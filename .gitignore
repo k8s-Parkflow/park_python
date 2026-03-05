@@ -1,1 +1,19 @@
 .venv/
+.codex/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Coverage artifacts
+/reports/
+
+# Ignore markdown files by default
+*.md
+AGENTS.md
+
+# Keep README files anywhere
+!README.md
+!**/README.md
+
+# Keep docs markdown files
+!docs/**/*.md
