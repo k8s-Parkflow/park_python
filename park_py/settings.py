@@ -10,10 +10,14 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import sys
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+PARKING_COMMAND_SERVICE_SRC = BASE_DIR / "services" / "parking-command-service" / "src"
+if str(PARKING_COMMAND_SERVICE_SRC) not in sys.path:
+    sys.path.insert(0, str(PARKING_COMMAND_SERVICE_SRC))
 
 
 # Quick-start development settings - unsuitable for production
@@ -37,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'parking_command_service.apps.ParkingCommandServiceConfig',
 ]
 
 MIDDLEWARE = [
