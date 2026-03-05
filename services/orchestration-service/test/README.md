@@ -13,4 +13,4 @@
 - 테스트 메서드명은 `should_<then>__when_<when>` 형식으로 작성한다.
 - DisplayName은 `[ID] ...` 형식으로 명세 ID와 1:1 매핑한다.
 
-상세 규칙: `docs/architecture/test-code-style.md`
+상세 규칙: 'docs/tdd/test-code-style.md'

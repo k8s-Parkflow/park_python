@@ -44,6 +44,7 @@ class ParkingHistory(models.Model):
                 condition=Q(exit_at__isnull=True),
                 name="uniq_active_history_per_vehicle",
             ),
+            # TODO: 슬롯 기준 활성 이력 유일성 제약 추가 검토
         ]
 
     @classmethod
