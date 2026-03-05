@@ -3,6 +3,7 @@
 
 # Ignore markdown files by default
 *.md
+AGENTS.md
 
 # Keep README files anywhere
 !README.md
