@@ -4,6 +4,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Coverage artifacts
+/reports/
+
 # Ignore markdown files by default
 *.md
 AGENTS.md
