@@ -1,23 +1,23 @@
-# TDD Architecture Rules
+# TDD 아키텍처 규칙
 
-This repository follows strict TDD for all services.
+이 저장소의 모든 서비스는 엄격한 TDD로 개발한다.
 
-## Mandatory sequence (per feature)
+## 기능 단위 필수 순서
 
-1. Acceptance test first (business scenario)
-2. Contract test second (API/schema compatibility)
-3. Unit test third (domain/policy logic)
-4. Minimal implementation
-5. Refactor
+1. Acceptance 테스트 작성 (실패 확인)
+2. Contract 테스트 작성 (실패 확인)
+3. Unit 테스트 작성 (실패 확인)
+4. 최소 구현으로 테스트 통과
+5. 리팩터링
 
-## Merge gate
+## 머지 게이트
 
-- No production code change without preceding failing tests.
-- No contract change without compatibility test updates.
-- Green test suite is required for all touched services.
+- 선행 실패 테스트 없이 프로덕션 코드 변경 금지
+- 계약 변경 시 계약 테스트 갱신 필수
+- 변경한 서비스의 테스트 스위트는 모두 녹색이어야 함
 
-## Test scope per service
+## 서비스별 테스트 초점
 
-- command services: domain integrity, transaction, idempotency
-- query services: projection accuracy, query latency checks
-- orchestration service: retry/timeout/compensation flow
+- Command 서비스: 도메인 무결성, 트랜잭션, 멱등성
+- Query 서비스: 프로젝션 정확도, 조회 일관성
+- Orchestration 서비스: 호출 순서, 재시도/타임아웃/보상 정책

@@ -1,15 +1,15 @@
 ---
-name: Setup Task
-about: Track initial setup or technical tasks
-title: "[Setup] "
+name: 설정 작업
+about: 초기 설정 또는 기술 작업을 추적합니다
+title: "[설정] "
 labels: ["setup"]
 assignees: []
 ---
 
-## Goal
-<!-- One sentence: what should be true after this issue is done? -->
+## 목표
+<!-- 이 이슈가 완료되었을 때 무엇이 참이어야 하는지 한 문장으로 작성 -->
 
-## Done Criteria
-- [ ] Runs locally without errors
-- [ ] Key settings/files are documented
-- [ ] Related PR is linked
+## 완료 기준
+- [ ] 로컬에서 오류 없이 실행된다
+- [ ] 핵심 설정/파일이 문서화되어 있다
+- [ ] 관련 PR이 연결되어 있다

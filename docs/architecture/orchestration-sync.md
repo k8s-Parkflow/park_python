@@ -1,22 +1,22 @@
-# Synchronous Orchestration Pattern
+# 동기 오케스트레이션 패턴
 
-## Why
+## 목적
 
-- Keep service ownership boundaries (DB per service)
-- Avoid MQ for current phase
-- Centralize multi-step workflow and error handling
+- 서비스 경계를 유지하면서 워크플로우를 중앙에서 제어
+- 현재 단계에서는 메시지 큐 없이 동기 호출로 운영
+- 다단계 실패 처리 정책을 일관되게 적용
 
-## Principles
+## 원칙
 
-- Orchestrator calls downstream services synchronously
-- Each request includes `Idempotency-Key` for write operations
-- Timeout/retry/circuit-breaker configured centrally
-- Compensation is explicit (best effort rollback)
+- 오케스트레이터가 하위 서비스를 동기 호출한다
+- 쓰기 요청은 `Idempotency-Key`를 사용한다
+- 타임아웃/재시도/서킷브레이커는 오케스트레이터에서 통합 관리한다
+- 실패 시 보상 로직을 명시적으로 실행한다
 
-## Initial flow
+## 기본 흐름
 
-1. Entry request arrives at orchestration-service
-2. Validate vehicle metadata via vehicle-service
-3. Reserve/occupy slot via parking-command-service
-4. Query current view from parking-query-service
-5. Return unified response
+1. 오케스트레이션 서비스가 요청 수신
+2. 필요한 도메인 사전 검증 수행
+3. 커맨드 서비스 호출로 상태 변경 수행
+4. 쿼리 서비스 조회로 최종 응답 조합
+5. 호출자에게 통합 결과 반환

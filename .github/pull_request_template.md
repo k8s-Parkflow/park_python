@@ -1,20 +1,18 @@
-## Summary
+## 요약
 Closes #
 
-<!-- What changed and why (2-4 lines) -->
+<!-- 무엇을 왜 변경했는지 2~4줄로 작성 -->
 
-## Changes
+## 변경 사항
 - 
 - 
 
+## 체크리스트
+- [ ] 로컬 실행/테스트를 완료했다
+- [ ] 단위 테스트를 완료했다
+- [ ] 통합 테스트를 완료했다
+- [ ] 코드 커버리지를 확인했다
+- [ ] 민감 정보가 커밋되지 않았다
+- [ ] 필요 시 문서/README를 업데이트했다
 
-## Checklist
-- [ ] Local run/test completed
-- [ ] Unit tests completed
-- [ ] Integration tests completed
-- [ ] code coverage
-- [ ] No sensitive data committed
-- [ ] Docs/README updated if needed
-
-
-## Screen Shots
+## 스크린샷
