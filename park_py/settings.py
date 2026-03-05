@@ -16,8 +16,11 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 PARKING_COMMAND_SERVICE_SRC = BASE_DIR / "services" / "parking-command-service" / "src"
+PARKING_QUERY_SERVICE_SRC = BASE_DIR / "services" / "parking-query-service" / "src"
 if str(PARKING_COMMAND_SERVICE_SRC) not in sys.path:
     sys.path.insert(0, str(PARKING_COMMAND_SERVICE_SRC))
+if str(PARKING_QUERY_SERVICE_SRC) not in sys.path:
+    sys.path.insert(0, str(PARKING_QUERY_SERVICE_SRC))
 
 
 # Quick-start development settings - unsuitable for production
@@ -42,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'parking_command_service.apps.ParkingCommandServiceConfig',
+    'parking_query_service.apps.ParkingQueryServiceConfig',
 ]
 
 MIDDLEWARE = [
