@@ -1,5 +1,8 @@
 .venv/
 .codex/
+__pycache__/
+*.py[cod]
+*$py.class
 
 # Ignore markdown files by default
 *.md
