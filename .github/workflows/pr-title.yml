@@ -1,0 +1,9 @@
+name: "PR Title Auto Format"
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  call-workflow:
+    uses: k8s-Parkflow/.github/.github/workflows/reusable-pr-title.yml@main
