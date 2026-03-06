@@ -14,15 +14,17 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf import settings
 from django.contrib import admin
 from django.urls import path
 
 from park_py.error_handling import handler404 as json_handler404
 from park_py.error_handling import handler500 as json_handler500
 
-urlpatterns = [
-    path('admin/', admin.site.urls),
-]
+urlpatterns = []
+
+if "django.contrib.admin" in settings.INSTALLED_APPS:
+    urlpatterns.append(path("admin/", admin.site.urls))
 
 handler404 = json_handler404
 handler500 = json_handler500

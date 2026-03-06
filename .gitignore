@@ -4,6 +4,14 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# test files
+**/test/*.py
+**/test/**/*.py
+**/tests/*.py
+**/tests/**/*.py
+**/test/TEST_SPEC.md
+**/tests/TEST_SPEC.md
+
 # Coverage artifacts
 /reports/
 
