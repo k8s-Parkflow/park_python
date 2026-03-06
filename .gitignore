@@ -5,10 +5,10 @@ __pycache__/
 *$py.class
 
 # test files
-**/test/*.py
-**/test/**/*.py
-**/tests/*.py
-**/tests/**/*.py
+**/test/init.py
+**/test/**/init.py
+**/tests/init.py
+**/tests/**/init.py
 **/test/TEST_SPEC.md
 **/tests/TEST_SPEC.md
 

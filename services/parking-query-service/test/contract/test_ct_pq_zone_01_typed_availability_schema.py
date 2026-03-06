@@ -1,0 +1,63 @@
+from django.test import TestCase, override_settings
+
+from parking_query_service.models import ZoneAvailability
+from zone_service.models import Zone
+
+
+@override_settings(ROOT_URLCONF="park_py.urls")
+class ZoneTypedAvailabilityContractTest(TestCase):
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        # 등록된 Zone은 모두 전체 타입 여석 합산 대상이다.
+        Zone.objects.create(zone_id=1, zone_name="A")
+        Zone.objects.create(zone_id=2, zone_name="B")
+        Zone.objects.create(zone_id=3, zone_name="C")
+
+        # Zone A의 일반 타입 잔여석 3대.
+        ZoneAvailability.objects.create(
+            zone_id=1,
+            slot_type="GENERAL",
+            total_count=10,
+            occupied_count=7,
+            available_count=3,
+        )
+
+        # Zone B의 일반 타입 잔여석 4대.
+        ZoneAvailability.objects.create(
+            zone_id=2,
+            slot_type="GENERAL",
+            total_count=8,
+            occupied_count=4,
+            available_count=4,
+        )
+
+        # Zone C의 일반 타입 잔여석 5대.
+        ZoneAvailability.objects.create(
+            zone_id=3,
+            slot_type="GENERAL",
+            total_count=10,
+            occupied_count=5,
+            available_count=5,
+        )
+
+    def test_should_match_total_typed_availability_response_schema__when_general_slot_type_requested(
+        self,
+    ) -> None:
+
+        # Given
+        # API는 Zone별 목록이 아니라 전체 Zone 기준 타입 합산 결과만 반환해야 한다.
+        request_path = "/api/zones/availabilities?slot_type=GENERAL"
+
+        # When
+        response = self.client.get(request_path)
+
+        # Then
+        # 응답 계약은 slotType과 availableCount 두 필드만 가진다.
+        self.assertEqual(response.status_code, 200)
+
+        payload = response.json()
+
+        self.assertEqual(set(payload.keys()), {"slotType", "availableCount"})
+        self.assertEqual(payload["slotType"], "GENERAL")
+        self.assertIsInstance(payload["availableCount"], int)
