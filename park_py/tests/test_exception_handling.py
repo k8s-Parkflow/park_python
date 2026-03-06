@@ -1,6 +1,7 @@
 from django.test import SimpleTestCase, override_settings
 
 
+@override_settings(ROOT_URLCONF="park_py.urls_test")
 class ExceptionHandlingMiddlewareTests(SimpleTestCase):
     def test_application_error_returns_consistent_payload(self) -> None:
         response = self.client.get("/test-errors/application/")
@@ -48,7 +49,8 @@ class ExceptionHandlingMiddlewareTests(SimpleTestCase):
 
     @override_settings(DEBUG=True)
     def test_unknown_error_returns_internal_server_error_payload(self) -> None:
-        response = self.client.get("/test-errors/runtime/")
+        with self.assertLogs("park_py.error_handling.middleware", level="ERROR"):
+                response = self.client.get("/test-errors/runtime/")
 
         self.assertEqual(response.status_code, 500)
         self.assertJSONEqual(

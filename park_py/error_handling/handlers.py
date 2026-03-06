@@ -9,7 +9,7 @@ from park_py.error_handling.responses import (
 )
 
 
-def handler404(_request: HttpRequest, _exception: Exception) -> JsonResponse:
+def handler404(_request: HttpRequest, exception: Exception) -> JsonResponse:
     return build_error_response(
         code=ErrorCode.NOT_FOUND,
         status=HTTPStatus.NOT_FOUND,
