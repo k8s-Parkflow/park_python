@@ -20,11 +20,16 @@ from django.urls import path
 
 from park_py.error_handling import handler404 as json_handler404
 from park_py.error_handling import handler500 as json_handler500
+from parking_query_service.views import zone_availability_view
 
 urlpatterns = []
 
 if "django.contrib.admin" in settings.INSTALLED_APPS:
     urlpatterns.append(path("admin/", admin.site.urls))
+
+urlpatterns.append(
+    path("api/zones/availabilities", zone_availability_view),
+)
 
 handler404 = json_handler404
 handler500 = json_handler500
