@@ -17,6 +17,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from park_py.error_handling import handler404 as json_handler404
+from park_py.error_handling import handler500 as json_handler500
+
 urlpatterns = [
     path('admin/', admin.site.urls),
 ]
+
+handler404 = json_handler404
+handler500 = json_handler500
