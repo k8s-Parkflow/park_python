@@ -4,6 +4,9 @@ on:
   pull_request:
     types: [opened, edited, synchronize]
 
+permissions:
+  pull-requests: write
+
 jobs:
   call-workflow:
     uses: k8s-Parkflow/.github/.github/workflows/reusable-pr-title.yml@main
