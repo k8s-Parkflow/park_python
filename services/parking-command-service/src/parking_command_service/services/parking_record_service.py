@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from typing import Protocol
 
 from django.db import DatabaseError, IntegrityError, transaction
@@ -47,8 +48,19 @@ class ParkingRecordCommandService:
         self.vehicle_repository = vehicle_repository or DjangoVehicleRepository()
         self.projection_writer = projection_writer
 
-    @transaction.atomic
     def create_entry(self, *, command: EntryCommand) -> ParkingRecordSnapshot:
+        for attempt in range(3):
+            try:
+                return self._create_entry_once(command=command)
+            except DatabaseError as exc:
+                if not _is_locked_error(exc) or attempt == 2:
+                    raise ParkingRecordConflictError("입차 처리 중 충돌이 발생했습니다.") from exc
+                time.sleep(0.01)
+
+        raise ParkingRecordConflictError("입차 처리 중 충돌이 발생했습니다.")
+
+    @transaction.atomic
+    def _create_entry_once(self, *, command: EntryCommand) -> ParkingRecordSnapshot:
         if not self.vehicle_repository.exists(vehicle_num=command.vehicle_num):
             raise ParkingRecordNotFoundError("존재하지 않는 차량입니다.")
 
@@ -83,8 +95,7 @@ class ParkingRecordCommandService:
             if self.projection_writer is not None:
                 # command 완료 시점의 write 결과만 query projection에 반영한다.
                 self.projection_writer.record_entry(history=history)
-        except (IntegrityError, DatabaseError) as exc:
-            # DB 수준 경합은 API 계약상 충돌로 노출한다.
+        except IntegrityError as exc:
             raise ParkingRecordConflictError("입차 처리 중 충돌이 발생했습니다.") from exc
 
         return _build_snapshot(history=history)
@@ -120,3 +131,7 @@ def _build_snapshot(*, history: ParkingHistory) -> ParkingRecordSnapshot:
         entry_at=history.entry_at,
         exit_at=history.exit_at,
     )
+
+
+def _is_locked_error(exc: DatabaseError) -> bool:
+    return "locked" in str(exc).lower()
