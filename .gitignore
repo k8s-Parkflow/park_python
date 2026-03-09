@@ -14,6 +14,7 @@ __pycache__/
 
 # Coverage artifacts
 /reports/
+/scripts/open_project_coverage.sh
 
 # Ignore markdown files by default
 *.md
@@ -25,3 +26,6 @@ AGENTS.md
 
 # Keep docs markdown files
 !docs/**/*.md
+
+# Local-only coverage helpers
+/docs/tdd/coverage-local-guide.md
