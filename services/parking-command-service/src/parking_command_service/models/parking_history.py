@@ -8,6 +8,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 from parking_command_service.models.enums import ParkingHistoryStatus
+from parking_command_service.vehicle_nums import normalize_vehicle_num
 
 
 class ParkingHistory(models.Model):
@@ -44,20 +45,20 @@ class ParkingHistory(models.Model):
                 condition=Q(exit_at__isnull=True),
                 name="uniq_active_history_per_vehicle",
             ),
-            # TODO: 슬롯 기준 활성 이력 유일성 제약 추가 검토
+            models.UniqueConstraint(
+                fields=["slot"],
+                condition=Q(exit_at__isnull=True),
+                name="uniq_active_history_per_slot",
+            ),
         ]
 
     @classmethod
     def start(
         cls, *, slot: "ParkingSlot", vehicle_num: str, entry_at: datetime | None = None,
     ) -> "ParkingHistory":
-        normalized_vehicle_num = vehicle_num.strip().upper()
-        if not normalized_vehicle_num:
-            raise ValidationError("차량 번호는 비어 있을 수 없습니다.")
-
         return cls(
             slot=slot,
-            vehicle_num=normalized_vehicle_num,
+            vehicle_num=normalize_vehicle_num(vehicle_num),
             entry_at=entry_at or timezone.now(),
             status=ParkingHistoryStatus.PARKED,
         )
@@ -66,5 +67,9 @@ class ParkingHistory(models.Model):
         if self.status == ParkingHistoryStatus.EXITED:
             raise ValidationError("이미 출차 처리된 이력입니다.")
 
+        resolved_exit_at = exited_at or timezone.now()
+        if resolved_exit_at < self.entry_at:
+            raise ValidationError("출차 시각은 입차 시각보다 빠를 수 없습니다.")
+
         self.status = ParkingHistoryStatus.EXITED
-        self.exit_at = exited_at or timezone.now()
+        self.exit_at = resolved_exit_at

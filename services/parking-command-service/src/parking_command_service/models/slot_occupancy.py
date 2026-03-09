@@ -7,6 +7,8 @@ from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 
+from parking_command_service.vehicle_nums import normalize_vehicle_num
+
 
 class SlotOccupancy(models.Model):
 
@@ -61,7 +63,7 @@ class SlotOccupancy(models.Model):
     ) -> None:
         self._validate_can_occupy()
         self._mark_occupied(
-            vehicle_num=self._normalize_vehicle_num(vehicle_num),
+            vehicle_num=normalize_vehicle_num(vehicle_num),
             history=history,
             occupied_at=occupied_at,
         )
@@ -79,23 +81,17 @@ class SlotOccupancy(models.Model):
         if self.history and self.history.slot_id != self.slot_id:
             raise ValidationError("주차 이력의 슬롯 정보가 일치하지 않습니다.")
 
-    def _validateOccupy(self) -> None:
+    def _validate_can_occupy(self) -> None:
         if self.occupied:
             raise ValidationError("이미 점유 중인 슬롯입니다.")
         if not self.slot.is_active:
             raise ValidationError("비활성화된 슬롯입니다.")
 
-    def _validateRelease(self) -> None:
+    def _validate_can_release(self) -> None:
         if not self.occupied:
             raise ValidationError("점유 중인 슬롯이 아닙니다.")
 
-    def _normalizeVehicle_num(self, vehicle_num: str) -> str:
-        normalized_vehicle_num = vehicle_num.strip().upper()
-        if not normalized_vehicle_num:
-            raise ValidationError("차량 번호는 비어 있을 수 없습니다.")
-        return normalized_vehicle_num
-
-    def _markOccupied(
+    def _mark_occupied(
         self, *, vehicle_num: str, history: "ParkingHistory", occupied_at: datetime | None,
     ) -> None:
         self.occupied = True
@@ -103,7 +99,7 @@ class SlotOccupancy(models.Model):
         self.history = history
         self.occupied_at = occupied_at or timezone.now()
 
-    def _markReleased(self) -> None:
+    def _mark_released(self) -> None:
         self.occupied = False
         self.vehicle_num = None
         self.history = None
