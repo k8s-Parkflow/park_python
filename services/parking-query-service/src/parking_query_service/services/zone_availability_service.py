@@ -27,8 +27,11 @@ class ZoneAvailabilityService:
         total = self._sum_available_counts(zone_ids=zone_ids, counts=counts)
         return self._build_response(slot_type=slot_type, total=total)
 
-    # 슬롯 타입 검증 에러 처리.
+    # slot_type이 비어 있으면 전체 조회, 그 외에는 에러 처리
     def _validate_slot_type(self, *, slot_type: str) -> None:
+        if self._is_total_request(slot_type=slot_type):
+            return
+
         if slot_type in self._SUPPORTED_SLOT_TYPES:
             return
 
@@ -37,6 +40,10 @@ class ZoneAvailabilityService:
                 "slot_type": ["지원하지 않는 슬롯 타입입니다."],
             }
         )
+
+    # slot_type이 없으면 전체 타입 합산 조회.
+    def _is_total_request(self, *, slot_type: str) -> bool:
+        return slot_type == ""
 
     # 전체 합산 대상 Zone 식별자 집합
     def _registered_zone_ids(self) -> set[int]:
@@ -55,6 +62,14 @@ class ZoneAvailabilityService:
             return self._zone_availability_repository.get_counts_by_slot_type(
                 slot_type=slot_type,
             )
+
+        if self._is_total_request(slot_type=slot_type):
+            return list(
+                ZoneAvailability.objects.filter(
+                    slot_type__in=self._SUPPORTED_SLOT_TYPES
+                ).order_by("zone_id")
+            )
+
         return list(
             ZoneAvailability.objects.filter(slot_type=slot_type).order_by("zone_id")
         )
@@ -69,6 +84,11 @@ class ZoneAvailabilityService:
 
     # API 응답 규격에 맞는 결과
     def _build_response(self, *, slot_type: str, total: int) -> dict[str, Any]:
+        if self._is_total_request(slot_type=slot_type):
+            return {
+                "availableCount": total,
+            }
+
         return {
             "slotType": slot_type,
             "availableCount": total,
