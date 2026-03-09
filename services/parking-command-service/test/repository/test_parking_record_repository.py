@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 import threading
+import time
 from pathlib import Path
 
 from django.db import IntegrityError, close_old_connections
@@ -88,15 +89,16 @@ class ParkingRecordRepositoryConcurrencyTests(TransactionTestCase):
         create_empty_occupancy(slot=slot)
         create_vehicle(vehicle_num="69가3455")
         create_vehicle(vehicle_num="70가1234")
-        barrier = threading.Barrier(2)
         outcomes: list[str] = []
         outcomes_lock = threading.Lock()
+        first_request_started = threading.Event()
 
-        def request_entry(vehicle_num: str) -> None:
+        def request_entry(vehicle_num: str, *, mark_started: bool = False) -> None:
             close_old_connections()
             service = ParkingRecordCommandService()
             try:
-                barrier.wait()
+                if mark_started:
+                    first_request_started.set()
                 service.create_entry(
                     command=EntryCommand(vehicle_num=vehicle_num, slot_id=slot.slot_id, entry_at=timezone.now())
                 )
@@ -110,9 +112,11 @@ class ParkingRecordRepositoryConcurrencyTests(TransactionTestCase):
                 outcomes.append(result)
 
         # When
-        first = threading.Thread(target=request_entry, args=("69가3455",))
-        second = threading.Thread(target=request_entry, args=("70가1234",))
+        first = threading.Thread(target=request_entry, args=("69가3455",), kwargs={"mark_started": True})
         first.start()
+        first_request_started.wait(timeout=1)
+        time.sleep(0.01)
+        second = threading.Thread(target=request_entry, args=("70가1234",))
         second.start()
         first.join()
         second.join()

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import sys
 from datetime import timedelta
 from pathlib import Path
@@ -8,21 +7,20 @@ from pathlib import Path
 from django.test import TestCase
 from django.utils import timezone
 
-from parking_command_service.models import ParkingHistory, SlotOccupancy
-
 TEST_ROOT = Path(__file__).resolve().parents[1]
 if str(TEST_ROOT) not in sys.path:
     sys.path.insert(0, str(TEST_ROOT))
 
-from support.factories import (  # noqa: E402
-    create_active_history,
+from support.api import post_entry, post_exit
+from support.factories import (
     create_empty_occupancy,
+    create_occupied_session,
     create_slot,
     create_vehicle,
 )
 
 
-class ParkingRecordContractTests(TestCase):
+class ParkingRecordSuccessContractTests(TestCase):
     maxDiff = None
 
     def test_should_match_entry_schema__when_entry_created(self) -> None:
@@ -32,11 +30,7 @@ class ParkingRecordContractTests(TestCase):
         create_empty_occupancy(slot=slot)
 
         # When
-        response = self.client.post(
-            "/api/parking/entry",
-            data=json.dumps({"vehicle_num": "69가-3455", "slot_id": slot.slot_id}),
-            content_type="application/json",
-        )
+        response = post_entry(self.client, vehicle_num="69가-3455", slot_id=slot.slot_id)
 
         # Then
         body = response.json()
@@ -58,21 +52,14 @@ class ParkingRecordContractTests(TestCase):
         vehicle = create_vehicle()
         slot = create_slot()
         entry_at = timezone.now() - timedelta(hours=1)
-        history = create_active_history(slot=slot, vehicle_num=vehicle.vehicle_num, entry_at=entry_at)
-        SlotOccupancy.objects.create(
+        history, _ = create_occupied_session(
             slot=slot,
-            occupied=True,
             vehicle_num=vehicle.vehicle_num,
-            history=history,
-            occupied_at=entry_at,
+            entry_at=entry_at,
         )
 
         # When
-        response = self.client.post(
-            "/api/parking/exit",
-            data=json.dumps({"vehicle_num": vehicle.vehicle_num}),
-            content_type="application/json",
-        )
+        response = post_exit(self.client, vehicle_num=vehicle.vehicle_num)
 
         # Then
         body = response.json()
@@ -96,11 +83,7 @@ class ParkingRecordContractTests(TestCase):
         create_empty_occupancy(slot=slot)
 
         # When
-        response = self.client.post(
-            "/api/parking/entry",
-            data=json.dumps({"vehicle_num": "69가-3455", "slot_id": slot.slot_id}),
-            content_type="application/json",
-        )
+        response = post_entry(self.client, vehicle_num="69가-3455", slot_id=slot.slot_id)
 
         # Then
         body = response.json()
@@ -109,16 +92,16 @@ class ParkingRecordContractTests(TestCase):
         self.assertNotIn("slot_name", body)
         self.assertNotIn("available_count", body)
 
+
+class ParkingRecordErrorContractTests(TestCase):
+    maxDiff = None
+
     def test_should_preserve_bad_request__when_command_schema_invalid(self) -> None:
         # Given
         create_vehicle()
 
         # When
-        response = self.client.post(
-            "/api/parking/entry",
-            data=json.dumps({"vehicle_num": "invalid"}),
-            content_type="application/json",
-        )
+        response = post_entry(self.client, vehicle_num="invalid")
 
         # Then
         self.assertEqual(response.status_code, 400)
@@ -141,11 +124,7 @@ class ParkingRecordContractTests(TestCase):
         create_vehicle()
 
         # When
-        response = self.client.post(
-            "/api/parking/entry",
-            data=json.dumps({"vehicle_num": "69가3455", "slot_id": 9999}),
-            content_type="application/json",
-        )
+        response = post_entry(self.client, vehicle_num="69가3455", slot_id=9999)
 
         # Then
         self.assertEqual(response.status_code, 404)
@@ -166,11 +145,7 @@ class ParkingRecordContractTests(TestCase):
         create_empty_occupancy(slot=slot)
 
         # When
-        response = self.client.post(
-            "/api/parking/entry",
-            data=json.dumps({"vehicle_num": vehicle.vehicle_num, "slot_id": slot.slot_id}),
-            content_type="application/json",
-        )
+        response = post_entry(self.client, vehicle_num=vehicle.vehicle_num, slot_id=slot.slot_id)
 
         # Then
         self.assertEqual(response.status_code, 409)
@@ -189,25 +164,13 @@ class ParkingRecordContractTests(TestCase):
         vehicle = create_vehicle()
         slot = create_slot()
         entry_at = timezone.now()
-        history = create_active_history(slot=slot, vehicle_num=vehicle.vehicle_num, entry_at=entry_at)
-        SlotOccupancy.objects.create(
-            slot=slot,
-            occupied=True,
-            vehicle_num=vehicle.vehicle_num,
-            history=history,
-            occupied_at=entry_at,
-        )
+        create_occupied_session(slot=slot, vehicle_num=vehicle.vehicle_num, entry_at=entry_at)
 
         # When
-        response = self.client.post(
-            "/api/parking/exit",
-            data=json.dumps(
-                {
-                    "vehicle_num": vehicle.vehicle_num,
-                    "exit_at": (entry_at - timedelta(minutes=1)).isoformat(),
-                }
-            ),
-            content_type="application/json",
+        response = post_exit(
+            self.client,
+            vehicle_num=vehicle.vehicle_num,
+            exit_at=entry_at - timedelta(minutes=1),
         )
 
         # Then

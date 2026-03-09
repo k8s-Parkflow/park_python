@@ -42,3 +42,19 @@ def create_active_history(
         entry_at=entry_at,
     )
 
+
+def create_occupied_session(
+    *,
+    slot: ParkingSlot,
+    vehicle_num: str,
+    entry_at,
+) -> tuple[ParkingHistory, SlotOccupancy]:
+    history = create_active_history(slot=slot, vehicle_num=vehicle_num, entry_at=entry_at)
+    occupancy = SlotOccupancy.objects.create(
+        slot=slot,
+        occupied=True,
+        vehicle_num=vehicle_num,
+        history=history,
+        occupied_at=entry_at,
+    )
+    return history, occupancy

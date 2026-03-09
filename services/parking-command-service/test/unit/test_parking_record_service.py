@@ -17,10 +17,8 @@ if str(TEST_ROOT) not in sys.path:
     sys.path.insert(0, str(TEST_ROOT))
 
 
-class ParkingRecordServiceUnitTests(TestCase):
-    def test_should_create_history_and_occupancy__when_entry_service_called(self) -> None:
-        # Given
-        entry_at = timezone.now()
+class ParkingRecordServiceTestSupport(TestCase):
+    def build_entry_dependencies(self) -> tuple[ParkingSlot, SlotOccupancy, Mock, Mock]:
         slot = ParkingSlot(slot_id=1, zone_id=1, slot_type_id=1, slot_code="A001", is_active=True)
         occupancy = SlotOccupancy(slot=slot)
         parking_record_repository = Mock()
@@ -29,15 +27,33 @@ class ParkingRecordServiceUnitTests(TestCase):
         parking_record_repository.get_slot_for_update.return_value = slot
         parking_record_repository.get_or_create_occupancy_for_update.return_value = occupancy
         parking_record_repository.has_active_history_for_vehicle.return_value = False
+        parking_record_repository.save_occupancy.side_effect = lambda *, occupancy: occupancy
+        return slot, occupancy, parking_record_repository, vehicle_repository
+
+    def build_service(
+        self,
+        *,
+        parking_record_repository: Mock,
+        vehicle_repository: Mock,
+    ) -> ParkingRecordCommandService:
+        return ParkingRecordCommandService(
+            parking_record_repository=parking_record_repository,
+            vehicle_repository=vehicle_repository,
+        )
+
+
+class ParkingRecordEntryServiceUnitTests(ParkingRecordServiceTestSupport):
+    def test_should_create_history_and_occupancy__when_entry_service_called(self) -> None:
+        # Given
+        entry_at = timezone.now()
+        slot, occupancy, parking_record_repository, vehicle_repository = self.build_entry_dependencies()
 
         def assign_history_id(*, history: ParkingHistory) -> ParkingHistory:
             history.history_id = 101
             return history
 
         parking_record_repository.save_history.side_effect = assign_history_id
-        parking_record_repository.save_occupancy.side_effect = lambda *, occupancy: occupancy
-
-        service = ParkingRecordCommandService(
+        service = self.build_service(
             parking_record_repository=parking_record_repository,
             vehicle_repository=vehicle_repository,
         )
@@ -58,6 +74,8 @@ class ParkingRecordServiceUnitTests(TestCase):
         parking_record_repository.save_history.assert_called_once()
         parking_record_repository.save_occupancy.assert_called_once()
 
+
+class ParkingRecordExitServiceUnitTests(ParkingRecordServiceTestSupport):
     def test_should_exit_history_and_release_occupancy__when_exit_service_called(self) -> None:
         # Given
         entry_at = timezone.now()
@@ -83,8 +101,7 @@ class ParkingRecordServiceUnitTests(TestCase):
         parking_record_repository.get_or_create_occupancy_for_update.return_value = occupancy
         parking_record_repository.save_history.side_effect = lambda *, history: history
         parking_record_repository.save_occupancy.side_effect = lambda *, occupancy: occupancy
-
-        service = ParkingRecordCommandService(
+        service = self.build_service(
             parking_record_repository=parking_record_repository,
             vehicle_repository=vehicle_repository,
         )
@@ -101,25 +118,19 @@ class ParkingRecordServiceUnitTests(TestCase):
         parking_record_repository.save_history.assert_called_once()
         parking_record_repository.save_occupancy.assert_called_once()
 
+
+class ParkingRecordResponseUnitTests(ParkingRecordServiceTestSupport):
     def test_should_map_write_snapshot_only__when_building_command_response(self) -> None:
         # Given
         entry_at = timezone.now()
-        slot = ParkingSlot(slot_id=1, zone_id=1, slot_type_id=1, slot_code="A001", is_active=True)
-        occupancy = SlotOccupancy(slot=slot)
-        parking_record_repository = Mock()
-        vehicle_repository = Mock()
-        vehicle_repository.exists.return_value = True
-        parking_record_repository.get_slot_for_update.return_value = slot
-        parking_record_repository.get_or_create_occupancy_for_update.return_value = occupancy
-        parking_record_repository.has_active_history_for_vehicle.return_value = False
+        slot, _occupancy, parking_record_repository, vehicle_repository = self.build_entry_dependencies()
 
         def assign_history_id(*, history: ParkingHistory) -> ParkingHistory:
             history.history_id = 101
             return history
 
         parking_record_repository.save_history.side_effect = assign_history_id
-        parking_record_repository.save_occupancy.side_effect = lambda *, occupancy: occupancy
-        service = ParkingRecordCommandService(
+        service = self.build_service(
             parking_record_repository=parking_record_repository,
             vehicle_repository=vehicle_repository,
         )
