@@ -316,3 +316,29 @@ class ZoneAvailabilityQueryServiceUnitTest(SimpleTestCase):
                 "availableCount": 7,
             },
         )
+
+    def test_should_return_normalized_slot_type__when_slot_type_requested_with_mixed_case(
+        self,
+    ) -> None:
+        # Given
+        # 지원 타입은 대소문자와 무관하게 허용하고 표준 대문자로 응답해야 한다.
+        from parking_query_service.services.zone_availability_service import (
+            ZoneAvailabilityService,
+        )
+
+        service = ZoneAvailabilityService(
+            zone_repository=FakeZoneRepository(),
+            zone_availability_repository=FakeEvAvailabilityRepository(),
+        )
+
+        # When
+        result = service.get(slot_type="eV")
+
+        # Then
+        self.assertEqual(
+            result,
+            {
+                "slotType": "EV",
+                "availableCount": 60,
+            },
+        )

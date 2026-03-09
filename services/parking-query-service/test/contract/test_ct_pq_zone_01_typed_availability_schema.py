@@ -271,3 +271,54 @@ class ZoneTotalAvailabilityWithMissingTypesContractTest(TestCase):
 
         self.assertEqual(set(payload.keys()), {"availableCount"})
         self.assertEqual(payload["availableCount"], 7)
+
+
+@override_settings(ROOT_URLCONF="park_py.urls")
+class ZoneTypedAvailabilityNormalizationContractTest(TestCase):
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        # 혼합 대소문자 입력도 표준 응답 계약을 유지해야 한다.
+        Zone.objects.create(zone_id=1, zone_name="A")
+        Zone.objects.create(zone_id=2, zone_name="B")
+        Zone.objects.create(zone_id=3, zone_name="C")
+
+        ZoneAvailability.objects.create(
+            zone_id=1,
+            slot_type="DISABLED",
+            total_count=100,
+            occupied_count=99,
+            available_count=1,
+        )
+        ZoneAvailability.objects.create(
+            zone_id=2,
+            slot_type="DISABLED",
+            total_count=100,
+            occupied_count=98,
+            available_count=2,
+        )
+        ZoneAvailability.objects.create(
+            zone_id=3,
+            slot_type="DISABLED",
+            total_count=100,
+            occupied_count=97,
+            available_count=3,
+        )
+
+    def test_should_preserve_typed_availability_response_schema__when_slot_type_requested_with_mixed_case(
+        self,
+    ) -> None:
+        # Given
+        request_path = "/api/zones/availabilities?slot_type=dIsAbLeD"
+
+        # When
+        response = self.client.get(request_path)
+
+        # Then
+        self.assertEqual(response.status_code, 200)
+
+        payload = response.json()
+
+        self.assertEqual(set(payload.keys()), {"slotType", "availableCount"})
+        self.assertEqual(payload["slotType"], "DISABLED")
+        self.assertEqual(payload["availableCount"], 6)
