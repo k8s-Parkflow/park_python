@@ -1,9 +1,7 @@
 from typing import Optional
 
-from django.db.models import Value
-from django.db.models.functions import Replace
-
 from parking_query_service.models.current_parking_view import CurrentParkingView
+from parking_query_service.repositories.normalized_vehicle_num import with_normalized_vehicle_num
 from parking_query_service.vehicle_num import normalize_vehicle_num
 
 
@@ -11,13 +9,7 @@ class CurrentLocationRepository:
     def get_by_vehicle_num(self, vehicle_num: str) -> Optional[CurrentParkingView]:
         normalized_vehicle_num = self._normalize_for_lookup(vehicle_num)
         return (
-            CurrentParkingView.objects.annotate(
-                normalized_vehicle_num=Replace(
-                    Replace("vehicle_num", Value("-"), Value("")),
-                    Value(" "),
-                    Value(""),
-                )
-            )
+            with_normalized_vehicle_num(CurrentParkingView.objects)
             .filter(normalized_vehicle_num=normalized_vehicle_num)
             .first()
         )
