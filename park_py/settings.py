@@ -50,6 +50,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'drf_spectacular',
     'parking_command_service.apps.ParkingCommandServiceConfig',
     'parking_query_service.apps.ParkingQueryServiceConfig',
     'zone_service.apps.ZoneServiceConfig',
@@ -139,3 +141,13 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+REST_FRAMEWORK = {
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "AutoE API",
+    "DESCRIPTION": "AutoE Django API schema",
+    "VERSION": "1.0.0",
+}

@@ -4,8 +4,17 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# test files
+**/test/__init__.py
+**/test/**/__init__.py
+**/tests/init.py
+**/tests/**/init.py
+**/test/TEST_SPEC.md
+**/tests/TEST_SPEC.md
+
 # Coverage artifacts
 /reports/
+/scripts/open_project_coverage.sh
 
 # Ignore markdown files by default
 *.md
@@ -17,3 +26,6 @@ AGENTS.md
 
 # Keep docs markdown files
 !docs/**/*.md
+
+# Local-only coverage helpers
+/docs/tdd/coverage-local-guide.md
