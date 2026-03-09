@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Mapping, Optional, Protocol, Union
+from typing import Mapping, Optional, Protocol, TypedDict, Union
 
 from park_py.error_handling.error_codes import ErrorCode
 from park_py.error_handling.exceptions import ApplicationError
@@ -42,6 +42,12 @@ class VehicleRepositoryProtocol(Protocol):
         ...
 
 
+class CurrentLocationPayload(TypedDict):
+    vehicle_num: str
+    zone_name: str
+    slot_name: str
+
+
 class CurrentLocationService:
     def __init__(
         self,
@@ -52,23 +58,32 @@ class CurrentLocationService:
         self._current_location_repository = current_location_repository
         self._vehicle_repository = vehicle_repository
 
-    def get_current_location(self, vehicle_num: str) -> dict[str, str]:
-        current_location = self._current_location_repository.get_by_vehicle_num(
-            normalize_vehicle_num(vehicle_num)
-        )
-        if current_location is None:
-            self._raise_missing_location_error(vehicle_num)
+    def get_current_location(self, vehicle_num: str) -> CurrentLocationPayload:
+        normalized_vehicle_num = normalize_vehicle_num(vehicle_num)
+        current_location = self._get_current_location_or_raise(normalized_vehicle_num)
+        return self._build_location_payload(current_location)
 
+    def _get_current_location_or_raise(
+        self, normalized_vehicle_num: str
+    ) -> Union[CurrentLocationProjection, Mapping[str, str]]:
+        current_location = self._current_location_repository.get_by_vehicle_num(
+            normalized_vehicle_num
+        )
+        if current_location is not None:
+            return current_location
+
+        if not self._vehicle_repository.exists_by_vehicle_num(normalized_vehicle_num):
+            raise VehicleNotFoundError()
+        raise CurrentVehicleNotParkedError()
+
+    def _build_location_payload(
+        self, current_location: Union[CurrentLocationProjection, Mapping[str, str]]
+    ) -> CurrentLocationPayload:
         return {
             "vehicle_num": self._value_of(current_location, "vehicle_num"),
             "zone_name": self._value_of(current_location, "zone_name"),
             "slot_name": self._value_of(current_location, "slot_name"),
         }
-
-    def _raise_missing_location_error(self, vehicle_num: str) -> None:
-        if not self._vehicle_repository.exists_by_vehicle_num(normalize_vehicle_num(vehicle_num)):
-            raise VehicleNotFoundError()
-        raise CurrentVehicleNotParkedError()
 
     @staticmethod
     def _value_of(
