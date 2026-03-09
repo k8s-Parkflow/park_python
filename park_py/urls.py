@@ -17,6 +17,7 @@ Including another URLconf
 from django.conf import settings
 from django.contrib import admin
 from django.urls import path
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 from park_py.error_handling import handler404 as json_handler404
 from park_py.error_handling import handler500 as json_handler500
@@ -29,6 +30,12 @@ if "django.contrib.admin" in settings.INSTALLED_APPS:
 
 urlpatterns.append(
     path("api/zones/availabilities", availability),
+)
+urlpatterns.append(
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+)
+urlpatterns.append(
+    path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
 )
 
 handler404 = json_handler404
