@@ -4,6 +4,7 @@ from django.db.models import Value
 from django.db.models.functions import Replace
 
 from parking_query_service.models.current_parking_view import CurrentParkingView
+from parking_query_service.vehicle_num import normalize_vehicle_num
 
 
 class CurrentLocationRepository:
@@ -38,4 +39,4 @@ class CurrentLocationRepository:
 
     @staticmethod
     def _normalize_for_lookup(vehicle_num: str) -> str:
-        return vehicle_num.replace("-", "").replace(" ", "")
+        return normalize_vehicle_num(vehicle_num)

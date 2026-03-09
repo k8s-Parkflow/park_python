@@ -3,6 +3,7 @@ from typing import Any
 
 from park_py.error_handling.error_codes import ErrorCode
 from park_py.error_handling.exceptions import ApplicationError
+from parking_query_service.vehicle_num import normalize_vehicle_num
 
 
 class VehicleNotFoundError(ApplicationError):
@@ -21,11 +22,6 @@ class CurrentVehicleNotParkedError(ApplicationError):
             code=ErrorCode.NOT_FOUND,
             status=HTTPStatus.NOT_FOUND,
         )
-
-
-def normalize_vehicle_num(vehicle_num: str) -> str:
-    return vehicle_num.replace("-", "").replace(" ", "")
-
 
 class CurrentLocationService:
     def __init__(self, *, current_location_repository: Any, vehicle_repository: Any) -> None:
