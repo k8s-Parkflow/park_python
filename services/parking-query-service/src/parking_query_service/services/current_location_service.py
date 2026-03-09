@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Any
+from typing import Mapping, Optional, Protocol, Union
 
 from park_py.error_handling.error_codes import ErrorCode
 from park_py.error_handling.exceptions import ApplicationError
@@ -23,12 +23,36 @@ class CurrentVehicleNotParkedError(ApplicationError):
             status=HTTPStatus.NOT_FOUND,
         )
 
+
+class CurrentLocationProjection(Protocol):
+    vehicle_num: str
+    zone_name: str
+    slot_name: str
+
+
+class CurrentLocationRepositoryProtocol(Protocol):
+    def get_by_vehicle_num(
+        self, vehicle_num: str
+    ) -> Optional[Union[CurrentLocationProjection, Mapping[str, str]]]:
+        ...
+
+
+class VehicleRepositoryProtocol(Protocol):
+    def exists_by_vehicle_num(self, vehicle_num: str) -> bool:
+        ...
+
+
 class CurrentLocationService:
-    def __init__(self, *, current_location_repository: Any, vehicle_repository: Any) -> None:
+    def __init__(
+        self,
+        *,
+        current_location_repository: CurrentLocationRepositoryProtocol,
+        vehicle_repository: VehicleRepositoryProtocol,
+    ) -> None:
         self._current_location_repository = current_location_repository
         self._vehicle_repository = vehicle_repository
 
-    def get_current_location(self, vehicle_num: str) -> dict:
+    def get_current_location(self, vehicle_num: str) -> dict[str, str]:
         current_location = self._current_location_repository.get_by_vehicle_num(
             normalize_vehicle_num(vehicle_num)
         )
@@ -47,7 +71,9 @@ class CurrentLocationService:
         raise CurrentVehicleNotParkedError()
 
     @staticmethod
-    def _value_of(source: Any, field_name: str):
-        if isinstance(source, dict):
+    def _value_of(
+        source: Union[CurrentLocationProjection, Mapping[str, str]], field_name: str
+    ) -> str:
+        if isinstance(source, Mapping):
             return source[field_name]
         return getattr(source, field_name)
