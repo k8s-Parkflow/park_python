@@ -117,6 +117,21 @@ class FakeEmptyEvAvailabilityRepository:
         return []
 
 
+class FakeAllSlotTypeAvailabilityRepositoryWithMissingTypes:
+
+    def get_counts_by_slot_type(
+        self,
+        *,
+        slot_type: str,
+    ) -> list[ZoneAvailabilityStub]:
+        # 전체 조회인데 일부 타입 집계가 비어 있으면 존재하는 타입만 반환한다.
+        assert slot_type == ""
+        return [
+            ZoneAvailabilityStub(zone_id=1, available_count=3),
+            ZoneAvailabilityStub(zone_id=2, available_count=4),
+        ]
+
+
 class ZoneAvailabilityQueryServiceUnitTest(SimpleTestCase):
 
     def test_should_return_total_available_count__when_general_slot_type_requested(
@@ -274,5 +289,30 @@ class ZoneAvailabilityQueryServiceUnitTest(SimpleTestCase):
             {
                 "slotType": "EV",
                 "availableCount": 0,
+            },
+        )
+
+    def test_should_return_total_available_count__when_some_slot_types_have_no_projection(
+        self,
+    ) -> None:
+        # Given
+        # 전체 조회 결과에 일부 타입 집계가 빠져 있어도 존재하는 값만 합산해야 한다.
+        from parking_query_service.services.zone_availability_service import (
+            ZoneAvailabilityService,
+        )
+
+        service = ZoneAvailabilityService(
+            zone_repository=FakeZoneRepository(),
+            zone_availability_repository=FakeAllSlotTypeAvailabilityRepositoryWithMissingTypes(),
+        )
+
+        # When
+        result = service.get(slot_type="")
+
+        # Then
+        self.assertEqual(
+            result,
+            {
+                "availableCount": 7,
             },
         )

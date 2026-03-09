@@ -236,3 +236,48 @@ class ZoneTypedAvailabilityWithoutProjectionAcceptanceTest(TestCase):
                 "availableCount": 0,
             },
         )
+
+
+@override_settings(ROOT_URLCONF="park_py.urls")
+class ZoneTotalAvailabilityWithMissingTypesAcceptanceTest(TestCase):
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        # 일부 타입 집계가 비어 있어도 전체 조회는 정상 응답이어야 한다.
+        Zone.objects.create(zone_id=1, zone_name="A")
+        Zone.objects.create(zone_id=2, zone_name="B")
+
+        # GENERAL 집계만 존재하고 EV, DISABLED는 비어 있는 상태를 만든다.
+        ZoneAvailability.objects.create(
+            zone_id=1,
+            slot_type="GENERAL",
+            total_count=10,
+            occupied_count=7,
+            available_count=3,
+        )
+        ZoneAvailability.objects.create(
+            zone_id=2,
+            slot_type="GENERAL",
+            total_count=10,
+            occupied_count=6,
+            available_count=4,
+        )
+
+    def test_should_return_total_available_count__when_some_slot_types_have_no_projection(
+        self,
+    ) -> None:
+        # Given (EV, DISABLED 집계는 없고 GENERAL만 존재)
+        request_path = "/api/zones/availabilities"
+
+        # When
+        response = self.client.get(request_path)
+
+        # Then
+        # 누락된 타입은 0으로 보고 GENERAL 합계 7만 반환해야 한다.
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "availableCount": 7,
+            },
+        )
