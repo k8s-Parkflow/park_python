@@ -154,3 +154,71 @@ class ParkingRecordResponseUnitTests(ParkingRecordServiceTestSupport):
             set(snapshot.to_dict().keys()),
             {"history_id", "vehicle_num", "slot_id", "status", "entry_at", "exit_at"},
         )
+
+
+# projection 연동 서비스 단위 테스트 클래스
+class ParkingRecordProjectionServiceUnitTests(ParkingRecordServiceTestSupport):
+    # 입차 projection 반영 호출 검증
+    def test_should_call_projection_writer__when_entry_service_succeeds(self) -> None:
+        # Given
+        entry_at = timezone.now()
+        slot, _occupancy, parking_record_repository, vehicle_repository = self.build_entry_dependencies()
+        projection_writer = Mock()
+
+        def assign_history_id(*, history: ParkingHistory) -> ParkingHistory:
+            history.history_id = 101
+            return history
+
+        parking_record_repository.save_history.side_effect = assign_history_id
+        service = ParkingRecordCommandService(
+            parking_record_repository=parking_record_repository,
+            projection_writer=projection_writer,
+            vehicle_repository=vehicle_repository,
+        )
+
+        # When
+        service.create_entry(command=EntryCommand(vehicle_num="69가3455", slot_id=slot.slot_id, entry_at=entry_at))
+
+        # Then
+        projection_writer.record_entry.assert_called_once()
+        projection_writer.record_exit.assert_not_called()
+
+    # 출차 projection 반영 호출 검증
+    def test_should_call_projection_writer__when_exit_service_succeeds(self) -> None:
+        # Given
+        entry_at = timezone.now()
+        exit_at = timezone.now()
+        slot = ParkingSlot(slot_id=1, zone_id=1, slot_type_id=1, slot_code="A001", is_active=True)
+        history = ParkingHistory(
+            history_id=101,
+            slot=slot,
+            vehicle_num="69가3455",
+            status=ParkingHistoryStatus.PARKED,
+            entry_at=entry_at,
+        )
+        occupancy = SlotOccupancy(
+            slot=slot,
+            occupied=True,
+            vehicle_num="69가3455",
+            history=history,
+            occupied_at=entry_at,
+        )
+        parking_record_repository = Mock()
+        vehicle_repository = Mock()
+        projection_writer = Mock()
+        parking_record_repository.get_active_history_for_vehicle_for_update.return_value = history
+        parking_record_repository.get_or_create_occupancy_for_update.return_value = occupancy
+        parking_record_repository.save_history.side_effect = lambda *, history: history
+        parking_record_repository.save_occupancy.side_effect = lambda *, occupancy: occupancy
+        service = ParkingRecordCommandService(
+            parking_record_repository=parking_record_repository,
+            projection_writer=projection_writer,
+            vehicle_repository=vehicle_repository,
+        )
+
+        # When
+        service.create_exit(command=ExitCommand(vehicle_num="69가3455", exit_at=exit_at))
+
+        # Then
+        projection_writer.record_exit.assert_called_once_with(history=history)
+        projection_writer.record_entry.assert_not_called()

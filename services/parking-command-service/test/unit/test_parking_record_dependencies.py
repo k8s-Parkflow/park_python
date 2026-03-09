@@ -8,6 +8,7 @@ from django.test import SimpleTestCase
 from parking_command_service.dependencies import get_parking_record_command_service
 from parking_command_service.repositories import (
     DjangoParkingRecordRepository,
+    DjangoParkingProjectionWriter,
     DjangoVehicleRepository,
 )
 from parking_command_service.services import ParkingRecordCommandService
@@ -27,4 +28,5 @@ class ParkingRecordDependenciesUnitTests(SimpleTestCase):
         # Then
         self.assertIsInstance(service, ParkingRecordCommandService)
         self.assertIsInstance(service.parking_record_repository, DjangoParkingRecordRepository)
+        self.assertIsInstance(service.projection_writer, DjangoParkingProjectionWriter)
         self.assertIsInstance(service.vehicle_repository, DjangoVehicleRepository)

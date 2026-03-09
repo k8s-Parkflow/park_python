@@ -30,15 +30,22 @@ class VehicleRepository(Protocol):
     def exists(self, *, vehicle_num: str) -> bool: ...
 
 
+class ParkingProjectionWriter(Protocol):
+    def record_entry(self, *, history: ParkingHistory) -> None: ...
+    def record_exit(self, *, history: ParkingHistory) -> None: ...
+
+
 class ParkingRecordCommandService:
     def __init__(
         self,
         *,
         parking_record_repository: ParkingRecordRepository | None = None,
         vehicle_repository: VehicleRepository | None = None,
+        projection_writer: ParkingProjectionWriter | None = None,
     ) -> None:
         self.parking_record_repository = parking_record_repository or DjangoParkingRecordRepository()
         self.vehicle_repository = vehicle_repository or DjangoVehicleRepository()
+        self.projection_writer = projection_writer
 
     @transaction.atomic
     def create_entry(self, *, command: EntryCommand) -> ParkingRecordSnapshot:
@@ -73,6 +80,9 @@ class ParkingRecordCommandService:
                 occupied_at=command.entry_at or history.entry_at,
             )
             self.parking_record_repository.save_occupancy(occupancy=occupancy)
+            if self.projection_writer is not None:
+                # command 완료 시점의 write 결과만 query projection에 반영한다.
+                self.projection_writer.record_entry(history=history)
         except (IntegrityError, DatabaseError) as exc:
             # DB 수준 경합은 API 계약상 충돌로 노출한다.
             raise ParkingRecordConflictError("입차 처리 중 충돌이 발생했습니다.") from exc
@@ -95,6 +105,8 @@ class ParkingRecordCommandService:
         # 출차 이력 종료와 점유 해제는 같은 트랜잭션에서 함께 끝나야 한다.
         occupancy.release()
         self.parking_record_repository.save_occupancy(occupancy=occupancy)
+        if self.projection_writer is not None:
+            self.projection_writer.record_exit(history=history)
 
         return _build_snapshot(history=history)
 
