@@ -3,6 +3,7 @@ from typing import Any, Optional
 from django.core.exceptions import ValidationError
 
 from parking_query_service.models import ZoneAvailability
+from parking_query_service.repositories import ZoneAvailabilityRepository
 from zone_service.models import Zone
 
 
@@ -17,7 +18,9 @@ class ZoneAvailabilityService:
         zone_availability_repository: Optional[Any] = None,
     ) -> None:
         self._zone_repository = zone_repository
-        self._zone_availability_repository = zone_availability_repository
+        self._zone_availability_repository = (
+            zone_availability_repository or ZoneAvailabilityRepository()
+        )
 
     # 요청한 타입 전체 Zone 잔여석 총합 응답
     def get(self, *, slot_type: str) -> dict[str, Any]:
@@ -74,21 +77,9 @@ class ZoneAvailabilityService:
 
     # 요청한 타입의 여석 집계 목록 조회
     def _available_counts(self, *, slot_type: str) -> list[Any]:
-        if self._zone_availability_repository is not None:
-            return self._zone_availability_repository.get_counts_by_slot_type(
-                slot_type=slot_type,
-            )
-
-        return list(self._available_counts_queryset(slot_type=slot_type).order_by("zone_id"))
-
-    # 요청 타입에 맞는 여석 집계 QuerySet을 만든다.
-    def _available_counts_queryset(self, *, slot_type: str) -> Any:
-        if self._is_total_request(slot_type=slot_type):
-            return ZoneAvailability.objects.filter(
-                slot_type__in=self._SUPPORTED_SLOT_TYPES
-            )
-
-        return ZoneAvailability.objects.filter(slot_type=slot_type)
+        return self._zone_availability_repository.get_counts_by_slot_type(
+            slot_type=slot_type,
+        )
 
     # 합산 대상 Zone에 속한 여석만 더해 총합 계산
     def _sum_available_counts(self, *, zone_ids: set[int], counts: list[Any]) -> int:
