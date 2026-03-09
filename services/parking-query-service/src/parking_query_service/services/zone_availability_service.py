@@ -1,10 +1,13 @@
 from typing import Any, Optional
 
+from django.core.exceptions import ValidationError
+
 from parking_query_service.models import ZoneAvailability
 from zone_service.models import Zone
 
 
 class ZoneAvailabilityService:
+    _SUPPORTED_SLOT_TYPES = {"GENERAL", "EV", "DISABLED"}
 
     # 전체 Zone 기준 타입별 잔여석 총합 조회에 필요한 의존성을 받는다.
     def __init__(
@@ -18,10 +21,22 @@ class ZoneAvailabilityService:
 
     # 요청한 타입 전체 Zone 잔여석 총합 응답
     def get(self, *, slot_type: str) -> dict[str, Any]:
+        self._validate_slot_type(slot_type=slot_type)
         zone_ids = self._registered_zone_ids()
         counts = self._available_counts(slot_type=slot_type)
         total = self._sum_available_counts(zone_ids=zone_ids, counts=counts)
         return self._build_response(slot_type=slot_type, total=total)
+
+    # 슬롯 타입 검증 에러 처리.
+    def _validate_slot_type(self, *, slot_type: str) -> None:
+        if slot_type in self._SUPPORTED_SLOT_TYPES:
+            return
+
+        raise ValidationError(
+            {
+                "slot_type": ["지원하지 않는 슬롯 타입입니다."],
+            }
+        )
 
     # 전체 합산 대상 Zone 식별자 집합
     def _registered_zone_ids(self) -> set[int]:
