@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from django.core.exceptions import ValidationError
 from django.test import SimpleTestCase
 
 
@@ -74,6 +75,18 @@ class FakeDisabledAvailabilityRepository:
             ZoneAvailabilityStub(zone_id=2, available_count=2),
             ZoneAvailabilityStub(zone_id=3, available_count=3),
         ]
+
+
+class FakeUnsupportedAvailabilityRepository:
+
+    def get_counts_by_slot_type(
+        self,
+        *,
+        slot_type: str,
+    ) -> list[ZoneAvailabilityStub]:
+        # 지원하지 않는 타입이어도 저장소는 빈 결과를 줄 수 있으므로,
+        # 서비스가 먼저 입력값을 검증해야 한다.
+        return []
 
 
 class ZoneAvailabilityQueryServiceUnitTest(SimpleTestCase):
@@ -158,4 +171,28 @@ class ZoneAvailabilityQueryServiceUnitTest(SimpleTestCase):
                 "slotType": "DISABLED",
                 "availableCount": 6,
             },
+        )
+
+    def test_should_raise_validation_error__when_slot_type_is_unsupported(
+        self,
+    ) -> None:
+        # Given
+        # 서비스는 지원하지 않는 타입을 합산하지 않고 입력 검증에서 거부해야 한다.
+        from parking_query_service.services.zone_availability_service import (
+            ZoneAvailabilityService,
+        )
+
+        service = ZoneAvailabilityService(
+            zone_repository=FakeZoneRepository(),
+            zone_availability_repository=FakeUnsupportedAvailabilityRepository(),
+        )
+
+        # When / Then
+        # 잘못된 타입이면 ValidationError를 발생시켜야 한다.
+        with self.assertRaises(ValidationError) as context:
+            service.get(slot_type="VIP")
+
+        self.assertEqual(
+            context.exception.message_dict,
+            {"slot_type": ["지원하지 않는 슬롯 타입입니다."]},
         )

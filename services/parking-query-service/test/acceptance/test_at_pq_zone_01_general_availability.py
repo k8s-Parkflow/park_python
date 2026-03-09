@@ -146,3 +146,28 @@ class ZoneGeneralAvailabilityAcceptanceTest(TestCase):
                 "availableCount": 6,
             },
         )
+
+    def test_should_return_bad_request__when_unsupported_slot_type_requested(
+        self,
+    ) -> None:
+        # Given (지원하지 않는 타입으로 전체 Zone 여석 조회를 요청)
+        request_path = "/api/zones/availabilities?slot_type=VIP"
+
+        # When
+        response = self.client.get(request_path)
+
+        # Then
+        # API는 표준 오류 포맷의 400 bad_request를 반환해야 한다.
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "error": {
+                    "code": "bad_request",
+                    "message": "잘못된 요청입니다.",
+                    "details": {
+                        "slot_type": ["지원하지 않는 슬롯 타입입니다."],
+                    },
+                }
+            },
+        )

@@ -141,3 +141,30 @@ class ZoneTypedAvailabilityContractTest(TestCase):
         self.assertEqual(set(payload.keys()), {"slotType", "availableCount"})
         self.assertEqual(payload["slotType"], "DISABLED")
         self.assertIsInstance(payload["availableCount"], int)
+
+    def test_should_preserve_bad_request_error_contract__when_slot_type_invalid(
+        self,
+    ) -> None:
+        # Given
+        # 지원하지 않는 타입 요청은 표준 오류 응답 계약을 유지해야 한다.
+        request_path = "/api/zones/availabilities?slot_type=VIP"
+
+        # When
+        response = self.client.get(request_path)
+
+        # Then
+        self.assertEqual(response.status_code, 400)
+
+        payload = response.json()
+
+        self.assertEqual(set(payload.keys()), {"error"})
+        self.assertEqual(
+            set(payload["error"].keys()),
+            {"code", "message", "details"},
+        )
+        self.assertEqual(payload["error"]["code"], "bad_request")
+        self.assertEqual(payload["error"]["message"], "잘못된 요청입니다.")
+        self.assertEqual(
+            payload["error"]["details"],
+            {"slot_type": ["지원하지 않는 슬롯 타입입니다."]},
+        )
