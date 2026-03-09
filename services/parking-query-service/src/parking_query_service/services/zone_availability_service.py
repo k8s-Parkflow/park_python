@@ -7,7 +7,7 @@ from zone_service.models import Zone
 
 
 class ZoneAvailabilityService:
-    _SUPPORTED_SLOT_TYPES = {"GENERAL", "EV", "DISABLED"}
+    _SUPPORTED_SLOT_TYPES = ("GENERAL", "EV", "DISABLED")
 
     # 전체 Zone 기준 타입별 잔여석 총합 조회에 필요한 의존성을 받는다.
     def __init__(
@@ -29,10 +29,9 @@ class ZoneAvailabilityService:
 
     # slot_type이 비어 있으면 전체 조회, 그 외에는 에러 처리
     def _validate_slot_type(self, *, slot_type: str) -> None:
-        if self._is_total_request(slot_type=slot_type):
-            return
-
-        if slot_type in self._SUPPORTED_SLOT_TYPES:
+        if self._is_total_request(slot_type=slot_type) or self._is_supported_slot_type(
+            slot_type=slot_type
+        ):
             return
 
         raise ValidationError(
@@ -44,6 +43,10 @@ class ZoneAvailabilityService:
     # slot_type이 없으면 전체 타입 합산 조회.
     def _is_total_request(self, *, slot_type: str) -> bool:
         return slot_type == ""
+
+    # 지원하는 슬롯 타입인지 확인한다.
+    def _is_supported_slot_type(self, *, slot_type: str) -> bool:
+        return slot_type in self._SUPPORTED_SLOT_TYPES
 
     # 전체 합산 대상 Zone 식별자 집합
     def _registered_zone_ids(self) -> set[int]:
@@ -63,16 +66,16 @@ class ZoneAvailabilityService:
                 slot_type=slot_type,
             )
 
+        return list(self._available_counts_queryset(slot_type=slot_type).order_by("zone_id"))
+
+    # 요청 타입에 맞는 여석 집계 QuerySet을 만든다.
+    def _available_counts_queryset(self, *, slot_type: str) -> Any:
         if self._is_total_request(slot_type=slot_type):
-            return list(
-                ZoneAvailability.objects.filter(
-                    slot_type__in=self._SUPPORTED_SLOT_TYPES
-                ).order_by("zone_id")
+            return ZoneAvailability.objects.filter(
+                slot_type__in=self._SUPPORTED_SLOT_TYPES
             )
 
-        return list(
-            ZoneAvailability.objects.filter(slot_type=slot_type).order_by("zone_id")
-        )
+        return ZoneAvailability.objects.filter(slot_type=slot_type)
 
     # 합산 대상 Zone에 속한 여석만 더해 총합 계산
     def _sum_available_counts(self, *, zone_ids: set[int], counts: list[Any]) -> int:
