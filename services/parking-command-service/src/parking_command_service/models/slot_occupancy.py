@@ -22,16 +22,14 @@ class SlotOccupancy(models.Model):
     occupied = models.BooleanField(default=False)
     vehicle_num = models.CharField(max_length=20, null=True, blank=True)
 
-    history = models.ForeignKey(
+    history = models.OneToOneField(
         "parking_command_service.ParkingHistory",
         on_delete=models.PROTECT,
         db_column="history_id",
         null=True,
         blank=True,
-        related_name="slot_occupancies",
+        related_name="slot_occupancy",
     )
-    # TODO: history 재사용 불가 강제 필요
-    # 하나의 ParkingHistory는 하나의 SlotOccupancy에서만 참조되도록 제약 추가 (One to One Field)
 
     occupied_at = models.DateTimeField(null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -84,6 +84,32 @@ class ParkingRecordRepositoryTests(TestCase):
         with self.assertRaises(IntegrityError):
             SlotOccupancy.objects.create(slot=slot)
 
+    # 주차 이력 단건 점유 참조 검증
+    def test_should_fail_duplicate_history_reference__when_same_history_reused(self) -> None:
+        # Given
+        vehicle = create_vehicle()
+        first_slot = create_slot(slot_code="A001")
+        second_slot = create_slot(slot_code="A002")
+        entry_at = timezone.now()
+        history = create_active_history(slot=first_slot, vehicle_num=vehicle.vehicle_num, entry_at=entry_at)
+        SlotOccupancy.objects.create(
+            slot=first_slot,
+            occupied=True,
+            vehicle_num=vehicle.vehicle_num,
+            history=history,
+            occupied_at=entry_at,
+        )
+
+        # When / Then
+        with self.assertRaises(IntegrityError):
+            SlotOccupancy.objects.create(
+                slot=second_slot,
+                occupied=True,
+                vehicle_num=vehicle.vehicle_num,
+                history=history,
+                occupied_at=entry_at,
+            )
+
 
 # 저장소 동시성 테스트 클래스
 class ParkingRecordRepositoryConcurrencyTests(TransactionTestCase):
