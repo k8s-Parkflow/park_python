@@ -7,8 +7,8 @@ __pycache__/
 # test files
 **/test/__init__.py
 **/test/**/__init__.py
-**/tests/init.py
-**/tests/**/init.py
+**/tests/__init__.py
+**/tests/**/__init__.py
 **/test/TEST_SPEC.md
 **/tests/TEST_SPEC.md
 
