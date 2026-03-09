@@ -20,13 +20,13 @@
 | `slot_id` | `bigint` | Y | 슬롯 PK (자동 증가) |
 | `zone_id` | `bigint` | Y | 존 식별자 (`zone_service.ZONE.zone_id` 논리 참조) |
 | `slot_type_id` | `bigint` | Y | 슬롯 타입 식별자 (`zone_service.SLOT_TYPE.slot_type_id` 논리 참조) |
-| `slot_code` | `varchar(50)` | Y | 존 내 슬롯 코드 |
+| `slot_name` | `varchar(50)` | Y | 존 내 슬롯 이름 |
 | `is_active` | `boolean` | Y | 슬롯 활성 여부 (기본값 `true`) |
 | `created_at` | `timestamp` | Y | 생성 시각 |
 | `updated_at` | `timestamp` | Y | 최종 수정 시각 |
 
 제약/인덱스:
-- 유니크 제약: `(zone_id, slot_code)` (`uniq_slot_zone_slot_code`)
+- 유니크 제약: `(zone_id, slot_name)` (`uniq_slot_zone_slot_name`)
 
 ## PARKING_HISTORY
 

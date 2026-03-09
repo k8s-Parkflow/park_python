@@ -1,6 +1,6 @@
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.http import HttpRequest, HttpResponse
-from django.urls import path
+from django.urls import include, path
 
 from park_py.error_handling import ApplicationError
 from park_py.error_handling import ErrorCode
@@ -29,6 +29,7 @@ def raise_runtime_error(_request: HttpRequest) -> HttpResponse:
 
 
 urlpatterns = [
+    path("", include("parking_query_service.urls")),
     path("test-errors/application/", raise_application_error),
     path("test-errors/validation/", raise_validation_error),
     path("test-errors/permission/", raise_permission_denied),
