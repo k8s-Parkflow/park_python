@@ -17,8 +17,8 @@
 | 컬럼명 | 타입 | 필수 | 설명 |
 | --- | --- | --- | --- |
 | `vehicle_num` | `varchar(20)` | Y | 차량 번호 PK |
-| `slot_id` | `bigint` | Y | 현재 점유 슬롯 ID |
-| `zone_id` | `bigint` | Y | 현재 점유 존 ID |
+| `zone_name` | `varchar(100)` | Y | 현재 위치한 존 이름 |
+| `slot_name` | `varchar(50)` | Y | 현재 위치한 슬롯 이름 |
 | `slot_type` | `varchar(50)` | Y | 슬롯 타입명 |
 | `entry_at` | `timestamp` | Y | 입차 시각 |
 | `updated_at` | `timestamp` | Y | 최종 갱신 시각 |
@@ -46,5 +46,6 @@
 
 ## 엔터티 관계
 
-- `CURRENT_PARKING_VIEW.slot_id`는 `parking-command-service`의 슬롯 식별자와 논리적으로 연결된다.
+- `CURRENT_PARKING_VIEW.zone_name`은 `zone-service`의 존 마스터 이름을 사용자 조회용으로 투영한 값이다.
+- `CURRENT_PARKING_VIEW.slot_name`은 `parking-command-service`의 슬롯 마스터 이름을 사용자 조회용으로 투영한 값이다.
 - `ZONE_AVAILABILITY.zone_id`는 `zone-service`의 존 식별자와 논리적으로 연결된다.
