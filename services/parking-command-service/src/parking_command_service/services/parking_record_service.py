@@ -45,6 +45,7 @@ class ParkingRecordCommandService:
         if not self.vehicle_repository.exists(vehicle_num=command.vehicle_num):
             raise ParkingRecordNotFoundError("존재하지 않는 차량입니다.")
 
+        # 슬롯과 점유 행을 같은 트랜잭션 안에서 잠가 이중 입차를 줄이는 흐름
         slot = self.parking_record_repository.get_slot_for_update(slot_id=command.slot_id)
         if slot is None:
             raise ParkingRecordNotFoundError("존재하지 않는 슬롯입니다.")
@@ -64,6 +65,7 @@ class ParkingRecordCommandService:
         )
 
         try:
+            # 이력 저장 후 점유를 연결해야 현재 활성 세션 참조가 일관된다.
             self.parking_record_repository.save_history(history=history)
             occupancy.occupy(
                 vehicle_num=command.vehicle_num,
@@ -72,6 +74,7 @@ class ParkingRecordCommandService:
             )
             self.parking_record_repository.save_occupancy(occupancy=occupancy)
         except (IntegrityError, DatabaseError) as exc:
+            # DB 수준 경합은 API 계약상 충돌로 노출한다.
             raise ParkingRecordConflictError("입차 처리 중 충돌이 발생했습니다.") from exc
 
         return _build_snapshot(history=history)
@@ -89,6 +92,7 @@ class ParkingRecordCommandService:
         history.exit(exited_at=exit_at)
         self.parking_record_repository.save_history(history=history)
 
+        # 출차 이력 종료와 점유 해제는 같은 트랜잭션에서 함께 끝나야 한다.
         occupancy.release()
         self.parking_record_repository.save_occupancy(occupancy=occupancy)
 

@@ -20,9 +20,11 @@ from support.factories import (
 )
 
 
+# 성공 응답 계약 테스트 클래스
 class ParkingRecordSuccessContractTests(TestCase):
     maxDiff = None
 
+    # 입차 성공 응답 스키마 계약 검증
     def test_should_match_entry_schema__when_entry_created(self) -> None:
         # Given
         vehicle = create_vehicle()
@@ -47,6 +49,7 @@ class ParkingRecordSuccessContractTests(TestCase):
         self.assertIsInstance(body["entry_at"], str)
         self.assertIsNone(body["exit_at"])
 
+    # 출차 성공 응답 스키마 계약 검증
     def test_should_match_exit_schema__when_exit_completed(self) -> None:
         # Given
         vehicle = create_vehicle()
@@ -76,6 +79,7 @@ class ParkingRecordSuccessContractTests(TestCase):
         self.assertIsInstance(body["entry_at"], str)
         self.assertIsInstance(body["exit_at"], str)
 
+    # write 전용 응답 필드 계약 검증
     def test_should_expose_write_fields_only__when_command_succeeds(self) -> None:
         # Given
         create_vehicle()
@@ -93,9 +97,11 @@ class ParkingRecordSuccessContractTests(TestCase):
         self.assertNotIn("available_count", body)
 
 
+# 오류 응답 계약 테스트 클래스
 class ParkingRecordErrorContractTests(TestCase):
     maxDiff = None
 
+    # 잘못된 요청 응답 계약 검증
     def test_should_preserve_bad_request__when_command_schema_invalid(self) -> None:
         # Given
         create_vehicle()
@@ -119,6 +125,7 @@ class ParkingRecordErrorContractTests(TestCase):
             },
         )
 
+    # 미존재 자원 응답 계약 검증
     def test_should_preserve_not_found__when_resource_missing(self) -> None:
         # Given
         create_vehicle()
@@ -138,6 +145,7 @@ class ParkingRecordErrorContractTests(TestCase):
             },
         )
 
+    # 충돌 응답 계약 검증
     def test_should_preserve_conflict__when_entry_precondition_invalid(self) -> None:
         # Given
         vehicle = create_vehicle()
@@ -159,6 +167,7 @@ class ParkingRecordErrorContractTests(TestCase):
             },
         )
 
+    # 출차 시각 역전 오류 계약 검증
     def test_should_preserve_error_contract__when_exit_time_invalid(self) -> None:
         # Given
         vehicle = create_vehicle()

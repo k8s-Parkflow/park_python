@@ -27,7 +27,9 @@ from support.factories import (  # noqa: E402
 )
 
 
+# 저장소 및 제약 테스트 클래스
 class ParkingRecordRepositoryTests(TestCase):
+    # 차량별 활성 세션 유니크 제약 검증
     def test_should_fail_second_active_history__when_same_vehicle_has_open_session(self) -> None:
         # Given
         vehicle = create_vehicle()
@@ -45,6 +47,7 @@ class ParkingRecordRepositoryTests(TestCase):
                 entry_at=entry_at,
             )
 
+    # 슬롯별 활성 세션 유니크 제약 검증
     def test_should_fail_second_active_history__when_same_slot_has_open_session(self) -> None:
         # Given
         first_vehicle = create_vehicle(vehicle_num="69가3455")
@@ -62,6 +65,7 @@ class ParkingRecordRepositoryTests(TestCase):
                 entry_at=entry_at,
             )
 
+    # 점유 상태 체크 제약 검증
     def test_should_fail__when_occupied_state_incomplete(self) -> None:
         # Given
         slot = create_slot()
@@ -70,6 +74,7 @@ class ParkingRecordRepositoryTests(TestCase):
         with self.assertRaises(IntegrityError):
             SlotOccupancy.objects.create(slot=slot, occupied=True)
 
+    # 슬롯별 점유 단건성 검증
     def test_should_fail_duplicate_occupancy__when_same_slot_saved_twice(self) -> None:
         # Given
         slot = create_slot()
@@ -80,9 +85,11 @@ class ParkingRecordRepositoryTests(TestCase):
             SlotOccupancy.objects.create(slot=slot)
 
 
+# 저장소 동시성 테스트 클래스
 class ParkingRecordRepositoryConcurrencyTests(TransactionTestCase):
     reset_sequences = True
 
+    # 동시 입차 저장 일관성 검증
     def test_should_keep_consistency__when_concurrent_entry_committed(self) -> None:
         # Given
         slot = create_slot()

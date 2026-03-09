@@ -6,10 +6,12 @@ from vehicle_service.models import Vehicle
 from vehicle_service.models.enums import VehicleType
 
 
+# 차량 테스트 데이터 생성 유틸리티
 def create_vehicle(*, vehicle_num: str = "69가3455", vehicle_type: VehicleType = VehicleType.General) -> Vehicle:
     return Vehicle.objects.create(vehicle_num=vehicle_num, vehicle_type=vehicle_type)
 
 
+# 슬롯 테스트 데이터 생성 유틸리티
 def create_slot(
     *,
     zone_id: int = 1,
@@ -25,10 +27,12 @@ def create_slot(
     )
 
 
+# 빈 점유 상태 생성 유틸리티
 def create_empty_occupancy(*, slot: ParkingSlot) -> SlotOccupancy:
     return SlotOccupancy.objects.create(slot=slot)
 
 
+# 활성 주차 이력 생성 유틸리티
 def create_active_history(
     *,
     slot: ParkingSlot,
@@ -43,6 +47,7 @@ def create_active_history(
     )
 
 
+# 점유 완료 세션 생성 유틸리티
 def create_occupied_session(
     *,
     slot: ParkingSlot,

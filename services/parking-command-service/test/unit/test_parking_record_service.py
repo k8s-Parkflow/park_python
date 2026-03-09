@@ -17,7 +17,9 @@ if str(TEST_ROOT) not in sys.path:
     sys.path.insert(0, str(TEST_ROOT))
 
 
+# 서비스 테스트 공통 조립 클래스
 class ParkingRecordServiceTestSupport(TestCase):
+    # 입차 서비스 의존성 조립 유틸리티
     def build_entry_dependencies(self) -> tuple[ParkingSlot, SlotOccupancy, Mock, Mock]:
         slot = ParkingSlot(slot_id=1, zone_id=1, slot_type_id=1, slot_code="A001", is_active=True)
         occupancy = SlotOccupancy(slot=slot)
@@ -30,6 +32,7 @@ class ParkingRecordServiceTestSupport(TestCase):
         parking_record_repository.save_occupancy.side_effect = lambda *, occupancy: occupancy
         return slot, occupancy, parking_record_repository, vehicle_repository
 
+    # 서비스 인스턴스 생성 유틸리티
     def build_service(
         self,
         *,
@@ -42,7 +45,9 @@ class ParkingRecordServiceTestSupport(TestCase):
         )
 
 
+# 입차 서비스 단위 테스트 클래스
 class ParkingRecordEntryServiceUnitTests(ParkingRecordServiceTestSupport):
+    # 입차 서비스 상태 변경 검증
     def test_should_create_history_and_occupancy__when_entry_service_called(self) -> None:
         # Given
         entry_at = timezone.now()
@@ -75,7 +80,9 @@ class ParkingRecordEntryServiceUnitTests(ParkingRecordServiceTestSupport):
         parking_record_repository.save_occupancy.assert_called_once()
 
 
+# 출차 서비스 단위 테스트 클래스
 class ParkingRecordExitServiceUnitTests(ParkingRecordServiceTestSupport):
+    # 출차 서비스 상태 변경 검증
     def test_should_exit_history_and_release_occupancy__when_exit_service_called(self) -> None:
         # Given
         entry_at = timezone.now()
@@ -119,7 +126,9 @@ class ParkingRecordExitServiceUnitTests(ParkingRecordServiceTestSupport):
         parking_record_repository.save_occupancy.assert_called_once()
 
 
+# 응답 조합 단위 테스트 클래스
 class ParkingRecordResponseUnitTests(ParkingRecordServiceTestSupport):
+    # write 스냅샷 응답 필드 검증
     def test_should_map_write_snapshot_only__when_building_command_response(self) -> None:
         # Given
         entry_at = timezone.now()

@@ -24,9 +24,11 @@ from support.factories import (
 )
 
 
+# 인수 테스트 공통 검증 보조 클래스
 class ParkingRecordAcceptanceSupport(TestCase):
     maxDiff = None
 
+    # 활성 주차 상태 검증 유틸리티
     def assert_active_parking(self, *, vehicle_num: str, slot_id: int) -> None:
         history = ParkingHistory.objects.get()
         occupancy = SlotOccupancy.objects.get(slot_id=slot_id)
@@ -35,6 +37,7 @@ class ParkingRecordAcceptanceSupport(TestCase):
         self.assertEqual(occupancy.vehicle_num, vehicle_num)
         self.assertEqual(occupancy.history_id, history.history_id)
 
+    # 해제된 점유 상태 검증 유틸리티
     def assert_released_parking(self, *, slot_id: int) -> None:
         occupancy = SlotOccupancy.objects.get(slot_id=slot_id)
         self.assertFalse(occupancy.occupied)
@@ -43,7 +46,9 @@ class ParkingRecordAcceptanceSupport(TestCase):
         self.assertIsNone(occupancy.occupied_at)
 
 
+# 입차 API 인수 테스트 클래스
 class ParkingRecordEntryAcceptanceTests(ParkingRecordAcceptanceSupport):
+    # 입차 성공 흐름 검증
     def test_should_create_active_history_and_occupancy__when_entry_requested(self) -> None:
         # Given
         vehicle = create_vehicle()
@@ -74,6 +79,7 @@ class ParkingRecordEntryAcceptanceTests(ParkingRecordAcceptanceSupport):
         )
         self.assert_active_parking(vehicle_num=vehicle.vehicle_num, slot_id=slot.slot_id)
 
+    # 차량 미등록 입차 거부 검증
     def test_should_return_not_found__when_vehicle_missing_on_entry(self) -> None:
         # Given
         slot = create_slot()
@@ -87,6 +93,7 @@ class ParkingRecordEntryAcceptanceTests(ParkingRecordAcceptanceSupport):
         self.assertEqual(response.json()["error"]["code"], "not_found")
         self.assertEqual(ParkingHistory.objects.count(), 0)
 
+    # 슬롯 미존재 입차 거부 검증
     def test_should_return_not_found__when_slot_missing_on_entry(self) -> None:
         # Given
         create_vehicle()
@@ -99,6 +106,7 @@ class ParkingRecordEntryAcceptanceTests(ParkingRecordAcceptanceSupport):
         self.assertEqual(response.json()["error"]["code"], "not_found")
         self.assertEqual(ParkingHistory.objects.count(), 0)
 
+    # 비활성 슬롯 입차 거부 검증
     def test_should_return_conflict__when_slot_inactive_on_entry(self) -> None:
         # Given
         vehicle = create_vehicle()
@@ -112,6 +120,7 @@ class ParkingRecordEntryAcceptanceTests(ParkingRecordAcceptanceSupport):
         self.assertEqual(response.status_code, 409)
         self.assertEqual(response.json()["error"]["code"], "conflict")
 
+    # 점유 중 슬롯 입차 거부 검증
     def test_should_return_conflict__when_slot_already_occupied(self) -> None:
         # Given
         vehicle = create_vehicle()
@@ -130,6 +139,7 @@ class ParkingRecordEntryAcceptanceTests(ParkingRecordAcceptanceSupport):
         self.assertEqual(response.status_code, 409)
         self.assertEqual(response.json()["error"]["code"], "conflict")
 
+    # 활성 세션 중복 입차 거부 검증
     def test_should_return_conflict__when_vehicle_already_parked(self) -> None:
         # Given
         vehicle = create_vehicle()
@@ -151,7 +161,9 @@ class ParkingRecordEntryAcceptanceTests(ParkingRecordAcceptanceSupport):
         self.assertEqual(ParkingHistory.objects.filter(exit_at__isnull=True).count(), 1)
 
 
+# 출차 API 인수 테스트 클래스
 class ParkingRecordExitAcceptanceTests(ParkingRecordAcceptanceSupport):
+    # 출차 성공 흐름 검증
     def test_should_close_history_and_release_occupancy__when_exit_requested(self) -> None:
         # Given
         vehicle = create_vehicle()
@@ -189,6 +201,7 @@ class ParkingRecordExitAcceptanceTests(ParkingRecordAcceptanceSupport):
         self.assertEqual(history.exit_at, exit_at)
         self.assert_released_parking(slot_id=slot.slot_id)
 
+    # 활성 세션 미존재 출차 거부 검증
     def test_should_return_not_found__when_active_history_missing_on_exit(self) -> None:
         # Given
         create_vehicle()
@@ -200,6 +213,7 @@ class ParkingRecordExitAcceptanceTests(ParkingRecordAcceptanceSupport):
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json()["error"]["code"], "not_found")
 
+    # 출차 시각 역전 거부 검증
     def test_should_reject_exit__when_exit_at_before_entry_at(self) -> None:
         # Given
         vehicle = create_vehicle()
@@ -219,7 +233,9 @@ class ParkingRecordExitAcceptanceTests(ParkingRecordAcceptanceSupport):
         self.assertEqual(response.json()["error"]["code"], "bad_request")
 
 
+# 요청 검증 인수 테스트 클래스
 class ParkingRecordValidationAcceptanceTests(ParkingRecordAcceptanceSupport):
+    # 입차 요청 검증 실패 응답 검증
     def test_should_return_bad_request__when_entry_payload_invalid(self) -> None:
         # Given
         create_vehicle()
@@ -232,6 +248,7 @@ class ParkingRecordValidationAcceptanceTests(ParkingRecordAcceptanceSupport):
         self.assertEqual(missing_slot_response.status_code, 400)
         self.assertEqual(invalid_vehicle_response.status_code, 400)
 
+    # 출차 요청 검증 실패 응답 검증
     def test_should_return_bad_request__when_exit_payload_invalid(self) -> None:
         # Given
         create_vehicle()
@@ -247,9 +264,11 @@ class ParkingRecordValidationAcceptanceTests(ParkingRecordAcceptanceSupport):
         self.assertEqual(response.status_code, 400)
 
 
+# 동시 입차 인수 테스트 클래스
 class ParkingRecordConcurrencyAcceptanceTests(TransactionTestCase):
     reset_sequences = True
 
+    # 동시 입차 경쟁 보호 검증
     def test_should_allow_only_one_entry__when_concurrent_requests_compete(self) -> None:
         # Given
         slot = create_slot()

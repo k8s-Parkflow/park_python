@@ -62,6 +62,7 @@ class SlotOccupancy(models.Model):
         self, *, vehicle_num: str, history: "ParkingHistory", occupied_at: datetime | None = None,
     ) -> None:
         self._validate_can_occupy()
+        # 점유 상태는 차량 번호, 현재 이력, 점유 시각이 항상 함께 움직여야 한다.
         self._mark_occupied(
             vehicle_num=normalize_vehicle_num(vehicle_num),
             history=history,
@@ -78,6 +79,7 @@ class SlotOccupancy(models.Model):
         super().clean()
         if self.occupied and not self.vehicle_num:
             raise ValidationError("차량 번호는 비어 있을 수 없습니다.")
+        # 점유가 참조하는 활성 이력은 반드시 같은 슬롯 소속이어야 한다.
         if self.history and self.history.slot_id != self.slot_id:
             raise ValidationError("주차 이력의 슬롯 정보가 일치하지 않습니다.")
 

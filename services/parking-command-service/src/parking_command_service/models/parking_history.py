@@ -56,6 +56,7 @@ class ParkingHistory(models.Model):
     def start(
         cls, *, slot: "ParkingSlot", vehicle_num: str, entry_at: datetime | None = None,
     ) -> "ParkingHistory":
+        # 생성 시점에 차량 번호를 정규화해 활성 세션 유니크 조건과 비교 기준을 맞춘다.
         return cls(
             slot=slot,
             vehicle_num=normalize_vehicle_num(vehicle_num),
@@ -68,6 +69,7 @@ class ParkingHistory(models.Model):
             raise ValidationError("이미 출차 처리된 이력입니다.")
 
         resolved_exit_at = exited_at or timezone.now()
+        # 입차보다 이른 출차는 세션 시간축을 깨므로 도메인에서 차단한다.
         if resolved_exit_at < self.entry_at:
             raise ValidationError("출차 시각은 입차 시각보다 빠를 수 없습니다.")
 

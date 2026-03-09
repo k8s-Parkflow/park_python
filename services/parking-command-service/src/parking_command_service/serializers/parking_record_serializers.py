@@ -12,6 +12,7 @@ from parking_command_service.vehicle_nums import normalize_vehicle_num
 
 def parse_entry_command(*, body: bytes) -> EntryCommand:
     payload = _parse_json_body(body=body)
+    # 필드별 오류를 한 번에 모아 표준 bad_request 형태로 반환하는 흐름
     errors: dict[str, list[str]] = {}
 
     vehicle_num = _normalize_vehicle_num(payload=payload, errors=errors)
@@ -64,6 +65,7 @@ def _normalize_vehicle_num(
     try:
         return normalize_vehicle_num(vehicle_num)
     except ValidationError as exc:
+        # 정규화 실패도 serializer 레벨에서는 필드 오류로 다시 적재한다.
         errors["vehicle_num"] = exc.messages
         return ""
 
@@ -101,6 +103,7 @@ def _parse_optional_datetime(
     if parsed_datetime is None:
         errors[field_name] = ["올바른 datetime 형식이어야 합니다."]
         return None
+    # 명령 API는 timezone-aware 값만 받아 write 시점을 명확히 고정한다.
     if parsed_datetime.tzinfo is None or parsed_datetime.utcoffset() is None:
         errors[field_name] = ["timezone-aware datetime이어야 합니다."]
         return None

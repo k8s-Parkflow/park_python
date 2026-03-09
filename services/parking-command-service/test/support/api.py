@@ -7,6 +7,7 @@ from django.test import Client
 from django.http import HttpResponse
 
 
+# 입차 API 호출 유틸리티
 def post_entry(
     client: Client,
     *,
@@ -26,6 +27,7 @@ def post_entry(
     )
 
 
+# 출차 API 호출 유틸리티
 def post_exit(
     client: Client,
     *,
