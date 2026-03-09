@@ -2,7 +2,6 @@ from typing import Any, Optional
 
 from django.core.exceptions import ValidationError
 
-from parking_query_service.models import ZoneAvailability
 from parking_query_service.repositories import ZoneAvailabilityRepository
 from zone_service.models import Zone
 
