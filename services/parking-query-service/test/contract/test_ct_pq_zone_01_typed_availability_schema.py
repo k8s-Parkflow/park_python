@@ -41,6 +41,50 @@ class ZoneTypedAvailabilityContractTest(TestCase):
             available_count=5,
         )
 
+        ZoneAvailability.objects.create(
+            zone_id=1,
+            slot_type="EV",
+            total_count=100,
+            occupied_count=90,
+            available_count=10,
+        )
+        ZoneAvailability.objects.create(
+            zone_id=2,
+            slot_type="EV",
+            total_count=100,
+            occupied_count=80,
+            available_count=20,
+        )
+        ZoneAvailability.objects.create(
+            zone_id=3,
+            slot_type="EV",
+            total_count=100,
+            occupied_count=70,
+            available_count=30,
+        )
+
+        ZoneAvailability.objects.create(
+            zone_id=1,
+            slot_type="DISABLED",
+            total_count=100,
+            occupied_count=99,
+            available_count=1,
+        )
+        ZoneAvailability.objects.create(
+            zone_id=2,
+            slot_type="DISABLED",
+            total_count=100,
+            occupied_count=98,
+            available_count=2,
+        )
+        ZoneAvailability.objects.create(
+            zone_id=3,
+            slot_type="DISABLED",
+            total_count=100,
+            occupied_count=97,
+            available_count=3,
+        )
+
     def test_should_match_total_typed_availability_response_schema__when_general_slot_type_requested(
         self,
     ) -> None:
@@ -60,4 +104,40 @@ class ZoneTypedAvailabilityContractTest(TestCase):
 
         self.assertEqual(set(payload.keys()), {"slotType", "availableCount"})
         self.assertEqual(payload["slotType"], "GENERAL")
+        self.assertIsInstance(payload["availableCount"], int)
+
+    def test_should_match_total_typed_availability_response_schema__when_ev_slot_type_requested(
+        self,
+    ) -> None:
+        # Given
+        request_path = "/api/zones/availabilities?slot_type=EV"
+
+        # When
+        response = self.client.get(request_path)
+
+        # Then
+        self.assertEqual(response.status_code, 200)
+
+        payload = response.json()
+
+        self.assertEqual(set(payload.keys()), {"slotType", "availableCount"})
+        self.assertEqual(payload["slotType"], "EV")
+        self.assertIsInstance(payload["availableCount"], int)
+
+    def test_should_match_total_typed_availability_response_schema__when_disabled_slot_type_requested(
+        self,
+    ) -> None:
+        # Given
+        request_path = "/api/zones/availabilities?slot_type=DISABLED"
+
+        # When
+        response = self.client.get(request_path)
+
+        # Then
+        self.assertEqual(response.status_code, 200)
+
+        payload = response.json()
+
+        self.assertEqual(set(payload.keys()), {"slotType", "availableCount"})
+        self.assertEqual(payload["slotType"], "DISABLED")
         self.assertIsInstance(payload["availableCount"], int)

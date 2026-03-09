@@ -5,8 +5,8 @@ __pycache__/
 *$py.class
 
 # test files
-**/test/init.py
-**/test/**/init.py
+**/test/__init__.py
+**/test/**/__init__.py
 **/tests/init.py
 **/tests/**/init.py
 **/test/TEST_SPEC.md
