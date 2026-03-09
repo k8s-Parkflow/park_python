@@ -101,6 +101,71 @@ class ParkingRecordSuccessContractTests(TestCase):
 class ParkingRecordErrorContractTests(TestCase):
     maxDiff = None
 
+    # malformed JSON 응답 계약 검증
+    def test_should_preserve_bad_request__when_json_malformed(self) -> None:
+        # Given / When
+        response = self.client.post(
+            "/api/parking/entry",
+            data='{"vehicle_num":"69가3455"',
+            content_type="application/json",
+        )
+
+        # Then
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "error": {
+                    "code": "bad_request",
+                    "message": "잘못된 요청입니다.",
+                    "details": {"body": ["JSON 본문 형식이 올바르지 않습니다."]},
+                }
+            },
+        )
+
+    # JSON 객체 외 본문 응답 계약 검증
+    def test_should_preserve_bad_request__when_json_body_not_object(self) -> None:
+        # Given / When
+        response = self.client.post(
+            "/api/parking/entry",
+            data='["69가3455", 1]',
+            content_type="application/json",
+        )
+
+        # Then
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "error": {
+                    "code": "bad_request",
+                    "message": "잘못된 요청입니다.",
+                    "details": {"body": ["JSON 객체만 허용됩니다."]},
+                }
+            },
+        )
+
+    # slot_id 타입 오류 응답 계약 검증
+    def test_should_preserve_bad_request__when_slot_id_not_integer(self) -> None:
+        # Given
+        create_vehicle()
+
+        # When
+        response = post_entry(self.client, vehicle_num="69가3455", slot_id="1")  # type: ignore[arg-type]
+
+        # Then
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "error": {
+                    "code": "bad_request",
+                    "message": "잘못된 요청입니다.",
+                    "details": {"slot_id": ["정수여야 합니다."]},
+                }
+            },
+        )
+
     # 잘못된 요청 응답 계약 검증
     def test_should_preserve_bad_request__when_command_schema_invalid(self) -> None:
         # Given
