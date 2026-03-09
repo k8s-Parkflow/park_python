@@ -171,3 +171,22 @@ class ZoneGeneralAvailabilityAcceptanceTest(TestCase):
                 }
             },
         )
+
+    def test_should_return_total_available_count_for_all_slot_types__when_slot_type_not_provided(
+        self,
+    ) -> None:
+        # Given (전체 Zone의 전체 타입 잔여석 합계 조회)
+        request_path = "/api/zones/availabilities"
+
+        # When
+        response = self.client.get(request_path)
+
+        # Then
+        # GENERAL(12) + EV(5) + DISABLED(6)이 합산된 23이 반환되어야 한다.
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "availableCount": 23,
+            },
+        )

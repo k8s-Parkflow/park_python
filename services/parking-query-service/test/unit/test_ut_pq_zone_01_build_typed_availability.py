@@ -89,6 +89,22 @@ class FakeUnsupportedAvailabilityRepository:
         return []
 
 
+class FakeAllSlotTypeAvailabilityRepository:
+
+    def get_counts_by_slot_type(
+        self,
+        *,
+        slot_type: str,
+    ) -> list[ZoneAvailabilityStub]:
+        # slot_type이 비어 있으면 전체 타입 잔여석 합산 대상 데이터를 반환한다.
+        assert slot_type == ""
+        return [
+            ZoneAvailabilityStub(zone_id=1, available_count=14),
+            ZoneAvailabilityStub(zone_id=2, available_count=26),
+            ZoneAvailabilityStub(zone_id=3, available_count=38),
+        ]
+
+
 class ZoneAvailabilityQueryServiceUnitTest(SimpleTestCase):
 
     def test_should_return_total_available_count__when_general_slot_type_requested(
@@ -195,4 +211,30 @@ class ZoneAvailabilityQueryServiceUnitTest(SimpleTestCase):
         self.assertEqual(
             context.exception.message_dict,
             {"slot_type": ["지원하지 않는 슬롯 타입입니다."]},
+        )
+
+    def test_should_return_total_available_count_for_all_slot_types__when_slot_type_not_provided(
+        self,
+    ) -> None:
+        # Given
+        # 서비스는 전체 Zone의 모든 지원 타입 여석을 합산해 단일 숫자로 반환해야 한다.
+        from parking_query_service.services.zone_availability_service import (
+            ZoneAvailabilityService,
+        )
+
+        service = ZoneAvailabilityService(
+            zone_repository=FakeZoneRepository(),
+            zone_availability_repository=FakeAllSlotTypeAvailabilityRepository(),
+        )
+
+        # When
+        result = service.get(slot_type="")
+
+        # Then
+        # Zone A(14) + Zone B(26) + Zone C(38)이 합산된 78이 반환되어야 한다.
+        self.assertEqual(
+            result,
+            {
+                "availableCount": 78,
+            },
         )

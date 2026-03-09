@@ -168,3 +168,21 @@ class ZoneTypedAvailabilityContractTest(TestCase):
             payload["error"]["details"],
             {"slot_type": ["지원하지 않는 슬롯 타입입니다."]},
         )
+
+    def test_should_match_total_availability_response_schema__when_slot_type_not_provided(
+        self,
+    ) -> None:
+        # Given
+        # slot_type이 없으면 전체 타입 합산 결과만 반환
+        request_path = "/api/zones/availabilities"
+
+        # When
+        response = self.client.get(request_path)
+
+        # Then
+        self.assertEqual(response.status_code, 200)
+
+        payload = response.json()
+
+        self.assertEqual(set(payload.keys()), {"availableCount"})
+        self.assertIsInstance(payload["availableCount"], int)
