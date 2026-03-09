@@ -105,6 +105,18 @@ class FakeAllSlotTypeAvailabilityRepository:
         ]
 
 
+class FakeEmptyEvAvailabilityRepository:
+
+    def get_counts_by_slot_type(
+        self,
+        *,
+        slot_type: str,
+    ) -> list[ZoneAvailabilityStub]:
+        # 지원하는 타입이지만 집계가 없을 수 있으므로 빈 결과를 반환한다.
+        assert slot_type == "EV"
+        return []
+
+
 class ZoneAvailabilityQueryServiceUnitTest(SimpleTestCase):
 
     def test_should_return_total_available_count__when_general_slot_type_requested(
@@ -236,5 +248,31 @@ class ZoneAvailabilityQueryServiceUnitTest(SimpleTestCase):
             result,
             {
                 "availableCount": 78,
+            },
+        )
+
+    def test_should_return_zero_available_count__when_supported_slot_type_has_no_projection(
+        self,
+    ) -> None:
+        # Given
+        # 지원하는 타입이어도 집계가 비어 있으면 0을 반환해야 한다.
+        from parking_query_service.services.zone_availability_service import (
+            ZoneAvailabilityService,
+        )
+
+        service = ZoneAvailabilityService(
+            zone_repository=FakeZoneRepository(),
+            zone_availability_repository=FakeEmptyEvAvailabilityRepository(),
+        )
+
+        # When
+        result = service.get(slot_type="EV")
+
+        # Then
+        self.assertEqual(
+            result,
+            {
+                "slotType": "EV",
+                "availableCount": 0,
             },
         )

@@ -186,3 +186,46 @@ class ZoneTypedAvailabilityContractTest(TestCase):
 
         self.assertEqual(set(payload.keys()), {"availableCount"})
         self.assertIsInstance(payload["availableCount"], int)
+
+
+@override_settings(ROOT_URLCONF="park_py.urls")
+class ZoneTypedAvailabilityWithoutProjectionContractTest(TestCase):
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        # EV 집계가 없어도 타입별 응답 계약은 유지되어야 한다.
+        Zone.objects.create(zone_id=1, zone_name="A")
+        Zone.objects.create(zone_id=2, zone_name="B")
+
+        ZoneAvailability.objects.create(
+            zone_id=1,
+            slot_type="GENERAL",
+            total_count=10,
+            occupied_count=7,
+            available_count=3,
+        )
+        ZoneAvailability.objects.create(
+            zone_id=2,
+            slot_type="GENERAL",
+            total_count=10,
+            occupied_count=6,
+            available_count=4,
+        )
+
+    def test_should_preserve_typed_availability_response_schema__when_supported_slot_type_has_no_projection(
+        self,
+    ) -> None:
+        # Given
+        request_path = "/api/zones/availabilities?slot_type=EV"
+
+        # When
+        response = self.client.get(request_path)
+
+        # Then
+        self.assertEqual(response.status_code, 200)
+
+        payload = response.json()
+
+        self.assertEqual(set(payload.keys()), {"slotType", "availableCount"})
+        self.assertEqual(payload["slotType"], "EV")
+        self.assertEqual(payload["availableCount"], 0)
