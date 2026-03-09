@@ -1,6 +1,6 @@
-import json
-
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 from parking_query_service.services.zone_availability_service import (
     ZoneAvailabilityService,
@@ -8,11 +8,9 @@ from parking_query_service.services.zone_availability_service import (
 
 
 # HTTP 요청에서 타입 값을 읽고 JSON HTTP 응답을 반환한다.
-def availability(request: HttpRequest) -> HttpResponse:
+@api_view(["GET"])
+def availability(request: HttpRequest) -> Response:
     payload = ZoneAvailabilityService().get(
         slot_type=request.GET.get("slot_type", ""),
     )
-    return HttpResponse(
-        content=json.dumps(payload),
-        content_type="application/json",
-    )
+    return Response(payload)
