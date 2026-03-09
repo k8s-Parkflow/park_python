@@ -21,12 +21,17 @@ class ZoneAvailabilityService:
 
     # 요청한 타입 전체 Zone 잔여석 총합 응답
     def get(self, *, slot_type: str) -> dict[str, Any]:
+        resolved_slot_type = self._resolved_slot_type(slot_type=slot_type)
+        zone_ids = self._registered_zone_ids()
+        counts = self._available_counts(slot_type=resolved_slot_type)
+        total = self._sum_available_counts(zone_ids=zone_ids, counts=counts)
+        return self._build_response(slot_type=resolved_slot_type, total=total)
+
+    # 입력 슬롯 타입을 표준값으로 정리하고 검증까지 마친다.
+    def _resolved_slot_type(self, *, slot_type: str) -> str:
         normalized_slot_type = self._normalize_slot_type(slot_type=slot_type)
         self._validate_slot_type(slot_type=normalized_slot_type)
-        zone_ids = self._registered_zone_ids()
-        counts = self._available_counts(slot_type=normalized_slot_type)
-        total = self._sum_available_counts(zone_ids=zone_ids, counts=counts)
-        return self._build_response(slot_type=normalized_slot_type, total=total)
+        return normalized_slot_type
 
     # 지원 타입 입력은 표준 대문자 값으로 정규화한다.
     def _normalize_slot_type(self, *, slot_type: str) -> str:
