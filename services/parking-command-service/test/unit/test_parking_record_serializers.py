@@ -7,7 +7,10 @@ from pathlib import Path
 from django.core.exceptions import ValidationError
 from django.test import SimpleTestCase
 
-from parking_command_service.serializers import parse_entry_command, parse_exit_command
+from parking_command_service.domains.parking_record.presentation.http.serializers import (
+    parse_entry_command,
+    parse_exit_command,
+)
 
 TEST_ROOT = Path(__file__).resolve().parents[1]
 if str(TEST_ROOT) not in sys.path:

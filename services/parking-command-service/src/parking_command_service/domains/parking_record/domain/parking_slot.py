@@ -14,7 +14,7 @@ class ParkingSlot(models.Model):
     class Meta:
         db_table = "PARKING_SLOT"
         constraints = [
-            models.UniqueConstraint(fields=["zone_id", "slot_code"],name="uniq_slot_zone_slot_code",),
+            models.UniqueConstraint(fields=["zone_id", "slot_code"], name="uniq_slot_zone_slot_code"),
         ]
 
     def activate(self) -> None:

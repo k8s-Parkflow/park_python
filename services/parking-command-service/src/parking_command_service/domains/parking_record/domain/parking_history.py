@@ -7,8 +7,8 @@ from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 
-from parking_command_service.models.enums import ParkingHistoryStatus
-from parking_command_service.vehicle_nums import normalize_vehicle_num
+from parking_command_service.domains.parking_record.domain.enums import ParkingHistoryStatus
+from parking_command_service.global_shared.utils.vehicle_nums import normalize_vehicle_num
 
 
 class ParkingHistory(models.Model):
@@ -34,10 +34,7 @@ class ParkingHistory(models.Model):
         db_table = "PARKING_HISTORY"
         indexes = [
             models.Index(fields=["slot", "entry_at"], name="idx_history_slot_entry"),
-            models.Index(
-                fields=["vehicle_num", "exit_at"],
-                name="idx_history_vehicle_exit",
-            ),
+            models.Index(fields=["vehicle_num", "exit_at"], name="idx_history_vehicle_exit"),
         ]
         constraints = [
             models.UniqueConstraint(

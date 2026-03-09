@@ -7,7 +7,9 @@ from pathlib import Path
 from django.test import TestCase
 from django.utils import timezone
 
-from parking_command_service.repositories import DjangoParkingProjectionWriter
+from parking_command_service.domains.parking_record.infrastructure.repositories import (
+    DjangoParkingProjectionWriter,
+)
 from parking_query_service.models import CurrentParkingView, ZoneAvailability
 
 TEST_ROOT = Path(__file__).resolve().parents[1]

@@ -3,8 +3,13 @@ from __future__ import annotations
 from django.http import HttpRequest, JsonResponse
 from django.views import View
 
-from parking_command_service.dependencies import get_parking_record_command_service
-from parking_command_service.serializers import parse_entry_command, parse_exit_command
+from parking_command_service.domains.parking_record.presentation.http.serializers import (
+    parse_entry_command,
+    parse_exit_command,
+)
+from parking_command_service.global_shared.application.dependencies import (
+    get_parking_record_command_service,
+)
 
 
 class ParkingEntryView(View):

@@ -5,13 +5,17 @@ from pathlib import Path
 
 from django.test import SimpleTestCase
 
-from parking_command_service.dependencies import get_parking_record_command_service
-from parking_command_service.repositories import (
+from parking_command_service.domains.parking_record.application.services import (
+    ParkingRecordCommandService,
+)
+from parking_command_service.domains.parking_record.infrastructure.repositories import (
     DjangoParkingRecordRepository,
     DjangoParkingProjectionWriter,
     DjangoVehicleRepository,
 )
-from parking_command_service.services import ParkingRecordCommandService
+from parking_command_service.global_shared.application.dependencies import (
+    get_parking_record_command_service,
+)
 
 TEST_ROOT = Path(__file__).resolve().parents[1]
 if str(TEST_ROOT) not in sys.path:

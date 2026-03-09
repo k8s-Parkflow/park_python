@@ -1,7 +1,11 @@
 from __future__ import annotations
 
-from parking_command_service.models import ParkingHistory, ParkingSlot, SlotOccupancy
-from parking_command_service.models.enums import ParkingHistoryStatus
+from parking_command_service.domains.parking_record.domain import (
+    ParkingHistory,
+    ParkingHistoryStatus,
+    ParkingSlot,
+    SlotOccupancy,
+)
 from vehicle_service.models import Vehicle
 from vehicle_service.models.enums import VehicleType
 from zone_service.models import SlotType

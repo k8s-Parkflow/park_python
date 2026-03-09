@@ -7,10 +7,19 @@ from unittest.mock import Mock
 from django.test import TestCase
 from django.utils import timezone
 
-from parking_command_service.dtos import EntryCommand, ExitCommand
-from parking_command_service.models import ParkingHistory, ParkingSlot, SlotOccupancy
-from parking_command_service.models.enums import ParkingHistoryStatus
-from parking_command_service.services import ParkingRecordCommandService
+from parking_command_service.domains.parking_record.application.dtos import (
+    EntryCommand,
+    ExitCommand,
+)
+from parking_command_service.domains.parking_record.application.services import (
+    ParkingRecordCommandService,
+)
+from parking_command_service.domains.parking_record.domain import (
+    ParkingHistory,
+    ParkingHistoryStatus,
+    ParkingSlot,
+    SlotOccupancy,
+)
 
 TEST_ROOT = Path(__file__).resolve().parents[1]
 if str(TEST_ROOT) not in sys.path:

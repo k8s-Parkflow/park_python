@@ -8,8 +8,11 @@ from pathlib import Path
 from django.test import Client, TestCase, TransactionTestCase
 from django.utils import timezone
 
-from parking_command_service.models import ParkingHistory, SlotOccupancy
-from parking_command_service.models.enums import ParkingHistoryStatus
+from parking_command_service.domains.parking_record.domain import (
+    ParkingHistory,
+    ParkingHistoryStatus,
+    SlotOccupancy,
+)
 
 TEST_ROOT = Path(__file__).resolve().parents[1]
 if str(TEST_ROOT) not in sys.path:

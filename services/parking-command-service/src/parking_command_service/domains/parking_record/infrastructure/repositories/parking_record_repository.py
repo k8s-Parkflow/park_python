@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-from parking_command_service.models import ParkingHistory, ParkingSlot, SlotOccupancy
+from parking_command_service.domains.parking_record.domain import (
+    ParkingHistory,
+    ParkingSlot,
+    SlotOccupancy,
+)
 
 
 class DjangoParkingRecordRepository:

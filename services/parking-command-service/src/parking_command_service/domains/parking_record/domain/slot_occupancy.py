@@ -7,7 +7,7 @@ from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 
-from parking_command_service.vehicle_nums import normalize_vehicle_num
+from parking_command_service.global_shared.utils.vehicle_nums import normalize_vehicle_num
 
 
 class SlotOccupancy(models.Model):

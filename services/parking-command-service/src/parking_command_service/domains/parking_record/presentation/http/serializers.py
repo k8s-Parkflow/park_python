@@ -6,8 +6,11 @@ from datetime import datetime
 from django.core.exceptions import ValidationError
 from django.utils.dateparse import parse_datetime
 
-from parking_command_service.dtos import EntryCommand, ExitCommand
-from parking_command_service.vehicle_nums import normalize_vehicle_num
+from parking_command_service.domains.parking_record.application.dtos import (
+    EntryCommand,
+    ExitCommand,
+)
+from parking_command_service.global_shared.utils.vehicle_nums import normalize_vehicle_num
 
 
 def parse_entry_command(*, body: bytes) -> EntryCommand:

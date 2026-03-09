@@ -1,11 +1,13 @@
 from __future__ import annotations
 
-from parking_command_service.repositories import (
-    DjangoParkingRecordRepository,
+from parking_command_service.domains.parking_record.application.services import (
+    ParkingRecordCommandService,
+)
+from parking_command_service.domains.parking_record.infrastructure.repositories import (
     DjangoParkingProjectionWriter,
+    DjangoParkingRecordRepository,
     DjangoVehicleRepository,
 )
-from parking_command_service.services import ParkingRecordCommandService
 
 
 def get_parking_record_command_service() -> ParkingRecordCommandService:

@@ -6,13 +6,17 @@ from typing import Protocol
 from django.db import DatabaseError, IntegrityError, transaction
 from django.utils import timezone
 
-from parking_command_service.dtos import EntryCommand, ExitCommand, ParkingRecordSnapshot
-from parking_command_service.exceptions import (
+from parking_command_service.domains.parking_record.application.dtos import (
+    EntryCommand,
+    ExitCommand,
+    ParkingRecordSnapshot,
+)
+from parking_command_service.domains.parking_record.application.exceptions import (
     ParkingRecordConflictError,
     ParkingRecordNotFoundError,
 )
-from parking_command_service.models import ParkingHistory, SlotOccupancy
-from parking_command_service.repositories import (
+from parking_command_service.domains.parking_record.domain import ParkingHistory, SlotOccupancy
+from parking_command_service.domains.parking_record.infrastructure.repositories import (
     DjangoParkingRecordRepository,
     DjangoVehicleRepository,
 )
