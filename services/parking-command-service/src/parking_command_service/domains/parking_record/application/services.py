@@ -88,6 +88,8 @@ class ParkingRecordCommandService:
         command: EntryCommand,
         trust_zone_metadata: bool,
     ) -> ParkingRecordSnapshot:
+        if trust_zone_metadata:
+            _validate_trusted_slot_snapshot(command=command)
         vehicle_num = _normalize_lookup_vehicle_num(command.vehicle_num)
         if not self.vehicle_repository.exists(vehicle_num=vehicle_num):
             raise ParkingRecordNotFoundError("존재하지 않는 차량입니다.")
@@ -210,6 +212,11 @@ def _is_locked_error(exc: DatabaseError) -> bool:
 
 def _normalize_lookup_vehicle_num(vehicle_num: str) -> str:
     return normalize_vehicle_num(vehicle_num)
+
+
+def _validate_trusted_slot_snapshot(*, command: EntryCommand) -> None:
+    if not command.slot_type:
+        raise ParkingRecordBadRequestError("trusted 입차에는 slot_type이 필요합니다.")
 
 
 def _history_zone_id(history) -> int:

@@ -218,6 +218,29 @@ class ParkingRecordEntryServiceUnitTests(ParkingRecordServiceTestSupport):
             lock_anchor=slot
         )
 
+    # trusted gRPC 입차는 zone snapshot slot_type이 없으면 거부
+    def test_should_reject_trusted_entry__when_slot_type_missing(self) -> None:
+        # Given
+        slot, _occupancy, parking_record_repository, vehicle_repository = self.make_entry_deps()
+        service = self.make_service(
+            parking_record_repository=parking_record_repository,
+            vehicle_repository=vehicle_repository,
+        )
+
+        # When / Then
+        with self.assertRaises(ParkingRecordBadRequestError):
+            service.create_trusted_entry(
+                command=EntryCommand(
+                    vehicle_num="69가3455",
+                    zone_id=slot.zone_id,
+                    slot_code=slot.slot_code,
+                    slot_id=slot.slot_id,
+                    entry_at=timezone.now(),
+                )
+            )
+        parking_record_repository.get_or_create_occupancy_for_update.assert_not_called()
+        parking_record_repository.save_history.assert_not_called()
+
     # 조회 차량 번호 정규화 검증
     def test_should_normalize_vehicle_num__when_entry_queries_active_history(self) -> None:
         # Given

@@ -12,6 +12,7 @@ from django.utils import timezone
 
 from parking_command_service.domains.parking_record.application.dtos import EntryCommand
 from parking_command_service.domains.parking_record.application.exceptions import (
+    ParkingRecordBadRequestError,
     ParkingRecordConflictError,
 )
 from parking_command_service.domains.parking_record.application.services import (
@@ -215,6 +216,30 @@ class ParkingRecordRepositoryTests(TestCase):
         self.assertEqual(history.slot_type_id, 1)
         self.assertEqual(history.slot_code, "A001")
         self.assertTrue(SlotOccupancy.objects.get(slot=slot).occupied)
+
+    # trusted gRPC 입차는 zone snapshot slot_type 없이 실행하지 않음
+    def test_should_reject_trusted_entry__when_zone_slot_type_missing(self) -> None:
+        # Given
+        slot = create_slot(zone_id=1, slot_code="A001", is_active=False)
+        create_empty_occupancy(slot=slot)
+        create_vehicle(vehicle_num="69가3455")
+        service = ParkingRecordCommandService(
+            parking_record_repository=DjangoParkingRecordRepository(),
+            vehicle_repository=Mock(exists=Mock(return_value=True)),
+        )
+
+        # When / Then
+        with self.assertRaises(ParkingRecordBadRequestError):
+            service.create_trusted_entry(
+                command=EntryCommand(
+                    vehicle_num="69가3455",
+                    zone_id=1,
+                    slot_code="A001",
+                    slot_id=slot.slot_id,
+                    entry_at=timezone.now(),
+                )
+            )
+        self.assertFalse(SlotOccupancy.objects.get(slot=slot).occupied)
 
 
 # 저장소 동시성 테스트 클래스
