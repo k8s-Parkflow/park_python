@@ -10,6 +10,34 @@ from parking_command_service.domains.parking_record.infrastructure.repositories.
 
 
 class ParkingCommandGrpcRepositoryTests(TestCase):
+    def test_should_persist_trusted_zone_snapshot__when_history_starts_with_override(self) -> None:
+        """[RT-PC-GRPC-05] trusted entry snapshot이 slot master보다 우선 저장된다"""
+
+        slot = ParkingSlot.objects.create(
+            slot_id=11,
+            zone_id=9,
+            slot_type_id=2,
+            slot_code="B999",
+            is_active=True,
+        )
+        history = ParkingHistory.start(
+            slot=slot,
+            vehicle_num="98다7654",
+            entry_at=timezone.now(),
+            zone_id=1,
+            slot_type_id=1,
+            slot_code="A001",
+        )
+        history.save()
+
+        loaded = DjangoParkingRecordRepository().get_active_history_for_vehicle(
+            vehicle_num="98다7654"
+        )
+
+        self.assertEqual(loaded.zone_id, 1)
+        self.assertEqual(loaded.slot_type_id, 1)
+        self.assertEqual(loaded.slot_code, "A001")
+
     def test_should_keep_history_slot_metadata__when_slot_master_changes_later(self) -> None:
         """[RT-PC-GRPC-04] history snapshot metadata 보존"""
 

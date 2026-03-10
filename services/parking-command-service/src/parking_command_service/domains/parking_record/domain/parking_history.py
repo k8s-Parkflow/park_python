@@ -54,14 +54,21 @@ class ParkingHistory(models.Model):
 
     @classmethod
     def start(
-        cls, *, slot: "ParkingSlot", vehicle_num: str, entry_at: datetime | None = None,
+        cls,
+        *,
+        slot: "ParkingSlot",
+        vehicle_num: str,
+        entry_at: datetime | None = None,
+        zone_id: int | None = None,
+        slot_type_id: int | None = None,
+        slot_code: str | None = None,
     ) -> "ParkingHistory":
         # 생성 시점에 차량 번호를 정규화해 활성 세션 유니크 조건과 비교 기준을 맞춘다.
         return cls(
             slot=slot,
-            zone_id=slot.zone_id,
-            slot_type_id=slot.slot_type_id,
-            slot_code=slot.slot_code,
+            zone_id=zone_id or slot.zone_id,
+            slot_type_id=slot_type_id or slot.slot_type_id,
+            slot_code=slot_code or slot.slot_code,
             vehicle_num=normalize_vehicle_num(vehicle_num),
             entry_at=entry_at or timezone.now(),
             status=ParkingHistoryStatus.PARKED,

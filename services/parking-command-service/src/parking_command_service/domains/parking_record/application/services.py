@@ -88,6 +88,9 @@ class ParkingRecordCommandService:
             slot=slot,
             vehicle_num=vehicle_num,
             entry_at=command.entry_at or timezone.now(),
+            zone_id=command.zone_id,
+            slot_type_id=_resolve_slot_type_id(command=command, slot=slot),
+            slot_code=command.slot_code,
         )
 
         try:
@@ -133,12 +136,14 @@ class ParkingRecordCommandService:
 
     def _get_command_slot(self, *, command: SlotCommand):
         slot_by_id = self.parking_record_repository.get_slot_for_update(slot_id=command.slot_id)
+        if slot_by_id is None:
+            raise ParkingRecordNotFoundError("존재하지 않는 슬롯입니다.")
+        if command.trusted_slot_metadata:
+            return slot_by_id
         slot_by_identity = self.parking_record_repository.get_slot_by_identity_for_update(
             zone_id=command.zone_id,
             slot_code=command.slot_code,
         )
-        if slot_by_id is None:
-            raise ParkingRecordNotFoundError("존재하지 않는 슬롯입니다.")
         if slot_by_identity is None:
             raise ParkingRecordBadRequestError("슬롯 식별자가 서로 일치하지 않습니다.")
         if slot_by_id.slot_id != slot_by_identity.slot_id:
@@ -187,3 +192,13 @@ def _history_slot_code(history) -> str:
     if slot_code:
         return slot_code
     return history.slot.slot_code
+
+
+def _resolve_slot_type_id(*, command: EntryCommand, slot) -> int:
+    if command.slot_type is None:
+        return slot.slot_type_id
+    return {
+        "GENERAL": 1,
+        "EV": 2,
+        "DISABLED": 3,
+    }.get(command.slot_type, slot.slot_type_id)

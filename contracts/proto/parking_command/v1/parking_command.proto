@@ -20,6 +20,7 @@ message CreateEntryRequest {
   int64 slot_id = 4;
   int64 zone_id = 5;
   string slot_code = 6;
+  string slot_type = 7;
 }
 
 message CreateEntryResponse {

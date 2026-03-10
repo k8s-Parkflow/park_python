@@ -37,6 +37,7 @@ class ParkingCommandGrpcApplicationUnitTests(TestCase):
             slot_id=7,
             zone_id=1,
             slot_code="A001",
+            slot_type="GENERAL",
             requested_at=datetime(2026, 3, 10, 1, 0, tzinfo=timezone.utc),
         )
 
@@ -45,6 +46,8 @@ class ParkingCommandGrpcApplicationUnitTests(TestCase):
         command = command_service.create_entry.call_args.kwargs["command"]
         self.assertEqual(command.zone_id, 1)
         self.assertEqual(command.slot_code, "A001")
+        self.assertEqual(command.slot_type, "GENERAL")
+        self.assertTrue(command.trusted_slot_metadata)
         repository.get_slot.assert_not_called()
 
     def test_should_return_existing_compensation_result__when_entry_is_already_released(self) -> None:

@@ -86,6 +86,7 @@ class EntrySagaOrchestrationService:
                 slot_id=slot_id,
                 zone_id=zone_payload["zone_id"],
                 slot_code=zone_payload["slot_code"],
+                slot_type=zone_payload["slot_type"],
                 requested_at=requested_at,
             )
             self.operation_repository.mark_step(

@@ -10,16 +10,18 @@ class SlotCommand:
     zone_id: int
     slot_code: str
     slot_id: int
+    slot_type: str | None = None
+    trusted_slot_metadata: bool = False
 
 
 @dataclass(frozen=True)
 class EntryCommand(SlotCommand):
-    entry_at: datetime | None
+    entry_at: datetime | None = None
 
 
 @dataclass(frozen=True)
 class ExitCommand(SlotCommand):
-    exit_at: datetime | None
+    exit_at: datetime | None = None
 
 
 @dataclass(frozen=True)

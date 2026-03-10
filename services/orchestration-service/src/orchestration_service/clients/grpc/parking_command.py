@@ -78,6 +78,7 @@ def _build_create_entry_request(
     slot_id: int,
     zone_id: int,
     slot_code: str,
+    slot_type: str,
     requested_at: str,
 ):
     return parking_command_pb2.CreateEntryRequest(
@@ -87,6 +88,7 @@ def _build_create_entry_request(
         slot_id=slot_id,
         zone_id=zone_id,
         slot_code=slot_code,
+        slot_type=slot_type,
     )
 
 
@@ -114,6 +116,7 @@ class ParkingCommandGrpcClient(GrpcClientBase):
         slot_id: int,
         zone_id: int,
         slot_code: str,
+        slot_type: str,
         requested_at: str,
     ) -> dict:
         stub = self.get_stub(parking_command_pb2_grpc.ParkingCommandServiceStub)
@@ -123,6 +126,7 @@ class ParkingCommandGrpcClient(GrpcClientBase):
             slot_id=slot_id,
             zone_id=zone_id,
             slot_code=slot_code,
+            slot_type=slot_type,
             requested_at=requested_at,
         )
         response = self.invoke_unary(

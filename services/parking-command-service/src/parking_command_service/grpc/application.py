@@ -43,6 +43,7 @@ class ParkingCommandGrpcApplicationService:
         slot_id: int,
         zone_id: int,
         slot_code: str,
+        slot_type: str,
         requested_at: datetime | None,
     ):
         return self.command_service.create_entry(
@@ -51,6 +52,7 @@ class ParkingCommandGrpcApplicationService:
                 zone_id=zone_id,
                 slot_code=slot_code,
                 slot_id=slot_id,
+                slot_type=slot_type,
                 requested_at=requested_at,
             )
         )
@@ -147,6 +149,7 @@ class ParkingCommandGrpcApplicationService:
         zone_id: int,
         slot_code: str,
         slot_id: int,
+        slot_type: str,
         requested_at: datetime | None,
     ) -> EntryCommand:
         return EntryCommand(
@@ -154,6 +157,8 @@ class ParkingCommandGrpcApplicationService:
             zone_id=zone_id,
             slot_code=slot_code,
             slot_id=slot_id,
+            slot_type=slot_type,
+            trusted_slot_metadata=True,
             entry_at=requested_at,
         )
 

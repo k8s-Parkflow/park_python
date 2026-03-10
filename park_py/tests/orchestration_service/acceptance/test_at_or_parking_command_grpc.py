@@ -99,8 +99,8 @@ class OrchestrationParkingCommandGrpcAcceptanceTests(TransactionTestCase):
         self.assertEqual(ParkingHistory.objects.count(), 1)
         self.assertTrue(SlotOccupancy.objects.get(slot_id=7).occupied)
 
-    def test_should_reject_entry__when_zone_metadata_and_command_slot_identity_conflict(self) -> None:
-        """[AT-OR-GRPC-PC-02] zone metadata와 command slot identity가 불일치하면 거부한다"""
+    def test_should_persist_zone_metadata_snapshot__when_command_slot_master_differs(self) -> None:
+        """[AT-OR-GRPC-PC-02] trusted gRPC entry는 zone metadata snapshot을 우선한다"""
 
         # Given
         Vehicle.objects.create(vehicle_num="12가3456", vehicle_type=VehicleType.General)
@@ -115,8 +115,8 @@ class OrchestrationParkingCommandGrpcAcceptanceTests(TransactionTestCase):
         )
         ParkingSlot.objects.create(
             slot_id=7,
-            zone_id=zone.zone_id,
-            slot_type_id=1,
+            zone_id=999,
+            slot_type_id=2,
             slot_code="B999",
             is_active=True,
         )
@@ -171,6 +171,9 @@ class OrchestrationParkingCommandGrpcAcceptanceTests(TransactionTestCase):
             )
 
         # Then
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(ParkingHistory.objects.count(), 0)
-        self.assertFalse(SlotOccupancy.objects.filter(slot_id=7, occupied=True).exists())
+        self.assertEqual(response.status_code, 201)
+        history = ParkingHistory.objects.get()
+        self.assertEqual(history.zone_id, zone.zone_id)
+        self.assertEqual(history.slot_type_id, 1)
+        self.assertEqual(history.slot_code, "A001")
+        self.assertTrue(SlotOccupancy.objects.filter(slot_id=7, occupied=True).exists())

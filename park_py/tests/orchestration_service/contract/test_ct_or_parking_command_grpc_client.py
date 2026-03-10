@@ -88,6 +88,7 @@ class OrchestrationParkingCommandGrpcClientContractTests(SimpleTestCase):
             slot_id=7,
             zone_id=1,
             slot_code="A001",
+            slot_type="GENERAL",
             requested_at="2026-03-10T10:00:00+09:00",
         )
 
@@ -96,6 +97,7 @@ class OrchestrationParkingCommandGrpcClientContractTests(SimpleTestCase):
         self.assertEqual(stub.create_request.slot_id, 7)
         self.assertEqual(stub.create_request.zone_id, 1)
         self.assertEqual(stub.create_request.slot_code, "A001")
+        self.assertEqual(stub.create_request.slot_type, "GENERAL")
         self.assertEqual(stub.create_request.vehicle_num, "12가3456")
         self.assertEqual(
             stub.create_request.context.requested_at.ToDatetime().isoformat(),
