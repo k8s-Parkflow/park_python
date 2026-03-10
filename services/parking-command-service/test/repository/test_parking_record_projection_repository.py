@@ -45,6 +45,7 @@ class ParkingRecordProjectionRepositoryTests(TestCase):
         # Then
         current_view = CurrentParkingView.objects.get(vehicle_num=vehicle.vehicle_num)
         zone_availability = ZoneAvailability.objects.get(zone_id=1, slot_type="GENERAL")
+        self.assertEqual(current_view.history_id, history.history_id)
         self.assertEqual(current_view.slot_id, target_slot.slot_id)
         self.assertEqual(current_view.zone_id, 1)
         self.assertEqual(current_view.slot_code, target_slot.slot_code)
@@ -94,6 +95,7 @@ class ParkingRecordProjectionRepositoryTests(TestCase):
         )
         CurrentParkingView.objects.create(
             vehicle_num=vehicle.vehicle_num,
+            history_id=999,
             slot_id=newer_slot.slot_id,
             zone_id=newer_slot.zone_id,
             slot_code=newer_slot.slot_code,
@@ -110,3 +112,36 @@ class ParkingRecordProjectionRepositoryTests(TestCase):
         current_view = CurrentParkingView.objects.get(vehicle_num=vehicle.vehicle_num)
         self.assertEqual(current_view.slot_id, newer_slot.slot_id)
         self.assertEqual(current_view.slot_code, newer_slot.slot_code)
+
+    # 동일 입차 시각에서는 더 큰 history_id를 유지하는 projection 회귀 검증
+    def test_should_keep_higher_history_id__when_entry_time_ties(self) -> None:
+        # Given
+        vehicle = create_vehicle()
+        first_slot = create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_code="A001")
+        second_slot = create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_code="A002")
+        tied_entry_at = timezone.now() - timedelta(hours=1)
+        older_history = create_active_history(
+            slot=first_slot,
+            vehicle_num=vehicle.vehicle_num,
+            entry_at=tied_entry_at,
+        )
+        CurrentParkingView.objects.create(
+            vehicle_num=vehicle.vehicle_num,
+            history_id=older_history.history_id + 1,
+            slot_id=second_slot.slot_id,
+            zone_id=second_slot.zone_id,
+            slot_code=second_slot.slot_code,
+            slot_type="GENERAL",
+            entry_at=tied_entry_at,
+        )
+        projection_writer = DjangoParkingProjectionWriter()
+
+        # When
+        projection_writer.record_entry(history=older_history)
+        projection_writer.record_exit(history=older_history)
+
+        # Then
+        current_view = CurrentParkingView.objects.get(vehicle_num=vehicle.vehicle_num)
+        self.assertEqual(current_view.history_id, older_history.history_id + 1)
+        self.assertEqual(current_view.slot_id, second_slot.slot_id)
+        self.assertEqual(current_view.slot_code, second_slot.slot_code)

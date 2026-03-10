@@ -25,12 +25,18 @@ class DjangoParkingProjectionWriter:
         current_view = CurrentParkingView.objects.select_for_update().filter(
             vehicle_num=history.vehicle_num
         ).first()
-        if current_view is not None and current_view.entry_at > history.entry_at:
+        if current_view is not None and self._is_newer_projection(
+            current_entry_at=current_view.entry_at,
+            current_history_id=current_view.history_id,
+            incoming_entry_at=history.entry_at,
+            incoming_history_id=history.history_id,
+        ):
             return
 
         CurrentParkingView.objects.update_or_create(
             vehicle_num=history.vehicle_num,
             defaults={
+                "history_id": history.history_id,
                 "slot_id": history.slot_id,
                 "zone_id": history.slot.zone_id,
                 "slot_code": history.slot.slot_code,
@@ -45,7 +51,12 @@ class DjangoParkingProjectionWriter:
         current_view = CurrentParkingView.objects.select_for_update().filter(
             vehicle_num=history.vehicle_num
         ).first()
-        if current_view is not None and current_view.entry_at <= history.entry_at:
+        if current_view is not None and not self._is_newer_projection(
+            current_entry_at=current_view.entry_at,
+            current_history_id=current_view.history_id,
+            incoming_entry_at=history.entry_at,
+            incoming_history_id=history.history_id,
+        ):
             current_view.delete()
 
         self._sync_zone_availability(slot=history.slot, slot_type_name=slot_type_name)
@@ -84,3 +95,15 @@ class DjangoParkingProjectionWriter:
                 if "locked" not in str(exc).lower() or attempt == 2:
                     raise
                 time.sleep(0.01)
+
+    @staticmethod
+    def _is_newer_projection(
+        *,
+        current_entry_at,
+        current_history_id: int | None,
+        incoming_entry_at,
+        incoming_history_id: int | None,
+    ) -> bool:
+        current_key = (current_entry_at, current_history_id or 0)
+        incoming_key = (incoming_entry_at, incoming_history_id or 0)
+        return current_key > incoming_key
