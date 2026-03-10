@@ -118,7 +118,7 @@ class OrchestrationParkingCommandGrpcAcceptanceTests(TransactionTestCase):
             zone_id=999,
             slot_type_id=2,
             slot_code="B999",
-            is_active=True,
+            is_active=False,
         )
 
         vehicle_gateway = VehicleGrpcClient(

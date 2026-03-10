@@ -57,9 +57,14 @@ class SlotOccupancy(models.Model):
         ]
 
     def occupy(
-        self, *, vehicle_num: str, history: "ParkingHistory", occupied_at: datetime | None = None,
+        self,
+        *,
+        vehicle_num: str,
+        history: "ParkingHistory",
+        occupied_at: datetime | None = None,
+        enforce_slot_active: bool = True,
     ) -> None:
-        self._validate_can_occupy()
+        self._validate_can_occupy(enforce_slot_active=enforce_slot_active)
         # 점유 상태는 차량 번호, 현재 이력, 점유 시각이 항상 함께 움직여야 한다.
         self._mark_occupied(
             vehicle_num=normalize_vehicle_num(vehicle_num),
@@ -93,10 +98,10 @@ class SlotOccupancy(models.Model):
         if self.history and self.history.slot_id != self.slot_id:
             raise ValidationError("주차 이력의 슬롯 정보가 일치하지 않습니다.")
 
-    def _validate_can_occupy(self) -> None:
+    def _validate_can_occupy(self, *, enforce_slot_active: bool = True) -> None:
         if self.occupied:
             raise ValidationError("이미 점유 중인 슬롯입니다.")
-        if not self.slot.is_active:
+        if enforce_slot_active and not self.slot.is_active:
             raise ValidationError("비활성화된 슬롯입니다.")
 
     def _validate_can_release(self) -> None:

@@ -133,6 +133,41 @@ class ParkingRecordEntryServiceUnitTests(ParkingRecordServiceTestSupport):
                 )
             )
 
+    # trusted gRPC 입차는 로컬 slot active 상태를 재검증하지 않음
+    def test_should_allow_trusted_entry__when_slot_inactive_locally(self) -> None:
+        # Given
+        entry_at = timezone.now()
+        slot, occupancy, parking_record_repository, vehicle_repository = self.make_entry_deps()
+        slot.is_active = False
+
+        def save_history(*, history: ParkingHistory) -> ParkingHistory:
+            history.history_id = 101
+            return history
+
+        parking_record_repository.save_history.side_effect = save_history
+        service = self.make_service(
+            parking_record_repository=parking_record_repository,
+            vehicle_repository=vehicle_repository,
+        )
+
+        # When
+        snapshot = service.create_entry(
+            command=EntryCommand(
+                vehicle_num="69가3455",
+                zone_id=1,
+                slot_code="A001",
+                slot_id=1,
+                slot_type="GENERAL",
+                trusted_slot_metadata=True,
+                entry_at=entry_at,
+            )
+        )
+
+        # Then
+        self.assertEqual(snapshot.history_id, 101)
+        self.assertTrue(occupancy.occupied)
+        parking_record_repository.get_slot_by_identity_for_update.assert_not_called()
+
     # 조회 차량 번호 정규화 검증
     def test_should_normalize_vehicle_num__when_entry_queries_active_history(self) -> None:
         # Given

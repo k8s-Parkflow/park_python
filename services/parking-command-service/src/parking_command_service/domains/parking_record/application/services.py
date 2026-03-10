@@ -77,7 +77,7 @@ class ParkingRecordCommandService:
         slot = self._get_command_slot(command=command)
 
         occupancy = self.parking_record_repository.get_or_create_occupancy_for_update(slot=slot)
-        if not slot.is_active:
+        if not command.trusted_slot_metadata and not slot.is_active:
             raise ParkingRecordConflictError("비활성화된 슬롯입니다.")
         if occupancy.occupied:
             raise ParkingRecordConflictError("이미 점유 중인 슬롯입니다.")
@@ -100,6 +100,7 @@ class ParkingRecordCommandService:
                 vehicle_num=vehicle_num,
                 history=history,
                 occupied_at=command.entry_at or history.entry_at,
+                enforce_slot_active=not command.trusted_slot_metadata,
             )
             self.parking_record_repository.save_occupancy(occupancy=occupancy)
             if self.projection_writer is not None:

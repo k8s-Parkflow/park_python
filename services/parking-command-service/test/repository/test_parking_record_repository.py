@@ -4,6 +4,7 @@ import sys
 import threading
 import time
 from pathlib import Path
+from unittest.mock import Mock
 
 from django.db import IntegrityError, close_old_connections
 from django.test import TestCase, TransactionTestCase
@@ -155,6 +156,35 @@ class ParkingRecordRepositoryTests(TestCase):
         self.assertIsNotNone(slot_by_id)
         self.assertIsNotNone(slot_by_identity)
         self.assertEqual(slot_by_id.slot_id, slot_by_identity.slot_id)
+
+    # trusted gRPC 입차는 로컬 inactive 슬롯에서도 실행 가능 검증
+    def test_should_allow_trusted_entry__when_slot_inactive_locally(self) -> None:
+        # Given
+        slot = create_slot(zone_id=1, slot_code="A001", is_active=False)
+        create_empty_occupancy(slot=slot)
+        create_vehicle(vehicle_num="69가3455")
+        service = ParkingRecordCommandService(
+            parking_record_repository=DjangoParkingRecordRepository(),
+            vehicle_repository=Mock(exists=Mock(return_value=True)),
+        )
+
+        # When
+        snapshot = service.create_entry(
+            command=EntryCommand(
+                vehicle_num="69가3455",
+                zone_id=1,
+                slot_code="A001",
+                slot_id=slot.slot_id,
+                slot_type="GENERAL",
+                trusted_slot_metadata=True,
+                entry_at=timezone.now(),
+            )
+        )
+
+        # Then
+        self.assertEqual(snapshot.status, ParkingHistoryStatus.PARKED)
+        self.assertEqual(ParkingHistory.objects.get().slot_id, slot.slot_id)
+        self.assertTrue(SlotOccupancy.objects.get(slot=slot).occupied)
 
 
 # 저장소 동시성 테스트 클래스
