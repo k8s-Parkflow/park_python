@@ -26,6 +26,7 @@ AGENTS.md
 
 # Keep docs markdown files
 !docs/**/*.md
+/docs/architecture/parking-command-service-implementation.md
 
 # Ignore test documents except README files
 services/*/test/*.md

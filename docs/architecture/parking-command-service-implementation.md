@@ -16,22 +16,22 @@
 - `domains/parking_record`
 
 핵심 흐름:
-1. 루트 [urls.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/urls.py)가 도메인 HTTP 라우터를 연결한다.
-2. [presentation/http/views.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/domains/parking_record/presentation/http/views.py)가 요청을 받는다.
-3. [presentation/http/serializers.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/domains/parking_record/presentation/http/serializers.py)가 JSON을 command DTO로 변환한다.
-4. [application/services.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/domains/parking_record/application/services.py)가 트랜잭션 안에서 유스케이스를 실행한다.
-5. [infrastructure/repositories/*](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/domains/parking_record/infrastructure/repositories/parking_record_repository.py)가 DB 접근과 projection 반영을 수행한다.
-6. [domain/*](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/domains/parking_record/domain/parking_history.py)가 도메인 상태 전이와 불변식을 보장한다.
+1. 루트 urls.py가 도메인 HTTP 라우터를 연결한다.
+2. presentation/http/views.py가 요청을 받는다.
+3. presentation/http/serializers.py가 JSON을 command DTO로 변환한다.
+4. application/services.py가 트랜잭션 안에서 유스케이스를 실행한다.
+5. infrastructure/repositories/*가 DB 접근과 projection 반영을 수행한다.
+6. domain/*가 도메인 상태 전이와 불변식을 보장한다.
 
 ## 패키지별 책임
 
 ### 루트 패키지
 
-- [apps.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/apps.py)
+- apps.py
   - Django 앱 등록 정보만 가진다.
-- [urls.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/urls.py)
+- urls.py
   - 도메인 HTTP URL을 루트에서 include 하는 진입점이다.
-- [models/__init__.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/models/__init__.py)
+- models/__init__.py
   - Django model autodiscovery를 위해 도메인 모델을 다시 노출한다.
 
 루트에는 더 이상 비즈니스 로직을 두지 않는다.
@@ -40,9 +40,9 @@
 
 도메인에 종속되지 않는 공통 기능을 둔다.
 
-- [global_shared/application/dependencies.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/global_shared/application/dependencies.py)
+- global_shared/application/dependencies.py
   - 애플리케이션 조립 지점
-- [global_shared/utils/vehicle_nums.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/global_shared/utils/vehicle_nums.py)
+- global_shared/utils/vehicle_nums.py
   - 차량 번호 정규화 공통 유틸리티
 
 ### `domains/parking_record`
@@ -64,13 +64,13 @@
 
 #### `ParkingCommandServiceConfig`
 
-- 위치: [apps.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/apps.py)
+- 위치: apps.py
 - 역할:
   - Django 앱 이름과 기본 PK 타입을 등록한다.
 
 #### 루트 `urlpatterns`
 
-- 위치: [urls.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/urls.py)
+- 위치: urls.py
 - 역할:
   - `parking_record` 도메인의 HTTP URL을 외부에 노출한다.
 - 구현 방식:
@@ -78,7 +78,7 @@
 
 #### 루트 `models`
 
-- 위치: [models/__init__.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/models/__init__.py)
+- 위치: models/__init__.py
 - 역할:
   - Django가 `parking_command_service` 앱의 모델을 인식하도록 도메인 모델을 재노출한다.
 - 구현 방식:
@@ -88,7 +88,7 @@
 
 #### `get_parking_record_command_service`
 
-- 위치: [dependencies.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/global_shared/application/dependencies.py)
+- 위치: dependencies.py
 - 역할:
   - `parking_record` 유스케이스 실행에 필요한 구현체를 조립한다.
 - 구현 방식:
@@ -99,7 +99,7 @@
 
 #### `normalize_vehicle_num`
 
-- 위치: [vehicle_nums.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/global_shared/utils/vehicle_nums.py)
+- 위치: vehicle_nums.py
 - 역할:
   - 차량 번호 저장/비교 기준을 표준 형태로 맞춘다.
 - 구현 방식:
@@ -111,7 +111,7 @@
 
 #### `EntryCommand`
 
-- 위치: [dtos.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/domains/parking_record/application/dtos.py)
+- 위치: dtos.py
 - 역할:
   - 입차 처리 입력 DTO
 - 구현 방식:
@@ -120,7 +120,7 @@
 
 #### `ExitCommand`
 
-- 위치: [dtos.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/domains/parking_record/application/dtos.py)
+- 위치: dtos.py
 - 역할:
   - 출차 처리 입력 DTO
 - 구현 방식:
@@ -129,7 +129,7 @@
 
 #### `ParkingRecordSnapshot`
 
-- 위치: [dtos.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/domains/parking_record/application/dtos.py)
+- 위치: dtos.py
 - 역할:
   - command API 응답용 write 스냅샷
 - 구현 방식:
@@ -139,19 +139,19 @@
 
 #### `ParkingRecordNotFoundError`
 
-- 위치: [exceptions.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/domains/parking_record/application/exceptions.py)
+- 위치: exceptions.py
 - 역할:
   - 차량 미존재, 슬롯 미존재, 활성 세션 미존재를 `404` 의미로 표현한다.
 
 #### `ParkingRecordConflictError`
 
-- 위치: [exceptions.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/domains/parking_record/application/exceptions.py)
+- 위치: exceptions.py
 - 역할:
   - 점유 충돌, 중복 세션, DB 경합을 `409` 의미로 표현한다.
 
 #### `ParkingRecordRepository` / `VehicleRepository` / `ParkingProjectionWriter`
 
-- 위치: [services.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/domains/parking_record/application/services.py)
+- 위치: services.py
 - 역할:
   - application service가 인프라 구현체에 직접 고정되지 않도록 최소 계약을 제공한다.
 - 구현 방식:
@@ -159,7 +159,7 @@
 
 #### `ParkingRecordCommandService`
 
-- 위치: [services.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/domains/parking_record/application/services.py)
+- 위치: services.py
 - 역할:
   - 입차/출차 유스케이스를 실행하는 애플리케이션 서비스다.
 - 구현 방식:
@@ -178,13 +178,13 @@
 
 #### `ParkingHistoryStatus`
 
-- 위치: [enums.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/domains/parking_record/domain/enums.py)
+- 위치: enums.py
 - 역할:
   - `PARKED`, `EXITED` 상태를 정의한다.
 
 #### `ParkingSlot`
 
-- 위치: [parking_slot.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/domains/parking_record/domain/parking_slot.py)
+- 위치: parking_slot.py
 - 역할:
   - 슬롯 마스터와 활성 상태를 표현한다.
 - 구현 방식:
@@ -193,7 +193,7 @@
 
 #### `ParkingHistory`
 
-- 위치: [parking_history.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/domains/parking_record/domain/parking_history.py)
+- 위치: parking_history.py
 - 역할:
   - 차량의 주차 세션 이력을 표현한다.
 - 구현 방식:
@@ -203,7 +203,7 @@
 
 #### `SlotOccupancy`
 
-- 위치: [slot_occupancy.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/domains/parking_record/domain/slot_occupancy.py)
+- 위치: slot_occupancy.py
 - 역할:
   - 슬롯의 현재 점유 상태를 1행으로 유지한다.
 - 구현 방식:
@@ -216,7 +216,7 @@
 
 #### `DjangoParkingRecordRepository`
 
-- 위치: [parking_record_repository.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/domains/parking_record/infrastructure/repositories/parking_record_repository.py)
+- 위치: parking_record_repository.py
 - 역할:
   - command 처리에 필요한 write 모델 조회/저장을 담당한다.
 - 구현 방식:
@@ -226,13 +226,13 @@
 
 #### `DjangoVehicleRepository`
 
-- 위치: [vehicle_repository.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/domains/parking_record/infrastructure/repositories/vehicle_repository.py)
+- 위치: Vehicle_repository.py
 - 역할:
   - `vehicle_service`의 차량 존재 여부 조회를 캡슐화한다.
 
 #### `DjangoParkingProjectionWriter`
 
-- 위치: [query_projection_repository.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/domains/parking_record/infrastructure/repositories/query_projection_repository.py)
+- 위치: query_projection_repository.py
 - 역할:
   - command 성공 후 query projection을 동기화한다.
 - 구현 방식:
@@ -251,7 +251,7 @@
 
 #### `parse_entry_command`
 
-- 위치: [serializers.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/domains/parking_record/presentation/http/serializers.py)
+- 위치: serializers.py
 - 역할:
   - 입차 요청 JSON을 `EntryCommand`로 변환한다.
 - 구현 방식:
@@ -263,7 +263,7 @@
 
 #### `parse_exit_command`
 
-- 위치: [serializers.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/domains/parking_record/presentation/http/serializers.py)
+- 위치: serializers.py
 - 역할:
   - 출차 요청 JSON을 `ExitCommand`로 변환한다.
 - 구현 방식:
@@ -272,7 +272,7 @@
 
 #### `ParkingEntryView`
 
-- 위치: [views.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/domains/parking_record/presentation/http/views.py)
+- 위치: views.py
 - 역할:
   - 입차 HTTP 진입점
 - 구현 방식:
@@ -282,13 +282,13 @@
 
 #### `ParkingExitView`
 
-- 위치: [views.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/domains/parking_record/presentation/http/views.py)
+- 위치: views.py
 - 역할:
   - 출차 HTTP 진입점
 
 #### 도메인 HTTP `urlpatterns`
 
-- 위치: [urls.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/domains/parking_record/presentation/http/urls.py)
+- 위치: urls.py
 - 역할:
   - `POST /api/parking/entry`
   - `POST /api/parking/exit`
@@ -326,7 +326,3 @@
 4. `DjangoParkingProjectionWriter.record_exit()`가 현재 위치 projection을 제거한다.
 5. 종료된 snapshot이 응답으로 반환된다.
 
-## 관련 문서
-
-- [parking-command-entities.md](/Users/kyum/Desktop/Private/autoE/docs/entities/parking-command-entities.md)
-- [parking-command-service-zone-slot-todo.md](/Users/kyum/Desktop/Private/autoE/docs/architecture/parking-command-service-zone-slot-todo.md)
