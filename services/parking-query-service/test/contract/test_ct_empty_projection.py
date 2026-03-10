@@ -1,7 +1,6 @@
 from django.test import TestCase, override_settings
 
 from parking_query_service.models import ZoneAvailability
-from zone_service.models import Zone
 
 
 @override_settings(ROOT_URLCONF="park_py.urls")
@@ -10,9 +9,6 @@ class EmptyProjectionCT(TestCase):
     @classmethod
     def setUpTestData(cls) -> None:
         # EV 집계가 없어도 타입별 응답 계약은 유지되어야 한다.
-        Zone.objects.create(zone_id=1, zone_name="A")
-        Zone.objects.create(zone_id=2, zone_name="B")
-
         ZoneAvailability.objects.create(
             zone_id=1,
             slot_type="GENERAL",

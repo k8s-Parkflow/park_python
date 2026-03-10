@@ -1,26 +1,38 @@
 from __future__ import annotations
 
-from uuid import uuid4
+import uuid
 
-from park_py.error_handling import ApplicationError
-
-from orchestration_service.application.compensation import CompensationAction
-from orchestration_service.application.compensation import CompensationRunner
-from orchestration_service.application.errors import build_error_payload
-from orchestration_service.application.errors import raise_application_error_from_payload
-from orchestration_service.application.errors import raise_application_error_from_downstream
-from orchestration_service.clients.http import DownstreamHttpError
-from orchestration_service.clients.parking_command import ParkingCommandServiceClient
-from orchestration_service.clients.parking_query import ParkingQueryServiceClient
+from orchestration_service.application.errors import DownstreamError
+from orchestration_service.application.result_factory import (
+    build_compensated_result,
+    build_completed_exit_result,
+    build_failed_result,
+)
+from orchestration_service.constants import (
+    COMPENSATE_PARKING_EXIT,
+    COMPENSATE_QUERY_EXIT,
+    EXIT_SAGA_TYPE,
+    STATUS_IN_PROGRESS,
+    STEP_PARKING_COMMAND_EXIT,
+    STEP_UPDATE_QUERY_EXIT,
+    STEP_VALIDATE_ACTIVE_PARKING,
+)
 from orchestration_service.repositories.operation import SagaOperationRepository
 
 
 class ExitSagaOrchestrationService:
-    def __init__(self, *, base_url: str) -> None:
-        self.parking_command_client = ParkingCommandServiceClient(base_url=base_url)
-        self.parking_query_client = ParkingQueryServiceClient(base_url=base_url)
-        self.operation_repository = SagaOperationRepository()
-        self.compensation_runner = CompensationRunner(repository=self.operation_repository)
+    def __init__(
+        self,
+        *,
+        operation_repository: SagaOperationRepository,
+        zone_gateway,
+        parking_command_gateway,
+        parking_query_gateway,
+    ) -> None:
+        self.operation_repository = operation_repository
+        self.zone_gateway = zone_gateway
+        self.parking_command_gateway = parking_command_gateway
+        self.parking_query_gateway = parking_query_gateway
 
     def execute(
         self,
@@ -30,128 +42,123 @@ class ExitSagaOrchestrationService:
         idempotency_key: str,
     ) -> dict:
         existing_operation = self.operation_repository.find_by_idempotency_key(
-            saga_type="EXIT",
-            idempotency_key=idempotency_key,
+            idempotency_key=idempotency_key
         )
-        if existing_operation is not None:
-            if existing_operation.error_status is not None and existing_operation.error_payload is not None:
-                raise_application_error_from_payload(
-                    error_payload=existing_operation.error_payload,
-                    status_code=existing_operation.error_status,
-                )
-            return self.operation_repository.to_response(existing_operation)
+        reused_operation = existing_operation and existing_operation.result_snapshot
+        if reused_operation:
+            return existing_operation.result_snapshot
 
-        operation_id = uuid4().hex
-        self.operation_repository.save(
+        operation_id = uuid.uuid4().hex
+        self.operation_repository.create(
             operation_id=operation_id,
-            saga_type="EXIT",
-            status="IN_PROGRESS",
-            current_step="VALIDATE_ACTIVE_PARKING",
+            saga_type=EXIT_SAGA_TYPE,
+            status=STATUS_IN_PROGRESS,
+            current_step=STEP_VALIDATE_ACTIVE_PARKING,
             idempotency_key=idempotency_key,
             vehicle_num=vehicle_num,
         )
 
-        try:
-            projection = self.parking_query_client.get_current_parking(vehicle_num=vehicle_num)
-        except ApplicationError as exc:
-            self.operation_repository.mark_failed(
-                operation_id=operation_id,
-                failed_step="VALIDATE_ACTIVE_PARKING",
-                error_payload=build_error_payload(
-                    code=exc.code,
-                    message=exc.message,
-                    details=exc.details,
-                ),
-                error_status=exc.status,
-            )
-            raise
-        except DownstreamHttpError as exc:
-            self.operation_repository.mark_failed(
-                operation_id=operation_id,
-                failed_step="VALIDATE_ACTIVE_PARKING",
-                error_payload=exc.payload,
-                error_status=exc.status_code,
-            )
-            raise_application_error_from_downstream(exc)
+        active_parking = None
+        exit_payload = None
+        zone_name = ""
 
         try:
-            command_result = self.parking_command_client.create_exit(
+            active_parking = self.parking_command_gateway.validate_active_parking(
+                vehicle_num=vehicle_num
+            )
+            self.operation_repository.mark_step(
+                operation_id=operation_id,
+                current_step=STEP_PARKING_COMMAND_EXIT,
+                history_id=active_parking["history_id"],
+                slot_id=active_parking["slot_id"],
+                vehicle_num=active_parking["vehicle_num"],
+            )
+            exit_payload = self.parking_command_gateway.exit_parking(
                 operation_id=operation_id,
                 vehicle_num=vehicle_num,
                 requested_at=requested_at,
             )
-        except ApplicationError as exc:
-            self.operation_repository.mark_failed(
+            self.operation_repository.mark_step(
                 operation_id=operation_id,
-                failed_step="PARKING_COMMAND_EXIT",
-                error_payload=build_error_payload(
-                    code=exc.code,
-                    message=exc.message,
-                    details=exc.details,
-                ),
-                error_status=exc.status,
+                current_step=STEP_UPDATE_QUERY_EXIT,
+                history_id=exit_payload["history_id"],
+                slot_id=exit_payload["slot_id"],
+                vehicle_num=exit_payload["vehicle_num"],
             )
-            raise
-        except DownstreamHttpError as exc:
-            self.operation_repository.mark_failed(
+            self.parking_query_gateway.apply_exit_projection(
                 operation_id=operation_id,
-                failed_step="PARKING_COMMAND_EXIT",
-                error_payload=exc.payload,
-                error_status=exc.status_code,
+                history_id=exit_payload["history_id"],
+                vehicle_num=exit_payload["vehicle_num"],
+                slot_id=exit_payload["slot_id"],
+                slot_code=active_parking["slot_code"],
+                zone_id=active_parking["zone_id"],
+                slot_type=active_parking["slot_type"],
+                exit_at=exit_payload["exit_at"],
             )
-            raise_application_error_from_downstream(exc)
+        except DownstreamError as error:
+            if exit_payload is None:
+                result = build_failed_result(
+                    operation_id=operation_id,
+                    failed_step=self.operation_repository.get(operation_id=operation_id).current_step,
+                    error_status=error.status,
+                    error_code=error.error_code,
+                    error_message=error.message,
+                )
+                self.operation_repository.fail(
+                    operation_id=operation_id,
+                    last_error_code=error.error_code,
+                    last_error_message=error.message,
+                    result_snapshot=result,
+                )
+                return result
 
-        self.operation_repository.mark_in_progress(
-            operation_id=operation_id,
-            current_step="PARKING_COMMAND_EXIT",
-            history_id=command_result["history_id"],
-            slot_id=command_result["slot_id"],
-        )
+            zone_name = active_parking.get("zone_name", "")
+            if not zone_name:
+                zone_payload = self.zone_gateway.get_zone(zone_id=active_parking["zone_id"])
+                zone_name = zone_payload["zone_name"]
 
-        try:
-            self.parking_query_client.project_exit(
+            self.parking_query_gateway.compensate_exit_projection(
                 operation_id=operation_id,
-                vehicle_num=vehicle_num,
+                history_id=exit_payload["history_id"],
+                vehicle_num=exit_payload["vehicle_num"],
+                slot_id=exit_payload["slot_id"],
+                slot_code=active_parking["slot_code"],
+                zone_id=active_parking["zone_id"],
+                zone_name=zone_name,
+                slot_type=active_parking["slot_type"],
+                entry_at=active_parking["entry_at"],
             )
-        except (ApplicationError, DownstreamHttpError) as exc:
-            return self.compensation_runner.run(
+            self.parking_command_gateway.compensate_exit(
                 operation_id=operation_id,
-                failed_step="UPDATE_QUERY_EXIT",
-                compensations=[
-                    CompensationAction(
-                        step_key="RESTORE_QUERY_EXIT",
-                        run=lambda: self.parking_query_client.restore_exit(
-                            operation_id=operation_id,
-                            vehicle_num=projection["vehicle_num"],
-                            slot_id=projection["slot_id"],
-                            zone_id=projection["zone_id"],
-                            slot_type=projection["slot_type"],
-                            entry_at=projection["entry_at"],
-                        ),
-                    ),
-                    CompensationAction(
-                        step_key="RESTORE_PARKING_EXIT",
-                        run=lambda: self.parking_command_client.restore_exit(
-                            operation_id=operation_id,
-                            history_id=command_result["history_id"],
-                        ),
-                    ),
+                history_id=exit_payload["history_id"],
+                slot_id=exit_payload["slot_id"],
+                vehicle_num=exit_payload["vehicle_num"],
+            )
+            result = build_compensated_result(
+                operation_id=operation_id,
+                failed_step=STEP_UPDATE_QUERY_EXIT,
+                error_message="출차 SAGA 처리 중 보상 트랜잭션이 실행되었습니다.",
+            )
+            self.operation_repository.compensate(
+                operation_id=operation_id,
+                failed_step=STEP_UPDATE_QUERY_EXIT,
+                last_error_code=error.error_code,
+                last_error_message=error.message,
+                completed_compensations=[
+                    COMPENSATE_QUERY_EXIT,
+                    COMPENSATE_PARKING_EXIT,
                 ],
+                result_snapshot=result,
             )
+            return result
 
-        response_payload = {
-            "operation_id": operation_id,
-            "status": "COMPLETED",
-            "history_id": command_result["history_id"],
-            "vehicle_num": command_result["vehicle_num"],
-            "slot_id": command_result["slot_id"],
-            "exit_at": command_result["exit_at"],
-        }
-        completed = self.operation_repository.mark_completed(
+        result = build_completed_exit_result(
             operation_id=operation_id,
-            current_step="UPDATE_QUERY_EXIT",
-            history_id=command_result["history_id"],
-            slot_id=command_result["slot_id"],
-            response_payload=response_payload,
+            exit_payload=exit_payload,
         )
-        return self.operation_repository.to_response(completed)
+        self.operation_repository.complete(
+            operation_id=operation_id,
+            current_step=STEP_UPDATE_QUERY_EXIT,
+            result_snapshot=result,
+        )
+        return result

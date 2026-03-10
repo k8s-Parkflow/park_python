@@ -1,65 +1,59 @@
-# parking-query-service 스키마
+# parking-query-service 엔터티 설명
 
-## 생성 대상 테이블
+## 목적
 
-- `CURRENT_PARKING_VIEW`
-- `ZONE_AVAILABILITY`
-- `PARKING_QUERY_OPERATION`
+- `parking-query-service`의 조회 전용 projection 구조를 정의한다.
+- 어떤 필드가 command/history snapshot에서 온 값인지와 외부 조회 계약을 위해 왜 중복 저장하는지 명확히 한다.
 
-## 공통 원칙
+## 엔터티 개요
 
-- 이 서비스는 projection 저장소라 로컬 FK를 만들지 않는다.
-- `vehicle_num`, `history_id`, `zone_id`, `slot_id`는 모두 논리 참조 값이다.
-- 슬롯 식별 문자열은 `slot_name` 하나만 사용한다.
+- `CURRENT_PARKING_VIEW`: 현재 주차 중 차량의 최신 위치 projection
+- `ZONE_AVAILABILITY`: zone/slot_type 조합별 가용성 projection
 
 ## CURRENT_PARKING_VIEW
 
-| 컬럼명 | 타입 | NULL | 기본값 | 키/제약 |
-| --- | --- | --- | --- | --- |
-| `vehicle_num` | varchar(20) | N |  | PK |
-| `history_id` | bigint | Y |  |  |
-| `zone_id` | bigint | Y |  |  |
-| `slot_id` | bigint | Y |  |  |
-| `zone_name` | varchar(100) | Y |  |  |
-| `slot_name` | varchar(50) | Y |  |  |
-| `slot_type` | varchar(50) | N |  |  |
-| `entry_at` | timestamp | N |  |  |
-| `updated_at` | timestamp | N | auto now |  |
+차량 번호 기준 1행으로 유지되는 현재 위치 projection이다.  
+외부 조회 응답 품질을 위해 `zone_name`, `slot_code`, `slot_name`을 함께 저장한다.
+
+| 컬럼명 | 타입 | 필수 | 설명 |
+| --- | --- | --- | --- |
+| `vehicle_num` | `varchar(20)` | Y | 차량 번호 PK |
+| `history_id` | `bigint` | N | projection을 만든 주차 이력 식별자 |
+| `zone_id` | `bigint` | N | zone 식별자 |
+| `slot_id` | `bigint` | N | slot 식별자 |
+| `slot_code` | `varchar(50)` | N | 입차 당시 slot code snapshot |
+| `zone_name` | `varchar(100)` | N | 입차 당시 zone name snapshot |
+| `slot_name` | `varchar(50)` | N | 외부 표시용 슬롯 이름, 현재는 `slot_code`와 동일하게 투영 |
+| `slot_type` | `varchar(50)` | Y | slot type name |
+| `entry_at` | `timestamp` | Y | 입차 시각 |
+| `updated_at` | `timestamp` | Y | projection 갱신 시각 |
+
+운영 규칙:
+- 최신 projection보다 오래된 이벤트가 들어오면 덮어쓰지 않는다.
+- exit projection은 `history_id`가 현재 projection과 일치할 때만 삭제한다.
+- 이 엔터티는 조회 최적화를 위한 projection이므로, 원본 truth는 `parking-command-service.PARKING_HISTORY`에 있다.
 
 ## ZONE_AVAILABILITY
 
-| 컬럼명 | 타입 | NULL | 기본값 | 키/제약 |
-| --- | --- | --- | --- | --- |
-| `id` | bigint | N | auto increment | PK |
-| `zone_id` | bigint | N |  | UK 일부, IDX |
-| `slot_type` | varchar(50) | N |  | UK 일부, IDX |
-| `total_count` | int | N |  |  |
-| `occupied_count` | int | N |  |  |
-| `available_count` | int | N |  | check |
-| `updated_at` | timestamp | N | auto now |  |
+zone/slot_type 조합별 총 슬롯 수, 점유 수, 가용 수를 유지하는 집계 projection이다.
 
-인덱스:
-- `(zone_id, slot_type)` (`idx_zone_type`)
+| 컬럼명 | 타입 | 필수 | 설명 |
+| --- | --- | --- | --- |
+| `zone_id` | `bigint` | Y | zone 식별자 |
+| `slot_type` | `varchar(50)` | Y | slot type name |
+| `total_count` | `int` | Y | 전체 슬롯 수 |
+| `occupied_count` | `int` | Y | 점유 슬롯 수 |
+| `available_count` | `int` | Y | 가용 슬롯 수 |
+| `updated_at` | `timestamp` | Y | 최종 갱신 시각 |
 
-추가 제약:
-- Unique `(zone_id, slot_type)` (`uniq_zone_availability_zone_slot_type`)
-- Check `available_count = total_count - occupied_count AND available_count >= 0` (`chk_zone_availability_available_count`)
+제약/인덱스:
+- 유니크 제약: `(zone_id, slot_type)` (`uniq_zone_availability_zone_slot_type`)
+- 인덱스: `(zone_id, slot_type)` (`idx_zone_type`)
+- 체크 제약: `available_count = total_count - occupied_count` 및 `available_count >= 0`
 
-## PARKING_QUERY_OPERATION
+## 엔터티 관계
 
-| 컬럼명 | 타입 | NULL | 기본값 | 키/제약 |
-| --- | --- | --- | --- | --- |
-| `id` | bigint | N | auto increment | PK |
-| `operation_id` | varchar(64) | N |  | UK 일부 |
-| `action` | varchar(64) | N |  | UK 일부 |
-| `response_payload` | json | Y |  |  |
-| `created_at` | timestamp | N | auto now add |  |
-| `updated_at` | timestamp | N | auto now |  |
+- `CURRENT_PARKING_VIEW.history_id`는 `parking-command-service.PARKING_HISTORY.history_id`를 논리 참조한다.
+- `CURRENT_PARKING_VIEW.zone_id`, `ZONE_AVAILABILITY.zone_id`는 `zone-service.ZONE.zone_id`를 논리 참조한다.
+- `CURRENT_PARKING_VIEW.slot_code`, `zone_name`, `slot_name`, `slot_type`는 외부 조회 응답을 위한 snapshot/projection 값이다.
 
-추가 제약:
-- Unique `(operation_id, action)` (`uniq_parking_query_operation_action`)
-
-## 최종 관계 요약
-
-- 로컬 FK 없음
-- `zone_id`, `slot_type` 조합으로 집계 projection 관리

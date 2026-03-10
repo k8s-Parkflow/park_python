@@ -1,6 +1,6 @@
 from django.test import SimpleTestCase
 
-from unit.support import PartialTotalAvailabilityRepoStub, TotalAvailabilityRepoStub, ZoneRepoStub
+from unit.support import PartialTotalAvailabilityRepoStub, TotalAvailabilityRepoStub
 
 
 class MissingTypeTotalUT(SimpleTestCase):
@@ -11,7 +11,6 @@ class MissingTypeTotalUT(SimpleTestCase):
         )
 
         service = ZoneAvailabilityService(
-            zone_repository=ZoneRepoStub(),
             zone_availability_repository=TotalAvailabilityRepoStub(),
         )
 
@@ -30,7 +29,6 @@ class MissingTypeTotalUT(SimpleTestCase):
         )
 
         service = ZoneAvailabilityService(
-            zone_repository=ZoneRepoStub(),
             zone_availability_repository=PartialTotalAvailabilityRepoStub(),
         )
 

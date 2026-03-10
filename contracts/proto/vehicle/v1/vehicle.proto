@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package vehicle.v1;
+
+service VehicleService {
+  rpc GetVehicle(GetVehicleRequest) returns (GetVehicleResponse);
+}
+
+message GetVehicleRequest {
+  string vehicle_num = 1;
+}
+
+message GetVehicleResponse {
+  string vehicle_num = 1;
+  string vehicle_type = 2;
+  bool active = 3;
+}

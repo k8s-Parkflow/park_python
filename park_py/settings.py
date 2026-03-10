@@ -13,23 +13,25 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import sys
 from pathlib import Path
 
+from park_py.database_config import build_service_databases
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 PARKING_COMMAND_SERVICE_SRC = BASE_DIR / "services" / "parking-command-service" / "src"
 PARKING_QUERY_SERVICE_SRC = BASE_DIR / "services" / "parking-query-service" / "src"
+ORCHESTRATION_SERVICE_SRC = BASE_DIR / "services" / "orchestration-service" / "src"
 ZONE_SERVICE_SRC = BASE_DIR / "services" / "zone-service" / "src"
 VEHICLE_SERVICE_SRC = BASE_DIR / "services" / "vehicle-service" / "src"
-ORCHESTRATION_SERVICE_SRC = BASE_DIR / "services" / "orchestration-service" / "src"
 if str(PARKING_COMMAND_SERVICE_SRC) not in sys.path:
     sys.path.insert(0, str(PARKING_COMMAND_SERVICE_SRC))
 if str(PARKING_QUERY_SERVICE_SRC) not in sys.path:
     sys.path.insert(0, str(PARKING_QUERY_SERVICE_SRC))
+if str(ORCHESTRATION_SERVICE_SRC) not in sys.path:
+    sys.path.insert(0, str(ORCHESTRATION_SERVICE_SRC))
 if str(ZONE_SERVICE_SRC) not in sys.path:
     sys.path.insert(0, str(ZONE_SERVICE_SRC))
 if str(VEHICLE_SERVICE_SRC) not in sys.path:
     sys.path.insert(0, str(VEHICLE_SERVICE_SRC))
-if str(ORCHESTRATION_SERVICE_SRC) not in sys.path:
-    sys.path.insert(0, str(ORCHESTRATION_SERVICE_SRC))
 
 
 # Quick-start development settings - unsuitable for production
@@ -55,11 +57,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'drf_spectacular',
+    'orchestration_service.apps.OrchestrationServiceConfig',
     'parking_command_service.apps.ParkingCommandServiceConfig',
     'parking_query_service.apps.ParkingQueryServiceConfig',
     'zone_service.apps.ZoneServiceConfig',
     'vehicle_service.apps.VehicleServiceConfig',
-    'orchestration_service.apps.OrchestrationServiceConfig',
 ]
 
 MIDDLEWARE = [
@@ -97,12 +99,8 @@ WSGI_APPLICATION = 'park_py.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+DATABASES = build_service_databases(base_dir=BASE_DIR)
+DATABASE_ROUTERS = ["park_py.database_router.ServiceDatabaseRouter"]
 
 
 # Password validation

@@ -1,4 +1,5 @@
 .venv/
+.venv-cpython39/
 .codex/
 __pycache__/
 *.py[cod]
@@ -21,6 +22,26 @@ __pycache__/
 
 # Ignore markdown files by default
 *.md
+AGENTS.md
+
+# Keep README files anywhere
+!README.md
+!**/README.md
+
+# Keep only entity docs under docs/
+/docs/*
+!/docs/entities/
+!/docs/entities/**/*.md
+
+# Ignore test documents except README files
+services/*/test/*.md
+services/*/test/*.txt
+services/*/test/*.rst
+services/*/test/**/*.md
+services/*/test/**/*.txt
+services/*/test/**/*.rst
+!services/*/test/README.md
+!services/*/test/**/README.md
 
 # Local-only coverage helpers
 /docs/tdd/coverage-local-guide.md

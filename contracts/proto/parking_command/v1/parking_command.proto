@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+package parking_command.v1;
+
+import "common/v1/common.proto";
+import "google/protobuf/timestamp.proto";
+
+service ParkingCommandService {
+  rpc CreateEntry(CreateEntryRequest) returns (CreateEntryResponse);
+  rpc ValidateActiveParking(ValidateActiveParkingRequest) returns (ValidateActiveParkingResponse);
+  rpc ExitParking(ExitParkingRequest) returns (ExitParkingResponse);
+  rpc CompensateEntry(CompensateEntryRequest) returns (CompensateEntryResponse);
+  rpc CompensateExit(CompensateExitRequest) returns (CompensateExitResponse);
+}
+
+message CreateEntryRequest {
+  common.v1.RequestContext context = 1;
+  string operation_id = 2;
+  string vehicle_num = 3;
+  int64 slot_id = 4;
+  int64 zone_id = 5;
+  string slot_code = 6;
+  string slot_type = 7;
+}
+
+message CreateEntryResponse {
+  int64 history_id = 1;
+  int64 slot_id = 2;
+  string vehicle_num = 3;
+  google.protobuf.Timestamp entry_at = 4;
+  string status = 5;
+  string slot_code = 6;
+}
+
+message ValidateActiveParkingRequest {
+  common.v1.RequestContext context = 1;
+  string vehicle_num = 2;
+}
+
+message ValidateActiveParkingResponse {
+  int64 history_id = 1;
+  int64 slot_id = 2;
+  string vehicle_num = 3;
+  google.protobuf.Timestamp entry_at = 4;
+  string status = 5;
+  int64 zone_id = 6;
+  string slot_type = 7;
+  string slot_code = 8;
+}
+
+message ExitParkingRequest {
+  common.v1.RequestContext context = 1;
+  string operation_id = 2;
+  string vehicle_num = 3;
+}
+
+message ExitParkingResponse {
+  int64 history_id = 1;
+  int64 slot_id = 2;
+  string vehicle_num = 3;
+  google.protobuf.Timestamp exit_at = 4;
+  string status = 5;
+  string slot_code = 6;
+}
+
+message CompensateEntryRequest {
+  common.v1.RequestContext context = 1;
+  string operation_id = 2;
+  int64 history_id = 3;
+  int64 slot_id = 4;
+  string vehicle_num = 5;
+}
+
+message CompensateEntryResponse {
+  int64 history_id = 1;
+  bool slot_released = 2;
+  google.protobuf.Timestamp compensated_at = 3;
+}
+
+message CompensateExitRequest {
+  common.v1.RequestContext context = 1;
+  string operation_id = 2;
+  int64 history_id = 3;
+  int64 slot_id = 4;
+  string vehicle_num = 5;
+}
+
+message CompensateExitResponse {
+  int64 history_id = 1;
+  bool slot_occupied = 2;
+  google.protobuf.Timestamp compensated_at = 3;
+}

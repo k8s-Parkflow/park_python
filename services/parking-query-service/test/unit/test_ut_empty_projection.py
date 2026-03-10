@@ -1,6 +1,6 @@
 from django.test import SimpleTestCase
 
-from unit.support import EmptyAvailabilityRepoStub, ZoneRepoStub
+from unit.support import EmptyAvailabilityRepoStub
 
 
 class EmptyProjectionUT(SimpleTestCase):
@@ -11,7 +11,6 @@ class EmptyProjectionUT(SimpleTestCase):
         )
 
         service = ZoneAvailabilityService(
-            zone_repository=ZoneRepoStub(),
             zone_availability_repository=EmptyAvailabilityRepoStub(),
         )
 

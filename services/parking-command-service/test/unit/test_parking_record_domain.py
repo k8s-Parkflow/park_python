@@ -25,11 +25,18 @@ class ParkingHistoryDomainTests(SimpleTestCase):
     # 차량 번호 정규화 검증
     def test_should_normalize_vehicle_num__when_history_started(self) -> None:
         # Given
-        slot = ParkingSlot(slot_id=1, zone_id=1, slot_type_id=1, slot_name="A001", is_active=True)
+        slot = ParkingSlot(slot_id=1, zone_id=1, slot_code="A001", is_active=True)
         entry_at = timezone.now()
 
         # When
-        history = ParkingHistory.start(slot=slot, vehicle_num=" 69가-3455 ", entry_at=entry_at)
+        history = ParkingHistory.start(
+            slot=slot,
+            vehicle_num=" 69가-3455 ",
+            entry_at=entry_at,
+            zone_id=slot.zone_id,
+            slot_type_id=1,
+            slot_code=slot.slot_code,
+        )
 
         # Then
         self.assertEqual(history.vehicle_num, "69가3455")
@@ -39,13 +46,35 @@ class ParkingHistoryDomainTests(SimpleTestCase):
     # 출차 시각 역전 거부 검증
     def test_should_reject_exit__when_earlier_than_entry(self) -> None:
         # Given
-        slot = ParkingSlot(slot_id=1, zone_id=1, slot_type_id=1, slot_name="A001", is_active=True)
+        slot = ParkingSlot(slot_id=1, zone_id=1, slot_code="A001", is_active=True)
         entry_at = timezone.now()
-        history = ParkingHistory.start(slot=slot, vehicle_num="69가3455", entry_at=entry_at)
+        history = ParkingHistory.start(
+            slot=slot,
+            vehicle_num="69가3455",
+            entry_at=entry_at,
+            zone_id=slot.zone_id,
+            slot_type_id=1,
+            slot_code=slot.slot_code,
+        )
 
         # When / Then
         with self.assertRaisesMessage(ValidationError, "출차 시각은 입차 시각보다 빠를 수 없습니다."):
             history.exit(exited_at=entry_at - timedelta(minutes=1))
+
+    # 이력 저장은 slot snapshot 없이 진행하지 않음
+    def test_should_reject_validation__when_slot_snapshot_missing(self) -> None:
+        # Given
+        slot = ParkingSlot(slot_id=1, zone_id=1, slot_code="A001", is_active=True)
+        history = ParkingHistory(
+            slot=slot,
+            vehicle_num="69가3455",
+            status=ParkingHistoryStatus.PARKED,
+            entry_at=timezone.now(),
+        )
+
+        # When / Then
+        with self.assertRaisesMessage(ValidationError, "주차 이력의 슬롯 snapshot 정보가 필요합니다."):
+            history.clean()
 
 
 # 슬롯 점유 도메인 단위 테스트 클래스
@@ -53,7 +82,7 @@ class SlotOccupancyDomainTests(SimpleTestCase):
     # 점유 및 해제 상태 전이 검증
     def test_should_update_occupancy__when_occupied_and_released(self) -> None:
         # Given
-        slot = ParkingSlot(slot_id=1, zone_id=1, slot_type_id=1, slot_name="A001", is_active=True)
+        slot = ParkingSlot(slot_id=1, zone_id=1, slot_code="A001", is_active=True)
         entry_at = timezone.now()
         history = ParkingHistory(
             history_id=101,

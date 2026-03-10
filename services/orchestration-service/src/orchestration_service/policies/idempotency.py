@@ -1,13 +1,7 @@
-from __future__ import annotations
-
-
 class IdempotencyPolicy:
-    def resolve(self, *, idempotency_key: str, existing_operation: dict | None) -> dict:
+    def resolve(self, *, idempotency_key: str, existing_operation) -> dict:
         if existing_operation is None:
-            return {
-                "reused": False,
-                "idempotency_key": idempotency_key,
-            }
+            return {"reused": False, "idempotency_key": idempotency_key}
 
         return {
             "reused": True,

@@ -1,11 +1,16 @@
 from importlib import import_module
 from typing import Any, Dict, Optional
+from unittest.mock import patch
 
 from django.test import SimpleTestCase
 from django.utils import timezone
 
 from parking_query_service.models.current_parking_view import CurrentParkingView
+from parking_query_service.repositories.current_location_repository import CurrentLocationRepository
+from parking_query_service.services.current_location_service import CurrentLocationService
+from park_py.tests.grpc_support import build_direct_stub
 from vehicle_service.models.enums import VehicleType
+from vehicle_service.grpc.servicers import VehicleGrpcServicer
 from vehicle_service.models.vehicle import Vehicle
 
 
@@ -34,7 +39,23 @@ class CurrentLocationFixtureMixin:
         )
 
     def request_current_location(self, vehicle_num: str):
-        return self.client.get(f"{CURRENT_LOCATION_PATH}/{vehicle_num}")
+        with patch(
+            "parking_query_service.views.build_current_location_service",
+            return_value=self.build_current_location_service(),
+        ):
+            return self.client.get(f"{CURRENT_LOCATION_PATH}/{vehicle_num}")
+
+    def build_current_location_service(self) -> CurrentLocationService:
+        client_module = import_module("parking_query_service.clients.grpc.vehicle")
+        return CurrentLocationService(
+            current_location_repository=CurrentLocationRepository(),
+            vehicle_lookup=client_module.VehicleGrpcClient(
+                stub=build_direct_stub(
+                    servicer=VehicleGrpcServicer(),
+                    method_names=["GetVehicle"],
+                )
+            ),
+        )
 
     def assert_location_payload(
         self,
@@ -95,7 +116,7 @@ class StubCurrentLocationRepository:
         return self.projection
 
 
-class StubVehicleRepository:
+class StubVehicleLookup:
     def __init__(self, exists: bool) -> None:
         self.exists = exists
 

@@ -28,7 +28,7 @@ def parse_entry_command(*, body: bytes) -> EntryCommand:
     return EntryCommand(
         vehicle_num=vehicle_num,
         zone_id=zone_id,
-        slot_name=slot_name,
+        slot_code=slot_name,
         slot_id=slot_id,
         entry_at=entry_at,
     )
@@ -48,7 +48,7 @@ def parse_exit_command(*, body: bytes) -> ExitCommand:
     return ExitCommand(
         vehicle_num=vehicle_num,
         zone_id=zone_id,
-        slot_name=slot_name,
+        slot_code=slot_name,
         slot_id=slot_id,
         exit_at=exit_at,
     )

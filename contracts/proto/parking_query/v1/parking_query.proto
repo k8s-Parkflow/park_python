@@ -1,0 +1,107 @@
+syntax = "proto3";
+
+package parking_query.v1;
+
+import "common/v1/common.proto";
+import "google/protobuf/timestamp.proto";
+
+service ParkingQueryService {
+  rpc ApplyEntryProjection(ApplyEntryProjectionRequest) returns (ApplyEntryProjectionResponse);
+  rpc ApplyExitProjection(ApplyExitProjectionRequest) returns (ApplyExitProjectionResponse);
+  rpc CompensateEntryProjection(CompensateEntryProjectionRequest) returns (CompensateEntryProjectionResponse);
+  rpc CompensateExitProjection(CompensateExitProjectionRequest) returns (CompensateExitProjectionResponse);
+  rpc GetCurrentParking(GetCurrentParkingRequest) returns (GetCurrentParkingResponse);
+  rpc GetZoneAvailability(GetZoneAvailabilityRequest) returns (GetZoneAvailabilityResponse);
+}
+
+message ApplyEntryProjectionRequest {
+  common.v1.RequestContext context = 1;
+  string operation_id = 2;
+  int64 history_id = 3;
+  string vehicle_num = 4;
+  int64 slot_id = 5;
+  int64 zone_id = 6;
+  string slot_type = 7;
+  google.protobuf.Timestamp entry_at = 8;
+  string slot_code = 9;
+  string zone_name = 10;
+}
+
+message ApplyEntryProjectionResponse {
+  bool projected = 1;
+  google.protobuf.Timestamp updated_at = 2;
+}
+
+message ApplyExitProjectionRequest {
+  common.v1.RequestContext context = 1;
+  string operation_id = 2;
+  int64 history_id = 3;
+  string vehicle_num = 4;
+  int64 slot_id = 5;
+  int64 zone_id = 6;
+  string slot_type = 7;
+  google.protobuf.Timestamp exit_at = 8;
+  string slot_code = 9;
+}
+
+message ApplyExitProjectionResponse {
+  bool projected = 1;
+  google.protobuf.Timestamp updated_at = 2;
+}
+
+message CompensateEntryProjectionRequest {
+  common.v1.RequestContext context = 1;
+  string operation_id = 2;
+  int64 history_id = 3;
+  string vehicle_num = 4;
+  int64 zone_id = 5;
+  string slot_type = 6;
+}
+
+message CompensateEntryProjectionResponse {
+  bool compensated = 1;
+  google.protobuf.Timestamp updated_at = 2;
+}
+
+message CompensateExitProjectionRequest {
+  common.v1.RequestContext context = 1;
+  string operation_id = 2;
+  int64 history_id = 3;
+  string vehicle_num = 4;
+  int64 slot_id = 5;
+  int64 zone_id = 6;
+  string slot_type = 7;
+  google.protobuf.Timestamp entry_at = 8;
+  string slot_code = 9;
+  string zone_name = 10;
+}
+
+message CompensateExitProjectionResponse {
+  bool compensated = 1;
+  google.protobuf.Timestamp updated_at = 2;
+}
+
+message GetCurrentParkingRequest {
+  string vehicle_num = 1;
+}
+
+message GetCurrentParkingResponse {
+  string vehicle_num = 1;
+  int64 slot_id = 2;
+  int64 zone_id = 3;
+  string slot_type = 4;
+  google.protobuf.Timestamp entry_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+  string slot_code = 7;
+  string zone_name = 8;
+}
+
+message GetZoneAvailabilityRequest {
+  string slot_type = 1;
+}
+
+message GetZoneAvailabilityResponse {
+  string slot_type = 1;
+  int32 available_count = 2;
+  google.protobuf.Timestamp updated_at = 3;
+}
