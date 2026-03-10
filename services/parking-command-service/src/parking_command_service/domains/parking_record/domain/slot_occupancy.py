@@ -11,6 +11,7 @@ from parking_command_service.global_shared.utils.vehicle_nums import normalize_v
 
 
 class SlotOccupancy(models.Model):
+    """Current occupancy state keyed by the command-side lock anchor row."""
 
     slot = models.OneToOneField(
         "parking_command_service.ParkingSlot",

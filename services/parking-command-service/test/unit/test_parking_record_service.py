@@ -136,7 +136,7 @@ class ParkingRecordEntryServiceUnitTests(ParkingRecordServiceTestSupport):
                 )
             )
 
-    # trusted gRPC 입차는 로컬 slot active 상태를 재검증하지 않음
+    # trusted gRPC 입차는 로컬 lock anchor active 상태를 재검증하지 않음
     def test_should_allow_trusted_entry__when_slot_inactive_locally(self) -> None:
         # Given
         entry_at = timezone.now()
@@ -173,7 +173,7 @@ class ParkingRecordEntryServiceUnitTests(ParkingRecordServiceTestSupport):
             lock_anchor=slot
         )
 
-    # trusted gRPC 입차는 로컬 slot metadata 대신 command metadata snapshot을 사용
+    # trusted gRPC 입차는 로컬 lock anchor metadata 대신 command metadata snapshot을 사용
     def test_should_use_command_slot_metadata__when_trusted_entry_slot_differs_locally(self) -> None:
         # Given
         entry_at = timezone.now()

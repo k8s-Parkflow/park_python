@@ -158,7 +158,7 @@ class ParkingRecordRepositoryTests(TestCase):
         self.assertIsNotNone(slot_by_identity)
         self.assertEqual(slot_by_id.slot_id, slot_by_identity.slot_id)
 
-    # trusted gRPC 입차는 로컬 inactive 슬롯에서도 실행 가능 검증
+    # trusted gRPC 입차는 로컬 inactive lock anchor에서도 실행 가능 검증
     def test_should_allow_trusted_entry__when_slot_inactive_locally(self) -> None:
         # Given
         slot = create_slot(zone_id=1, slot_code="A001", is_active=False)
@@ -186,7 +186,7 @@ class ParkingRecordRepositoryTests(TestCase):
         self.assertEqual(ParkingHistory.objects.get().slot_id, slot.slot_id)
         self.assertTrue(SlotOccupancy.objects.get(slot=slot).occupied)
 
-    # trusted gRPC 입차는 로컬 slot metadata와 무관하게 command snapshot을 저장
+    # trusted gRPC 입차는 로컬 lock anchor metadata와 무관하게 command snapshot을 저장
     def test_should_persist_trusted_snapshot__when_local_slot_metadata_differs(self) -> None:
         # Given
         slot = create_slot(zone_id=9, slot_type_id=2, slot_code="B999", is_active=False)
