@@ -9,11 +9,3 @@ __pycache__/
 
 # Ignore markdown files by default
 *.md
-AGENTS.md
-
-# Keep README files anywhere
-!README.md
-!**/README.md
-
-# Keep docs markdown files
-!docs/**/*.md
