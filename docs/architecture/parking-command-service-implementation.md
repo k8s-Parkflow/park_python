@@ -114,12 +114,18 @@
 - 위치: [dtos.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/domains/parking_record/application/dtos.py)
 - 역할:
   - 입차 처리 입력 DTO
+- 구현 방식:
+  - 공통 슬롯 식별값 `vehicle_num`, `zone_id`, `slot_code`, `slot_id`를 함께 가진다.
+  - `entry_at`만 입차 전용 필드로 추가한다.
 
 #### `ExitCommand`
 
 - 위치: [dtos.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/domains/parking_record/application/dtos.py)
 - 역할:
   - 출차 처리 입력 DTO
+- 구현 방식:
+  - 입차와 같은 슬롯 식별값을 사용해 현재 활성 세션과 요청 위치가 일치하는지 검증할 수 있게 한다.
+  - `exit_at`만 출차 전용 필드로 추가한다.
 
 #### `ParkingRecordSnapshot`
 
@@ -127,6 +133,7 @@
 - 역할:
   - command API 응답용 write 스냅샷
 - 구현 방식:
+  - `zone_id`, `slot_code`, `slot_id`를 모두 포함해 프론트가 점유 위치를 바로 표시할 수 있게 한다.
   - `to_dict()`에서 datetime을 ISO 8601 문자열로 변환한다.
   - query projection 전용 필드는 포함하지 않는다.
 
@@ -231,6 +238,7 @@
 - 구현 방식:
   - `record_entry()`
     - `CurrentParkingView` upsert
+    - `slot_id`, `zone_id`, `slot_code`를 함께 저장
     - 오래된 입차는 최신 projection을 덮어쓰지 않음
     - `ZoneAvailability` 재계산
   - `record_exit()`
@@ -249,7 +257,8 @@
 - 구현 방식:
   - malformed JSON 차단
   - JSON object만 허용
-  - `vehicle_num`, `slot_id`, `entry_at` 검증
+  - `vehicle_num`, `zone_id`, `slot_code`, `slot_id`, `entry_at` 검증
+  - `slot_code`는 빈 값, 앞뒤 공백, 소문자 입력을 허용하지 않는다.
   - 필드 오류를 모아 `ValidationError`로 반환
 
 #### `parse_exit_command`
@@ -257,6 +266,9 @@
 - 위치: [serializers.py](/Users/kyum/Desktop/Private/autoE/services/parking-command-service/src/parking_command_service/domains/parking_record/presentation/http/serializers.py)
 - 역할:
   - 출차 요청 JSON을 `ExitCommand`로 변환한다.
+- 구현 방식:
+  - 입차와 같은 슬롯 식별 필드를 동일하게 검증한다.
+  - `exit_at`이 주어지면 timezone-aware datetime인지 확인한다.
 
 #### `ParkingEntryView`
 
@@ -300,6 +312,7 @@
 1. 루트 URL이 `parking_record.presentation.http.urls`로 라우팅한다.
 2. `ParkingEntryView.post()`가 요청을 받는다.
 3. `parse_entry_command()`가 JSON과 필드를 검증한다.
+   - `slot_id`와 `zone_id + slot_code`는 이후 service에서 동일 슬롯인지 다시 검증한다.
 4. `get_parking_record_command_service()`가 repository와 projection writer를 조립한다.
 5. `ParkingRecordCommandService.create_entry()`가 트랜잭션 안에서 이력 생성과 점유 전환을 수행한다.
 6. `DjangoParkingProjectionWriter.record_entry()`가 query projection을 갱신한다.
@@ -309,7 +322,7 @@
 
 1. `ParkingExitView.post()`가 요청을 받는다.
 2. `parse_exit_command()`가 요청을 검증한다.
-3. `ParkingRecordCommandService.create_exit()`가 활성 이력을 종료하고 점유를 해제한다.
+3. `ParkingRecordCommandService.create_exit()`가 차량의 활성 이력과 요청 위치가 일치하는지 확인한 뒤 점유를 해제한다.
 4. `DjangoParkingProjectionWriter.record_exit()`가 현재 위치 projection을 제거한다.
 5. 종료된 snapshot이 응답으로 반환된다.
 
