@@ -19,9 +19,7 @@ def parse_entry_command(*, body: bytes) -> EntryCommand:
     errors: dict[str, list[str]] = {}
 
     vehicle_num = _normalize_vehicle_num(payload=payload, errors=errors)
-    zone_id = _require_int(payload=payload, field_name="zone_id", errors=errors)
-    slot_code = _require_string(payload=payload, field_name="slot_code", errors=errors)
-    slot_id = _require_int(payload=payload, field_name="slot_id", errors=errors)
+    zone_id, slot_code, slot_id = _parse_slot_fields(payload=payload, errors=errors)
     entry_at = _parse_optional_datetime(payload=payload, field_name="entry_at", errors=errors)
 
     if errors:
@@ -41,9 +39,7 @@ def parse_exit_command(*, body: bytes) -> ExitCommand:
     errors: dict[str, list[str]] = {}
 
     vehicle_num = _normalize_vehicle_num(payload=payload, errors=errors)
-    zone_id = _require_int(payload=payload, field_name="zone_id", errors=errors)
-    slot_code = _require_string(payload=payload, field_name="slot_code", errors=errors)
-    slot_id = _require_int(payload=payload, field_name="slot_id", errors=errors)
+    zone_id, slot_code, slot_id = _parse_slot_fields(payload=payload, errors=errors)
     exit_at = _parse_optional_datetime(payload=payload, field_name="exit_at", errors=errors)
 
     if errors:
@@ -55,6 +51,18 @@ def parse_exit_command(*, body: bytes) -> ExitCommand:
         slot_code=slot_code,
         slot_id=slot_id,
         exit_at=exit_at,
+    )
+
+
+def _parse_slot_fields(
+    *,
+    payload: dict[str, object],
+    errors: dict[str, list[str]],
+) -> tuple[int, str, int]:
+    return (
+        _require_int(payload=payload, field_name="zone_id", errors=errors),
+        _require_string(payload=payload, field_name="slot_code", errors=errors),
+        _require_int(payload=payload, field_name="slot_id", errors=errors),
     )
 
 

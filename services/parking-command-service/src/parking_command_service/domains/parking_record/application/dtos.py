@@ -5,20 +5,20 @@ from datetime import datetime
 
 
 @dataclass(frozen=True)
-class EntryCommand:
+class SlotCommand:
     vehicle_num: str
     zone_id: int
     slot_code: str
     slot_id: int
+
+
+@dataclass(frozen=True)
+class EntryCommand(SlotCommand):
     entry_at: datetime | None
 
 
 @dataclass(frozen=True)
-class ExitCommand:
-    vehicle_num: str
-    zone_id: int
-    slot_code: str
-    slot_id: int
+class ExitCommand(SlotCommand):
     exit_at: datetime | None
 
 
