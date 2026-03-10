@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 import threading
+import time
 from datetime import timedelta
 from pathlib import Path
 
@@ -326,12 +327,13 @@ class ParkingRecordConcurrencyAcceptanceTests(TransactionTestCase):
         create_empty_occupancy(slot=slot)
         create_vehicle(vehicle_num="69가3455")
         create_vehicle(vehicle_num="70가1234")
-        barrier = threading.Barrier(2)
         responses: list[int] = []
+        first_request_started = threading.Event()
 
-        def send_entry(vehicle_num: str) -> None:
+        def send_entry(vehicle_num: str, *, mark_started: bool = False) -> None:
             client = Client()
-            barrier.wait()
+            if mark_started:
+                first_request_started.set()
             response = post_entry(
                 client,
                 vehicle_num=vehicle_num,
@@ -342,9 +344,11 @@ class ParkingRecordConcurrencyAcceptanceTests(TransactionTestCase):
             responses.append(response.status_code)
 
         # When
-        first = threading.Thread(target=send_entry, args=("69가3455",))
-        second = threading.Thread(target=send_entry, args=("70가1234",))
+        first = threading.Thread(target=send_entry, args=("69가3455",), kwargs={"mark_started": True})
         first.start()
+        first_request_started.wait(timeout=1)
+        time.sleep(0.01)
+        second = threading.Thread(target=send_entry, args=("70가1234",))
         second.start()
         first.join()
         second.join()
