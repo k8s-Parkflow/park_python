@@ -61,7 +61,7 @@ def _parse_slot_fields(
 ) -> tuple[int, str, int]:
     return (
         _require_int(payload=payload, field_name="zone_id", errors=errors),
-        _require_string(payload=payload, field_name="slot_code", errors=errors),
+        _require_slot_code(payload=payload, errors=errors),
         _require_int(payload=payload, field_name="slot_id", errors=errors),
     )
 
@@ -114,18 +114,27 @@ def _require_int(
     return value
 
 
-def _require_string(
+def _require_slot_code(
     *,
     payload: dict[str, object],
-    field_name: str,
     errors: dict[str, list[str]],
 ) -> str:
+    field_name = "slot_code"
     value = payload.get(field_name)
     if value is None:
         errors[field_name] = ["필수 입력값입니다."]
         return ""
     if not isinstance(value, str):
         errors[field_name] = ["문자열이어야 합니다."]
+        return ""
+    if value == "":
+        errors[field_name] = ["비어 있을 수 없습니다."]
+        return ""
+    if value.strip() != value:
+        errors[field_name] = ["앞뒤 공백 없이 입력해야 합니다."]
+        return ""
+    if value.upper() != value:
+        errors[field_name] = ["대문자 형식이어야 합니다."]
         return ""
     return value
 

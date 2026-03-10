@@ -193,6 +193,33 @@ class ParkingRecordErrorContractTests(TestCase):
             },
         )
 
+    # slot_code 형식 오류 응답 계약 검증
+    def test_should_preserve_bad_request__when_slot_code_invalid(self) -> None:
+        # Given
+        create_vehicle()
+
+        # When
+        response = post_entry(
+            self.client,
+            vehicle_num="69가3455",
+            zone_id=1,
+            slot_code="a001",
+            slot_id=1,
+        )
+
+        # Then
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "error": {
+                    "code": "bad_request",
+                    "message": "잘못된 요청입니다.",
+                    "details": {"slot_code": ["대문자 형식이어야 합니다."]},
+                }
+            },
+        )
+
     # 잘못된 요청 응답 계약 검증
     def test_should_preserve_bad_request__when_schema_invalid(self) -> None:
         # Given
