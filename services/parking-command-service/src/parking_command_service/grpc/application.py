@@ -63,7 +63,9 @@ class ParkingCommandGrpcApplicationService:
         if history is None:
             raise ParkingRecordNotFoundError("존재하지 않는 주차 이력입니다.")
 
-        occupancy = self.parking_record_repository.get_or_create_occupancy_for_update(slot=history.slot)
+        occupancy = self.parking_record_repository.get_or_create_occupancy_for_update(
+            lock_anchor=history.slot
+        )
         compensated_at = history.exit_at or timezone.now()
 
         if history.exit_at is None:
@@ -110,7 +112,9 @@ class ParkingCommandGrpcApplicationService:
         if history is None:
             raise ParkingRecordNotFoundError("존재하지 않는 주차 이력입니다.")
 
-        occupancy = self.parking_record_repository.get_or_create_occupancy_for_update(slot=history.slot)
+        occupancy = self.parking_record_repository.get_or_create_occupancy_for_update(
+            lock_anchor=history.slot
+        )
         compensated_at = timezone.now()
         restored = False
 

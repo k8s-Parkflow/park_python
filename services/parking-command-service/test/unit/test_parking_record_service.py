@@ -102,6 +102,9 @@ class ParkingRecordEntryServiceUnitTests(ParkingRecordServiceTestSupport):
             zone_id=slot.zone_id,
             slot_code=slot.slot_code,
         )
+        parking_record_repository.get_or_create_occupancy_for_update.assert_called_once_with(
+            lock_anchor=slot
+        )
         parking_record_repository.save_history.assert_called_once()
         parking_record_repository.save_occupancy.assert_called_once()
 
@@ -166,6 +169,9 @@ class ParkingRecordEntryServiceUnitTests(ParkingRecordServiceTestSupport):
         self.assertEqual(snapshot.history_id, 101)
         self.assertTrue(occupancy.occupied)
         parking_record_repository.get_lock_anchor_by_identity_for_update.assert_not_called()
+        parking_record_repository.get_or_create_occupancy_for_update.assert_called_once_with(
+            lock_anchor=slot
+        )
 
     # trusted gRPC 입차는 로컬 slot metadata 대신 command metadata snapshot을 사용
     def test_should_use_command_slot_metadata__when_trusted_entry_slot_differs_locally(self) -> None:
@@ -208,6 +214,9 @@ class ParkingRecordEntryServiceUnitTests(ParkingRecordServiceTestSupport):
         self.assertEqual(saved_history.slot_code, "A001")
         self.assertTrue(occupancy.occupied)
         parking_record_repository.get_lock_anchor_by_identity_for_update.assert_not_called()
+        parking_record_repository.get_or_create_occupancy_for_update.assert_called_once_with(
+            lock_anchor=slot
+        )
 
     # 조회 차량 번호 정규화 검증
     def test_should_normalize_vehicle_num__when_entry_queries_active_history(self) -> None:
@@ -296,6 +305,9 @@ class ParkingRecordExitServiceUnitTests(ParkingRecordServiceTestSupport):
         self.assertEqual(snapshot.exit_at, exit_at)
         self.assertFalse(occupancy.occupied)
         self.assertIsNone(occupancy.vehicle_num)
+        parking_record_repository.get_or_create_occupancy_for_update.assert_called_once_with(
+            lock_anchor=slot
+        )
         parking_record_repository.save_history.assert_called_once()
         parking_record_repository.save_occupancy.assert_called_once()
 

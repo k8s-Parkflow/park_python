@@ -48,7 +48,7 @@ class ParkingCommandGrpcApplicationUnitTests(TestCase):
         self.assertEqual(command.slot_code, "A001")
         self.assertEqual(command.slot_type, "GENERAL")
         command_service.create_entry.assert_not_called()
-        repository.get_slot.assert_not_called()
+        repository.get_lock_anchor_for_update.assert_not_called()
 
     def test_should_return_existing_compensation_result__when_entry_is_already_released(self) -> None:
         """[UT-PC-GRPC-02] compensate-entry 멱등 처리"""

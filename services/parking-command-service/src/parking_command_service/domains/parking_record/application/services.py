@@ -28,7 +28,7 @@ from parking_command_service.global_shared.utils.vehicle_nums import normalize_v
 class ParkingRecordRepository(Protocol):
     def get_lock_anchor_for_update(self, *, slot_id: int): ...
     def get_lock_anchor_by_identity_for_update(self, *, zone_id: int, slot_code: str): ...
-    def get_or_create_occupancy_for_update(self, *, slot): ...
+    def get_or_create_occupancy_for_update(self, *, lock_anchor): ...
     def has_active_history_for_vehicle(self, *, vehicle_num: str) -> bool: ...
     def get_active_history_for_vehicle_for_update(self, *, vehicle_num: str): ...
     def save_history(self, *, history: ParkingHistory) -> ParkingHistory: ...
@@ -92,14 +92,16 @@ class ParkingRecordCommandService:
         if not self.vehicle_repository.exists(vehicle_num=vehicle_num):
             raise ParkingRecordNotFoundError("존재하지 않는 차량입니다.")
 
-        # 슬롯과 점유 행을 같은 트랜잭션 안에서 잠가 이중 입차를 줄이는 흐름
-        slot = self._resolve_lock_anchor(
+        # lock anchor와 점유 행을 같은 트랜잭션 안에서 잠가 이중 입차를 줄인다.
+        lock_anchor = self._resolve_lock_anchor(
             command=command,
             trust_zone_metadata=trust_zone_metadata,
         )
 
-        occupancy = self.parking_record_repository.get_or_create_occupancy_for_update(slot=slot)
-        if not trust_zone_metadata and not slot.is_active:
+        occupancy = self.parking_record_repository.get_or_create_occupancy_for_update(
+            lock_anchor=lock_anchor
+        )
+        if not trust_zone_metadata and not lock_anchor.is_active:
             raise ParkingRecordConflictError("비활성화된 슬롯입니다.")
         if occupancy.occupied:
             raise ParkingRecordConflictError("이미 점유 중인 슬롯입니다.")
@@ -107,11 +109,11 @@ class ParkingRecordCommandService:
             raise ParkingRecordConflictError("이미 활성 주차 세션이 존재합니다.")
 
         history = ParkingHistory.start(
-            slot=slot,
+            slot=lock_anchor,
             vehicle_num=vehicle_num,
             entry_at=command.entry_at or timezone.now(),
             zone_id=command.zone_id,
-            slot_type_id=_resolve_slot_type_id(command=command, slot=slot),
+            slot_type_id=_resolve_slot_type_id(command=command, lock_anchor=lock_anchor),
             slot_code=command.slot_code,
         )
 
@@ -144,7 +146,9 @@ class ParkingRecordCommandService:
 
         self._validate_exit_request(history=history, command=command)
 
-        occupancy = self.parking_record_repository.get_or_create_occupancy_for_update(slot=history.slot)
+        occupancy = self.parking_record_repository.get_or_create_occupancy_for_update(
+            lock_anchor=history.slot
+        )
         exit_at = command.exit_at or timezone.now()
         history.exit(exited_at=exit_at)
         self.parking_record_repository.save_history(history=history)
@@ -222,11 +226,11 @@ def _history_slot_code(history) -> str:
     return history.slot.slot_code
 
 
-def _resolve_slot_type_id(*, command: EntryCommand, slot) -> int:
+def _resolve_slot_type_id(*, command: EntryCommand, lock_anchor) -> int:
     if command.slot_type is None:
-        return slot.slot_type_id
+        return lock_anchor.slot_type_id
     return {
         "GENERAL": 1,
         "EV": 2,
         "DISABLED": 3,
-    }.get(command.slot_type, slot.slot_type_id)
+    }.get(command.slot_type, lock_anchor.slot_type_id)

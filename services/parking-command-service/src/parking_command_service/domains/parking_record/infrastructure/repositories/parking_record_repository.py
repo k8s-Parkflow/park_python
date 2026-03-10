@@ -26,9 +26,9 @@ class DjangoParkingRecordRepository:
             .first()
         )
 
-    def get_or_create_occupancy_for_update(self, *, slot: ParkingSlot) -> SlotOccupancy:
-        SlotOccupancy.objects.get_or_create(slot=slot)
-        return SlotOccupancy.objects.select_for_update().get(slot=slot)
+    def get_or_create_occupancy_for_update(self, *, lock_anchor: ParkingSlot) -> SlotOccupancy:
+        SlotOccupancy.objects.get_or_create(slot=lock_anchor)
+        return SlotOccupancy.objects.select_for_update().get(slot=lock_anchor)
 
     def has_active_history_for_vehicle(self, *, vehicle_num: str) -> bool:
         return ParkingHistory.objects.select_for_update().filter(
