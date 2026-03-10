@@ -13,7 +13,6 @@ class ParkingSlot(models.Model):
     slot_id = models.BigAutoField(primary_key=True)
     # Mirrored operational metadata. These fields are not the source of truth.
     zone_id = models.BigIntegerField()
-    slot_type_id = models.BigIntegerField()
     # Human-readable slot label mirrored from zone metadata.
     slot_code = models.CharField(max_length=50, db_column="slot_name")
     is_active = models.BooleanField(default=True)

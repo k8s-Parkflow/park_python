@@ -73,7 +73,7 @@ class ParkingRecordRepositoryTests(TestCase):
             ParkingHistory.objects.create(
                 slot=second_slot,
                 zone_id=second_slot.zone_id,
-                slot_type_id=second_slot.slot_type_id,
+                slot_type_id=1,
                 slot_code=second_slot.slot_code,
                 vehicle_num=vehicle.vehicle_num,
                 status=ParkingHistoryStatus.PARKED,
@@ -94,7 +94,7 @@ class ParkingRecordRepositoryTests(TestCase):
             ParkingHistory.objects.create(
                 slot=slot,
                 zone_id=slot.zone_id,
-                slot_type_id=slot.slot_type_id,
+                slot_type_id=1,
                 slot_code=slot.slot_code,
                 vehicle_num=second_vehicle.vehicle_num,
                 status=ParkingHistoryStatus.PARKED,
@@ -146,23 +146,18 @@ class ParkingRecordRepositoryTests(TestCase):
                 occupied_at=entry_at,
             )
 
-    # 슬롯 식별 조회 일관성 검증
-    def test_should_load_same_slot__when_slot_id_and_identity_match(self) -> None:
+    # 슬롯 id 조회 일관성 검증
+    def test_should_load_same_slot__when_slot_id_matches(self) -> None:
         # Given
         slot = create_slot(zone_id=1, slot_code="A001")
         repository = DjangoParkingRecordRepository()
 
         # When
         slot_by_id = repository.get_lock_anchor_for_update(slot_id=slot.slot_id)
-        slot_by_identity = repository.get_lock_anchor_by_identity_for_update(
-            zone_id=slot.zone_id,
-            slot_code=slot.slot_code,
-        )
 
         # Then
         self.assertIsNotNone(slot_by_id)
-        self.assertIsNotNone(slot_by_identity)
-        self.assertEqual(slot_by_id.slot_id, slot_by_identity.slot_id)
+        self.assertEqual(slot_by_id.slot_id, slot.slot_id)
 
     # trusted gRPC 입차는 로컬 inactive lock anchor에서도 실행 가능 검증
     def test_should_allow_trusted_entry__when_slot_inactive_locally(self) -> None:

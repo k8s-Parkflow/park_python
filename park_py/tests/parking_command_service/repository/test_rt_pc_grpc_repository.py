@@ -16,7 +16,6 @@ class ParkingCommandGrpcRepositoryTests(TestCase):
         slot = ParkingSlot.objects.create(
             slot_id=11,
             zone_id=9,
-            slot_type_id=2,
             slot_code="B999",
             is_active=True,
         )
@@ -44,23 +43,21 @@ class ParkingCommandGrpcRepositoryTests(TestCase):
         slot = ParkingSlot.objects.create(
             slot_id=10,
             zone_id=1,
-            slot_type_id=1,
             slot_code="A001",
             is_active=True,
         )
         history = ParkingHistory.objects.create(
             slot=slot,
             zone_id=slot.zone_id,
-            slot_type_id=slot.slot_type_id,
+            slot_type_id=1,
             slot_code=slot.slot_code,
             vehicle_num="98다7654",
             entry_at=timezone.now(),
         )
 
         slot.zone_id = 3
-        slot.slot_type_id = 2
         slot.slot_code = "B999"
-        slot.save(update_fields=["zone_id", "slot_type_id", "slot_code"])
+        slot.save(update_fields=["zone_id", "slot_code"])
 
         loaded = DjangoParkingRecordRepository().get_active_history_for_vehicle(
             vehicle_num="98다7654"
@@ -70,25 +67,6 @@ class ParkingCommandGrpcRepositoryTests(TestCase):
         self.assertEqual(loaded.slot_type_id, 1)
         self.assertEqual(loaded.slot_code, "A001")
 
-    def test_should_return_slot_by_identity_for_update__when_zone_metadata_matches(self) -> None:
-        """[RT-PC-GRPC-03] zone metadata 기반 slot identity 조회"""
-
-        slot = ParkingSlot.objects.create(
-            slot_id=9,
-            zone_id=2,
-            slot_type_id=1,
-            slot_code="C101",
-            is_active=True,
-        )
-
-        loaded = DjangoParkingRecordRepository().get_lock_anchor_by_identity_for_update(
-            zone_id=2,
-            slot_code="C101",
-        )
-
-        self.assertEqual(loaded.slot_id, slot.slot_id)
-        self.assertEqual(loaded.zone_id, 2)
-
     def test_should_return_history_for_update_with_slot__when_history_exists(self) -> None:
         """[RT-PC-GRPC-01] compensation용 이력 조회"""
 
@@ -96,14 +74,13 @@ class ParkingCommandGrpcRepositoryTests(TestCase):
         slot = ParkingSlot.objects.create(
             slot_id=7,
             zone_id=1,
-            slot_type_id=1,
             slot_code="A001",
             is_active=True,
         )
         history = ParkingHistory.objects.create(
             slot=slot,
             zone_id=slot.zone_id,
-            slot_type_id=slot.slot_type_id,
+            slot_type_id=1,
             slot_code=slot.slot_code,
             vehicle_num="12가3456",
             entry_at=timezone.now(),
@@ -123,14 +100,13 @@ class ParkingCommandGrpcRepositoryTests(TestCase):
         slot = ParkingSlot.objects.create(
             slot_id=8,
             zone_id=1,
-            slot_type_id=1,
             slot_code="A002",
             is_active=True,
         )
         ParkingHistory.objects.create(
             slot=slot,
             zone_id=slot.zone_id,
-            slot_type_id=slot.slot_type_id,
+            slot_type_id=1,
             slot_code=slot.slot_code,
             vehicle_num="34나5678",
             entry_at=timezone.now(),

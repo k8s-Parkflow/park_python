@@ -56,7 +56,6 @@ def create_slot(
     slot_type = create_slot_type(slot_type_id=slot_type_id, type_name=resolved_slot_type_name)
     lock_anchor = ParkingSlot.objects.create(
         zone_id=zone_id,
-        slot_type_id=slot_type_id,
         slot_code=slot_code,
         is_active=is_active,
     )
@@ -95,11 +94,17 @@ def create_active_history(
     slot: ParkingSlot,
     vehicle_num: str,
     entry_at,
+    slot_type_id: int | None = None,
 ) -> ParkingHistory:
+    resolved_slot_type_id = slot_type_id
+    if resolved_slot_type_id is None:
+        resolved_slot_type_id = (
+            ZoneParkingSlot.objects.only("slot_type_id").get(slot_id=slot.slot_id).slot_type_id
+        )
     return ParkingHistory.objects.create(
         slot=slot,
         zone_id=slot.zone_id,
-        slot_type_id=slot.slot_type_id,
+        slot_type_id=resolved_slot_type_id,
         slot_code=slot.slot_code,
         vehicle_num=vehicle_num,
         status=ParkingHistoryStatus.PARKED,

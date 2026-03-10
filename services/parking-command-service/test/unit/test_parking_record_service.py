@@ -34,7 +34,7 @@ if str(TEST_ROOT) not in sys.path:
 class ParkingRecordServiceTestSupport(TestCase):
     # 입차 서비스 의존성 조립 유틸리티
     def make_entry_deps(self) -> tuple[ParkingSlot, SlotOccupancy, Mock, Mock, Mock]:
-        slot = ParkingSlot(slot_id=1, zone_id=1, slot_type_id=1, slot_code="A001", is_active=True)
+        slot = ParkingSlot(slot_id=1, zone_id=1, slot_code="A001", is_active=True)
         occupancy = SlotOccupancy(slot=slot)
         parking_record_repository = Mock()
         vehicle_repository = Mock()
@@ -54,7 +54,6 @@ class ParkingRecordServiceTestSupport(TestCase):
             "slot_code": slot.slot_code,
         }
         parking_record_repository.get_lock_anchor_for_update.return_value = slot
-        parking_record_repository.get_lock_anchor_by_identity_for_update.return_value = slot
         parking_record_repository.get_or_create_occupancy_for_update.return_value = occupancy
         parking_record_repository.has_active_history_for_vehicle.return_value = False
         parking_record_repository.save_occupancy.side_effect = lambda *, occupancy: occupancy
@@ -115,7 +114,6 @@ class ParkingRecordEntryServiceUnitTests(ParkingRecordServiceTestSupport):
         self.assertEqual(snapshot.entry_at, entry_at)
         self.assertIsNone(snapshot.exit_at)
         self.assertTrue(occupancy.occupied)
-        parking_record_repository.get_lock_anchor_by_identity_for_update.assert_not_called()
         zone_policy_gateway.validate_entry_policy.assert_called_once_with(
             slot_id=slot.slot_id,
             vehicle_type="GENERAL",
@@ -190,7 +188,6 @@ class ParkingRecordEntryServiceUnitTests(ParkingRecordServiceTestSupport):
         # Then
         self.assertEqual(snapshot.history_id, 101)
         self.assertTrue(occupancy.occupied)
-        parking_record_repository.get_lock_anchor_by_identity_for_update.assert_not_called()
         parking_record_repository.get_or_create_occupancy_for_update.assert_called_once_with(
             lock_anchor=slot
         )
@@ -201,7 +198,6 @@ class ParkingRecordEntryServiceUnitTests(ParkingRecordServiceTestSupport):
         entry_at = timezone.now()
         slot, occupancy, parking_record_repository, vehicle_repository, zone_policy_gateway = self.make_entry_deps()
         slot.zone_id = 9
-        slot.slot_type_id = 2
         slot.slot_code = "B999"
         slot.is_active = False
 
@@ -236,7 +232,6 @@ class ParkingRecordEntryServiceUnitTests(ParkingRecordServiceTestSupport):
         self.assertEqual(saved_history.slot_type_id, 1)
         self.assertEqual(saved_history.slot_code, "A001")
         self.assertTrue(occupancy.occupied)
-        parking_record_repository.get_lock_anchor_by_identity_for_update.assert_not_called()
         parking_record_repository.get_or_create_occupancy_for_update.assert_called_once_with(
             lock_anchor=slot
         )
@@ -298,12 +293,12 @@ class ParkingRecordEntryServiceUnitTests(ParkingRecordServiceTestSupport):
             vehicle_num="69가3455"
         )
 
-    # strict HTTP 입차는 lock anchor slot_type보다 zone policy slot_type snapshot을 우선한다
-    def test_should_use_zone_policy_slot_type__when_strict_entry_slot_type_differs_locally(self) -> None:
+    # strict HTTP 입차는 zone policy slot_type snapshot을 기준으로 저장한다
+    def test_should_use_zone_policy_slot_type__when_strict_entry_runs(self) -> None:
         # Given
         entry_at = timezone.now()
         slot, occupancy, parking_record_repository, vehicle_repository, zone_policy_gateway = self.make_entry_deps()
-        slot.slot_type_id = 2
+        zone_policy_gateway.validate_entry_policy.return_value["slot_type"] = "EV"
         service = self.make_service(
             parking_record_repository=parking_record_repository,
             vehicle_repository=vehicle_repository,
@@ -330,7 +325,7 @@ class ParkingRecordEntryServiceUnitTests(ParkingRecordServiceTestSupport):
         # Then
         self.assertEqual(snapshot.history_id, 101)
         saved_history = parking_record_repository.save_history.call_args.kwargs["history"]
-        self.assertEqual(saved_history.slot_type_id, 1)
+        self.assertEqual(saved_history.slot_type_id, 2)
         self.assertTrue(occupancy.occupied)
 
     # strict HTTP 입차는 로컬 inactive lock anchor보다 zone policy 결과를 우선한다
@@ -374,12 +369,12 @@ class ParkingRecordExitServiceUnitTests(ParkingRecordServiceTestSupport):
         # Given
         entry_at = timezone.now()
         exit_at = timezone.now()
-        slot = ParkingSlot(slot_id=1, zone_id=1, slot_type_id=1, slot_code="A001", is_active=True)
+        slot = ParkingSlot(slot_id=1, zone_id=1, slot_code="A001", is_active=True)
         history = ParkingHistory(
             history_id=101,
             slot=slot,
             zone_id=slot.zone_id,
-            slot_type_id=slot.slot_type_id,
+            slot_type_id=1,
             slot_code=slot.slot_code,
             vehicle_num="69가3455",
             status=ParkingHistoryStatus.PARKED,
@@ -396,7 +391,6 @@ class ParkingRecordExitServiceUnitTests(ParkingRecordServiceTestSupport):
         vehicle_repository = Mock()
         parking_record_repository.get_active_history_for_vehicle_for_update.return_value = history
         parking_record_repository.get_lock_anchor_for_update.return_value = slot
-        parking_record_repository.get_lock_anchor_by_identity_for_update.return_value = slot
         parking_record_repository.get_or_create_occupancy_for_update.return_value = occupancy
         parking_record_repository.save_history.side_effect = lambda *, history: history
         parking_record_repository.save_occupancy.side_effect = lambda *, occupancy: occupancy
@@ -434,12 +428,12 @@ class ParkingRecordExitServiceUnitTests(ParkingRecordServiceTestSupport):
     def test_should_raise_conflict__when_exit_location_differs(self) -> None:
         # Given
         entry_at = timezone.now()
-        slot = ParkingSlot(slot_id=1, zone_id=1, slot_type_id=1, slot_code="A001", is_active=True)
+        slot = ParkingSlot(slot_id=1, zone_id=1, slot_code="A001", is_active=True)
         history = ParkingHistory(
             history_id=101,
             slot=slot,
             zone_id=slot.zone_id,
-            slot_type_id=slot.slot_type_id,
+            slot_type_id=1,
             slot_code=slot.slot_code,
             vehicle_num="69가3455",
             status=ParkingHistoryStatus.PARKED,
@@ -451,11 +445,9 @@ class ParkingRecordExitServiceUnitTests(ParkingRecordServiceTestSupport):
         parking_record_repository.get_lock_anchor_for_update.return_value = ParkingSlot(
             slot_id=2,
             zone_id=1,
-            slot_type_id=1,
             slot_code="A002",
             is_active=True,
         )
-        parking_record_repository.get_lock_anchor_by_identity_for_update.return_value = parking_record_repository.get_lock_anchor_for_update.return_value
         service = self.make_service(
             parking_record_repository=parking_record_repository,
             vehicle_repository=vehicle_repository,
@@ -478,12 +470,12 @@ class ParkingRecordExitServiceUnitTests(ParkingRecordServiceTestSupport):
         # Given
         entry_at = timezone.now()
         exit_at = timezone.now()
-        slot = ParkingSlot(slot_id=1, zone_id=1, slot_type_id=1, slot_code="A001", is_active=True)
+        slot = ParkingSlot(slot_id=1, zone_id=1, slot_code="A001", is_active=True)
         history = ParkingHistory(
             history_id=101,
             slot=slot,
             zone_id=slot.zone_id,
-            slot_type_id=slot.slot_type_id,
+            slot_type_id=1,
             slot_code=slot.slot_code,
             vehicle_num="69가3455",
             status=ParkingHistoryStatus.PARKED,
@@ -500,7 +492,6 @@ class ParkingRecordExitServiceUnitTests(ParkingRecordServiceTestSupport):
         vehicle_repository = Mock()
         parking_record_repository.get_active_history_for_vehicle_for_update.return_value = history
         parking_record_repository.get_lock_anchor_for_update.return_value = slot
-        parking_record_repository.get_lock_anchor_by_identity_for_update.return_value = slot
         parking_record_repository.get_or_create_occupancy_for_update.return_value = occupancy
         parking_record_repository.save_history.side_effect = lambda *, history: history
         parking_record_repository.save_occupancy.side_effect = lambda *, occupancy: occupancy
@@ -604,12 +595,12 @@ class ParkingRecordProjectionServiceUnitTests(ParkingRecordServiceTestSupport):
         # Given
         entry_at = timezone.now()
         exit_at = timezone.now()
-        slot = ParkingSlot(slot_id=1, zone_id=1, slot_type_id=1, slot_code="A001", is_active=True)
+        slot = ParkingSlot(slot_id=1, zone_id=1, slot_code="A001", is_active=True)
         history = ParkingHistory(
             history_id=101,
             slot=slot,
             zone_id=slot.zone_id,
-            slot_type_id=slot.slot_type_id,
+            slot_type_id=1,
             slot_code=slot.slot_code,
             vehicle_num="69가3455",
             status=ParkingHistoryStatus.PARKED,
@@ -627,7 +618,6 @@ class ParkingRecordProjectionServiceUnitTests(ParkingRecordServiceTestSupport):
         projection_writer = Mock()
         parking_record_repository.get_active_history_for_vehicle_for_update.return_value = history
         parking_record_repository.get_lock_anchor_for_update.return_value = slot
-        parking_record_repository.get_lock_anchor_by_identity_for_update.return_value = slot
         parking_record_repository.get_or_create_occupancy_for_update.return_value = occupancy
         parking_record_repository.save_history.side_effect = lambda *, history: history
         parking_record_repository.save_occupancy.side_effect = lambda *, occupancy: occupancy
