@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.utils.dateparse import parse_datetime
 
 from park_py.error_handling import ApplicationError, ErrorCode
@@ -21,21 +21,29 @@ def get_current_parking(*, vehicle_num: str) -> dict:
     }
 
 
-def _find_cached_response(*, operation_id: str, action: str) -> dict | None:
-    record = ParkingQueryOperation.objects.filter(
-        operation_id=operation_id,
-        action=action,
-    ).first()
-    if record is None:
-        return None
-    return record.response_payload
-
-
-def _create_operation_record(*, operation_id: str, action: str) -> ParkingQueryOperation:
-    return ParkingQueryOperation.objects.create(
-        operation_id=operation_id,
-        action=action,
-    )
+def _claim_operation_record(*, operation_id: str, action: str) -> tuple[ParkingQueryOperation, dict | None]:
+    try:
+        with transaction.atomic():
+            return ParkingQueryOperation.objects.create(
+                operation_id=operation_id,
+                action=action,
+            ), None
+    except IntegrityError:
+        record = ParkingQueryOperation.objects.select_for_update().get(
+            operation_id=operation_id,
+            action=action,
+        )
+        if record.response_payload is None:
+            raise ApplicationError(
+                code=ErrorCode.CONFLICT,
+                status=409,
+                details={
+                    "error_code": "operation_in_progress",
+                    "operation_id": operation_id,
+                    "action": action,
+                },
+            )
+        return record, record.response_payload
 
 
 def _complete_operation_record(*, record: ParkingQueryOperation, response_payload: dict) -> None:
@@ -53,11 +61,13 @@ def project_entry(
     entry_at: str,
 ) -> dict:
     with transaction.atomic():
-        cached_response = _find_cached_response(operation_id=operation_id, action="PROJECT_ENTRY")
+        record, cached_response = _claim_operation_record(
+            operation_id=operation_id,
+            action="PROJECT_ENTRY",
+        )
         if cached_response is not None:
             return cached_response
 
-        record = _create_operation_record(operation_id=operation_id, action="PROJECT_ENTRY")
         availability = ZoneAvailability.objects.get(zone_id=zone_id, slot_type=slot_type)
         try:
             CurrentParkingView.objects.update_or_create(
@@ -83,11 +93,13 @@ def project_entry(
 
 def revert_entry(*, operation_id: str, vehicle_num: str) -> dict:
     with transaction.atomic():
-        cached_response = _find_cached_response(operation_id=operation_id, action="REVERT_ENTRY")
+        record, cached_response = _claim_operation_record(
+            operation_id=operation_id,
+            action="REVERT_ENTRY",
+        )
         if cached_response is not None:
             return cached_response
 
-        record = _create_operation_record(operation_id=operation_id, action="REVERT_ENTRY")
         try:
             projection = CurrentParkingView.objects.filter(vehicle_num=vehicle_num).first()
             if projection is None:
@@ -113,11 +125,13 @@ def revert_entry(*, operation_id: str, vehicle_num: str) -> dict:
 
 def project_exit(*, operation_id: str, vehicle_num: str) -> dict:
     with transaction.atomic():
-        cached_response = _find_cached_response(operation_id=operation_id, action="PROJECT_EXIT")
+        record, cached_response = _claim_operation_record(
+            operation_id=operation_id,
+            action="PROJECT_EXIT",
+        )
         if cached_response is not None:
             return cached_response
 
-        record = _create_operation_record(operation_id=operation_id, action="PROJECT_EXIT")
         try:
             projection = CurrentParkingView.objects.get(vehicle_num=vehicle_num)
             availability = ZoneAvailability.objects.get(
@@ -157,11 +171,13 @@ def restore_exit(
     entry_at: str,
 ) -> dict:
     with transaction.atomic():
-        cached_response = _find_cached_response(operation_id=operation_id, action="RESTORE_EXIT")
+        record, cached_response = _claim_operation_record(
+            operation_id=operation_id,
+            action="RESTORE_EXIT",
+        )
         if cached_response is not None:
             return cached_response
 
-        record = _create_operation_record(operation_id=operation_id, action="RESTORE_EXIT")
         try:
             CurrentParkingView.objects.update_or_create(
                 vehicle_num=vehicle_num,

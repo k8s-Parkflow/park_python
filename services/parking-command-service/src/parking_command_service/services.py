@@ -1,7 +1,9 @@
 from __future__ import annotations
 
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.utils.dateparse import parse_datetime
+
+from park_py.error_handling import ApplicationError, ErrorCode
 
 from parking_command_service.models import ParkingCommandOperation
 from parking_command_service.models import ParkingHistory
@@ -10,21 +12,29 @@ from parking_command_service.models import ParkingSlot
 from parking_command_service.models import SlotOccupancy
 
 
-def _find_cached_response(*, operation_id: str, action: str) -> dict | None:
-    record = ParkingCommandOperation.objects.filter(
-        operation_id=operation_id,
-        action=action,
-    ).first()
-    if record is None:
-        return None
-    return record.response_payload
-
-
-def _create_operation_record(*, operation_id: str, action: str) -> ParkingCommandOperation:
-    return ParkingCommandOperation.objects.create(
-        operation_id=operation_id,
-        action=action,
-    )
+def _claim_operation_record(*, operation_id: str, action: str) -> tuple[ParkingCommandOperation, dict | None]:
+    try:
+        with transaction.atomic():
+            return ParkingCommandOperation.objects.create(
+                operation_id=operation_id,
+                action=action,
+            ), None
+    except IntegrityError:
+        record = ParkingCommandOperation.objects.select_for_update().get(
+            operation_id=operation_id,
+            action=action,
+        )
+        if record.response_payload is None:
+            raise ApplicationError(
+                code=ErrorCode.CONFLICT,
+                status=409,
+                details={
+                    "error_code": "operation_in_progress",
+                    "operation_id": operation_id,
+                    "action": action,
+                },
+            )
+        return record, record.response_payload
 
 
 def _complete_operation_record(*, record: ParkingCommandOperation, response_payload: dict) -> None:
@@ -34,11 +44,13 @@ def _complete_operation_record(*, record: ParkingCommandOperation, response_payl
 
 def enter_parking(*, operation_id: str, vehicle_num: str, slot_id: int, requested_at: str) -> dict:
     with transaction.atomic():
-        cached_response = _find_cached_response(operation_id=operation_id, action="CREATE_ENTRY")
+        record, cached_response = _claim_operation_record(
+            operation_id=operation_id,
+            action="CREATE_ENTRY",
+        )
         if cached_response is not None:
             return cached_response
 
-        record = _create_operation_record(operation_id=operation_id, action="CREATE_ENTRY")
         slot = ParkingSlot.objects.get(slot_id=slot_id)
         occupancy, _ = SlotOccupancy.objects.get_or_create(slot=slot)
         try:
@@ -67,11 +79,13 @@ def enter_parking(*, operation_id: str, vehicle_num: str, slot_id: int, requeste
 
 def cancel_entry(*, operation_id: str, history_id: int) -> dict:
     with transaction.atomic():
-        cached_response = _find_cached_response(operation_id=operation_id, action="CANCEL_ENTRY")
+        record, cached_response = _claim_operation_record(
+            operation_id=operation_id,
+            action="CANCEL_ENTRY",
+        )
         if cached_response is not None:
             return cached_response
 
-        record = _create_operation_record(operation_id=operation_id, action="CANCEL_ENTRY")
         try:
             history = ParkingHistory.objects.filter(history_id=history_id).select_related("slot").first()
             if history is None:
@@ -97,11 +111,13 @@ def cancel_entry(*, operation_id: str, history_id: int) -> dict:
 
 def exit_parking(*, operation_id: str, vehicle_num: str, requested_at: str) -> dict:
     with transaction.atomic():
-        cached_response = _find_cached_response(operation_id=operation_id, action="CREATE_EXIT")
+        record, cached_response = _claim_operation_record(
+            operation_id=operation_id,
+            action="CREATE_EXIT",
+        )
         if cached_response is not None:
             return cached_response
 
-        record = _create_operation_record(operation_id=operation_id, action="CREATE_EXIT")
         try:
             history = ParkingHistory.objects.get(vehicle_num=vehicle_num, exit_at__isnull=True)
             occupancy = SlotOccupancy.objects.get(slot=history.slot)
@@ -126,11 +142,13 @@ def exit_parking(*, operation_id: str, vehicle_num: str, requested_at: str) -> d
 
 def restore_exit(*, operation_id: str, history_id: int) -> dict:
     with transaction.atomic():
-        cached_response = _find_cached_response(operation_id=operation_id, action="RESTORE_EXIT")
+        record, cached_response = _claim_operation_record(
+            operation_id=operation_id,
+            action="RESTORE_EXIT",
+        )
         if cached_response is not None:
             return cached_response
 
-        record = _create_operation_record(operation_id=operation_id, action="RESTORE_EXIT")
         try:
             history = ParkingHistory.objects.get(history_id=history_id)
             occupancy, _ = SlotOccupancy.objects.get_or_create(slot=history.slot)

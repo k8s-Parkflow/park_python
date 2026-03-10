@@ -1,7 +1,7 @@
 import json
 from json import JSONDecodeError
-from http import HTTPStatus
 
+from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
@@ -17,23 +17,18 @@ from parking_command_service.services import restore_exit
 
 def _payload(request) -> dict:
     try:
-        return json.loads(request.body.decode("utf-8"))
+        payload = json.loads(request.body or b"{}")
     except JSONDecodeError as exc:
-        raise ApplicationError(
-            code=ErrorCode.BAD_REQUEST,
-            status=HTTPStatus.BAD_REQUEST,
-            message="JSON 형식이 올바르지 않습니다.",
-        ) from exc
+        raise ValidationError({"body": ["JSON 본문 형식이 올바르지 않습니다."]}) from exc
+    if not isinstance(payload, dict):
+        raise ValidationError({"body": ["JSON 객체만 허용됩니다."]})
+    return payload
 
 
 def _require_fields(payload: dict, *required_fields: str) -> None:
-    missing_fields = [field for field in required_fields if field not in payload]
-    if missing_fields:
-        raise ApplicationError(
-            code=ErrorCode.BAD_REQUEST,
-            status=HTTPStatus.BAD_REQUEST,
-            details={"missing_fields": missing_fields},
-        )
+    errors = {field: ["필수 입력값입니다."] for field in required_fields if field not in payload}
+    if errors:
+        raise ValidationError(errors)
 
 
 @csrf_exempt

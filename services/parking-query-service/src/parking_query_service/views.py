@@ -1,6 +1,5 @@
 import json
 from json import JSONDecodeError
-from http import HTTPStatus
 
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest
@@ -38,23 +37,18 @@ from parking_query_service.services.zone_availability_service import (
 
 def _payload(request) -> dict:
     try:
-        return json.loads(request.body.decode("utf-8"))
+        payload = json.loads(request.body or b"{}")
     except JSONDecodeError as exc:
-        raise ApplicationError(
-            code=ErrorCode.BAD_REQUEST,
-            status=HTTPStatus.BAD_REQUEST,
-            message="JSON 형식이 올바르지 않습니다.",
-        ) from exc
+        raise ValidationError({"body": ["JSON 본문 형식이 올바르지 않습니다."]}) from exc
+    if not isinstance(payload, dict):
+        raise ValidationError({"body": ["JSON 객체만 허용됩니다."]})
+    return payload
 
 
 def _require_fields(payload: dict, *required_fields: str) -> None:
-    missing_fields = [field for field in required_fields if field not in payload]
-    if missing_fields:
-        raise ApplicationError(
-            code=ErrorCode.BAD_REQUEST,
-            status=HTTPStatus.BAD_REQUEST,
-            details={"missing_fields": missing_fields},
-        )
+    errors = {field: ["필수 입력값입니다."] for field in required_fields if field not in payload}
+    if errors:
+        raise ValidationError(errors)
 
 
 def get_current_location(_request: HttpRequest, vehicle_num: str) -> JsonResponse:
