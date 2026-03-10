@@ -1,13 +1,15 @@
-from parking_command_service.models.enums import ParkingHistoryStatus
 from parking_command_service.models.operation_record import ParkingCommandOperation
-from parking_command_service.models.parking_history import ParkingHistory
-from parking_command_service.models.parking_slot import ParkingSlot
-from parking_command_service.models.slot_occupancy import SlotOccupancy
+from parking_command_service.domains.parking_record.domain import (
+    ParkingHistory,
+    ParkingHistoryStatus,
+    ParkingSlot,
+    SlotOccupancy,
+)
 
 __all__ = [
-    "ParkingHistoryStatus",
     "ParkingCommandOperation",
     "ParkingHistory",
+    "ParkingHistoryStatus",
     "ParkingSlot",
     "SlotOccupancy",
 ]

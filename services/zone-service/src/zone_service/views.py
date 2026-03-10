@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_GET
 
 from park_py.error_handling import ApplicationError, ErrorCode
-from parking_command_service.models.parking_slot import ParkingSlot
+from parking_command_service.models import ParkingSlot
 from zone_service.models.slot_type import SlotType
 from zone_service.models.zone import Zone
 
@@ -21,8 +21,7 @@ def get_entry_policy(_request, slot_id: int) -> JsonResponse:
             "slot_id": slot.slot_id,
             "zone_id": zone.zone_id,
             "slot_type": slot_type.type_name,
-            "zone_active": zone.is_active,
-            "entry_allowed": zone.is_active and slot.is_active,
+            "zone_active": True,
+            "entry_allowed": slot.is_active,
         }
     )
-

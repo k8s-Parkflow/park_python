@@ -4,11 +4,39 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# test files
+**/test/__init__.py
+**/test/**/__init__.py
+**/tests/init.py
+**/tests/**/init.py
+**/test/TEST_SPEC.md
+**/tests/TEST_SPEC.md
+
 # Coverage artifacts
 /reports/
-
-# Local architecture/design drafts
-/docs/
+/scripts/open_project_coverage.sh
 
 # Ignore markdown files by default
 *.md
+AGENTS.md
+
+# Keep README files anywhere
+!README.md
+!**/README.md
+
+# Keep docs markdown files
+!docs/**/*.md
+/docs/architecture/parking-command-service-implementation.md
+
+# Ignore test documents except README files
+services/*/test/*.md
+services/*/test/*.txt
+services/*/test/*.rst
+services/*/test/**/*.md
+services/*/test/**/*.txt
+services/*/test/**/*.rst
+!services/*/test/README.md
+!services/*/test/**/README.md
+
+# Local-only coverage helpers
+/docs/tdd/coverage-local-guide.md

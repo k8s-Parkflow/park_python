@@ -6,6 +6,7 @@ from urllib.request import Request
 from urllib.request import urlopen
 
 from django.test import LiveServerTestCase, override_settings
+from django.utils.dateparse import parse_datetime
 
 from parking_command_service.models import ParkingHistory
 from parking_command_service.models import ParkingHistoryStatus
@@ -155,7 +156,11 @@ class OrchestrationRealSagaHttpAcceptanceTests(LiveServerTestCase):
             slot_type_id=slot_type.slot_type_id,
             slot_code="C-01",
         )
-        history = ParkingHistory.start(slot=slot, vehicle_num="56다7890")
+        history = ParkingHistory.start(
+            slot=slot,
+            vehicle_num="56다7890",
+            entry_at=parse_datetime("2026-03-10T10:00:00+09:00"),
+        )
         history.save()
         SlotOccupancy.objects.create(
             slot=slot,
