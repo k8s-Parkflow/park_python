@@ -15,13 +15,18 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
 
 from park_py.error_handling import handler404 as json_handler404
 from park_py.error_handling import handler500 as json_handler500
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path("", include("orchestration_service.urls")),
+    path("", include("vehicle_service.urls")),
+    path("", include("zone_service.urls")),
+    path("", include("parking_command_service.urls")),
+    path("", include("parking_query_service.urls")),
 ]
 
 handler404 = json_handler404
