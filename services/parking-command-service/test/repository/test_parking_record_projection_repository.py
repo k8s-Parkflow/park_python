@@ -145,3 +145,31 @@ class ParkingRecordProjectionRepositoryTests(TestCase):
         self.assertEqual(current_view.history_id, older_history.history_id + 1)
         self.assertEqual(current_view.slot_id, second_slot.slot_id)
         self.assertEqual(current_view.slot_code, second_slot.slot_code)
+
+    # 비활성 슬롯 제외 가용 집계 검증
+    def test_should_exclude_inactive_slots__when_syncing_availability(self) -> None:
+        # Given
+        vehicle = create_vehicle()
+        active_slot = create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_code="A001")
+        create_slot(
+            zone_id=1,
+            slot_type_id=1,
+            slot_type_name="GENERAL",
+            slot_code="A099",
+            is_active=False,
+        )
+        history, _occupancy = create_occupied_session(
+            slot=active_slot,
+            vehicle_num=vehicle.vehicle_num,
+            entry_at=timezone.now(),
+        )
+        projection_writer = DjangoParkingProjectionWriter()
+
+        # When
+        projection_writer.record_entry(history=history)
+
+        # Then
+        zone_availability = ZoneAvailability.objects.get(zone_id=1, slot_type="GENERAL")
+        self.assertEqual(zone_availability.total_count, 1)
+        self.assertEqual(zone_availability.occupied_count, 1)
+        self.assertEqual(zone_availability.available_count, 0)

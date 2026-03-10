@@ -65,10 +65,12 @@ class DjangoParkingProjectionWriter:
         total_count = ParkingSlot.objects.filter(
             zone_id=slot.zone_id,
             slot_type_id=slot.slot_type_id,
+            is_active=True,
         ).count()
         occupied_count = SlotOccupancy.objects.filter(
             slot__zone_id=slot.zone_id,
             slot__slot_type_id=slot.slot_type_id,
+            slot__is_active=True,
             occupied=True,
         ).count()
 
