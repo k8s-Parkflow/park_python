@@ -37,7 +37,7 @@ class ParkingHistoryDomainTests(SimpleTestCase):
         self.assertEqual(history.entry_at, entry_at)
 
     # 출차 시각 역전 거부 검증
-    def test_should_reject_exit_before_entry__when_exit_called(self) -> None:
+    def test_should_reject_exit__when_earlier_than_entry(self) -> None:
         # Given
         slot = ParkingSlot(slot_id=1, zone_id=1, slot_type_id=1, slot_code="A001", is_active=True)
         entry_at = timezone.now()
@@ -51,7 +51,7 @@ class ParkingHistoryDomainTests(SimpleTestCase):
 # 슬롯 점유 도메인 단위 테스트 클래스
 class SlotOccupancyDomainTests(SimpleTestCase):
     # 점유 및 해제 상태 전이 검증
-    def test_should_set_and_clear_occupancy_fields__when_occupy_and_release_called(self) -> None:
+    def test_should_update_occupancy__when_occupied_and_released(self) -> None:
         # Given
         slot = ParkingSlot(slot_id=1, zone_id=1, slot_type_id=1, slot_code="A001", is_active=True)
         entry_at = timezone.now()

@@ -27,7 +27,7 @@ from support.factories import (  # noqa: E402
 # projection 저장소 테스트 클래스
 class ParkingRecordProjectionRepositoryTests(TestCase):
     # 입차 projection 생성 및 가용 현황 동기화 검증
-    def test_should_create_current_view_and_zone_availability__when_entry_recorded(self) -> None:
+    def test_should_record_entry_projection__when_entry_saved(self) -> None:
         # Given
         vehicle = create_vehicle()
         target_slot = create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_code="A001")
@@ -53,7 +53,7 @@ class ParkingRecordProjectionRepositoryTests(TestCase):
         self.assertEqual(zone_availability.available_count, 1)
 
     # 출차 projection 제거 및 가용 현황 재계산 검증
-    def test_should_delete_current_view_and_refresh_zone_availability__when_exit_recorded(self) -> None:
+    def test_should_record_exit_projection__when_exit_saved(self) -> None:
         # Given
         vehicle = create_vehicle()
         target_slot = create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_code="A001")
@@ -81,7 +81,7 @@ class ParkingRecordProjectionRepositoryTests(TestCase):
         self.assertEqual(zone_availability.available_count, 2)
 
     # 최신 projection 유지 회귀 검증
-    def test_should_keep_newer_projection__when_older_history_recorded_late(self) -> None:
+    def test_should_keep_newer_projection__when_older_history_arrives_late(self) -> None:
         # Given
         vehicle = create_vehicle()
         older_slot = create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_code="A001")

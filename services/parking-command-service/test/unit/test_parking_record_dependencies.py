@@ -25,7 +25,7 @@ if str(TEST_ROOT) not in sys.path:
 # 의존성 조립 단위 테스트 클래스
 class ParkingRecordDependenciesUnitTests(SimpleTestCase):
     # command 서비스 기본 조립 검증
-    def test_should_build_command_service_with_django_repositories(self) -> None:
+    def test_should_build_service__when_default_requested(self) -> None:
         # Given / When
         service = get_parking_record_command_service()
 
