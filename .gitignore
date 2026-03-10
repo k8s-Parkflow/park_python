@@ -16,6 +16,9 @@ __pycache__/
 /reports/
 /scripts/open_project_coverage.sh
 
+# Local docs
+/docs/
+
 # Ignore markdown files by default
 *.md
 
