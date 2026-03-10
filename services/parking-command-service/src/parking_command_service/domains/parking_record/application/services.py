@@ -26,8 +26,8 @@ from parking_command_service.global_shared.utils.vehicle_nums import normalize_v
 
 
 class ParkingRecordRepository(Protocol):
-    def get_slot_for_update(self, *, slot_id: int): ...
-    def get_slot_by_identity_for_update(self, *, zone_id: int, slot_code: str): ...
+    def get_lock_anchor_for_update(self, *, slot_id: int): ...
+    def get_lock_anchor_by_identity_for_update(self, *, zone_id: int, slot_code: str): ...
     def get_or_create_occupancy_for_update(self, *, slot): ...
     def has_active_history_for_vehicle(self, *, vehicle_num: str) -> bool: ...
     def get_active_history_for_vehicle_for_update(self, *, vehicle_num: str): ...
@@ -93,7 +93,7 @@ class ParkingRecordCommandService:
             raise ParkingRecordNotFoundError("존재하지 않는 차량입니다.")
 
         # 슬롯과 점유 행을 같은 트랜잭션 안에서 잠가 이중 입차를 줄이는 흐름
-        slot = self._get_command_slot(
+        slot = self._resolve_lock_anchor(
             command=command,
             trust_zone_metadata=trust_zone_metadata,
         )
@@ -157,26 +157,26 @@ class ParkingRecordCommandService:
 
         return _build_snapshot(history=history)
 
-    def _get_command_slot(
+    def _resolve_lock_anchor(
         self,
         *,
         command: SlotCommand,
         trust_zone_metadata: bool,
     ):
-        slot_by_id = self.parking_record_repository.get_slot_for_update(slot_id=command.slot_id)
-        if slot_by_id is None:
+        anchor_by_id = self.parking_record_repository.get_lock_anchor_for_update(slot_id=command.slot_id)
+        if anchor_by_id is None:
             raise ParkingRecordNotFoundError("존재하지 않는 슬롯입니다.")
         if trust_zone_metadata:
-            return slot_by_id
-        slot_by_identity = self.parking_record_repository.get_slot_by_identity_for_update(
+            return anchor_by_id
+        anchor_by_identity = self.parking_record_repository.get_lock_anchor_by_identity_for_update(
             zone_id=command.zone_id,
             slot_code=command.slot_code,
         )
-        if slot_by_identity is None:
+        if anchor_by_identity is None:
             raise ParkingRecordBadRequestError("슬롯 식별자가 서로 일치하지 않습니다.")
-        if slot_by_id.slot_id != slot_by_identity.slot_id:
+        if anchor_by_id.slot_id != anchor_by_identity.slot_id:
             raise ParkingRecordBadRequestError("슬롯 식별자가 서로 일치하지 않습니다.")
-        return slot_by_id
+        return anchor_by_id
 
     def _validate_exit_request(self, *, history: ParkingHistory, command: ExitCommand) -> None:
         if command.slot_id != history.slot_id:

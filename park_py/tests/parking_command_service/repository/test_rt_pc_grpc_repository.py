@@ -78,7 +78,7 @@ class ParkingCommandGrpcRepositoryTests(TestCase):
             is_active=True,
         )
 
-        loaded = DjangoParkingRecordRepository().get_slot_by_identity_for_update(
+        loaded = DjangoParkingRecordRepository().get_lock_anchor_by_identity_for_update(
             zone_id=2,
             slot_code="C101",
         )

@@ -146,8 +146,8 @@ class ParkingRecordRepositoryTests(TestCase):
         repository = DjangoParkingRecordRepository()
 
         # When
-        slot_by_id = repository.get_slot_for_update(slot_id=slot.slot_id)
-        slot_by_identity = repository.get_slot_by_identity_for_update(
+        slot_by_id = repository.get_lock_anchor_for_update(slot_id=slot.slot_id)
+        slot_by_identity = repository.get_lock_anchor_by_identity_for_update(
             zone_id=slot.zone_id,
             slot_code=slot.slot_code,
         )

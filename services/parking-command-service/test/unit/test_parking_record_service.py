@@ -39,8 +39,8 @@ class ParkingRecordServiceTestSupport(TestCase):
         parking_record_repository = Mock()
         vehicle_repository = Mock()
         vehicle_repository.exists.return_value = True
-        parking_record_repository.get_slot_for_update.return_value = slot
-        parking_record_repository.get_slot_by_identity_for_update.return_value = slot
+        parking_record_repository.get_lock_anchor_for_update.return_value = slot
+        parking_record_repository.get_lock_anchor_by_identity_for_update.return_value = slot
         parking_record_repository.get_or_create_occupancy_for_update.return_value = occupancy
         parking_record_repository.has_active_history_for_vehicle.return_value = False
         parking_record_repository.save_occupancy.side_effect = lambda *, occupancy: occupancy
@@ -98,7 +98,7 @@ class ParkingRecordEntryServiceUnitTests(ParkingRecordServiceTestSupport):
         self.assertEqual(snapshot.entry_at, entry_at)
         self.assertIsNone(snapshot.exit_at)
         self.assertTrue(occupancy.occupied)
-        parking_record_repository.get_slot_by_identity_for_update.assert_called_once_with(
+        parking_record_repository.get_lock_anchor_by_identity_for_update.assert_called_once_with(
             zone_id=slot.zone_id,
             slot_code=slot.slot_code,
         )
@@ -109,7 +109,7 @@ class ParkingRecordEntryServiceUnitTests(ParkingRecordServiceTestSupport):
     def test_should_reject_entry__when_slot_identifiers_mismatch(self) -> None:
         # Given
         slot, _occupancy, parking_record_repository, vehicle_repository = self.make_entry_deps()
-        parking_record_repository.get_slot_by_identity_for_update.return_value = ParkingSlot(
+        parking_record_repository.get_lock_anchor_by_identity_for_update.return_value = ParkingSlot(
             slot_id=2,
             zone_id=2,
             slot_type_id=1,
@@ -165,7 +165,7 @@ class ParkingRecordEntryServiceUnitTests(ParkingRecordServiceTestSupport):
         # Then
         self.assertEqual(snapshot.history_id, 101)
         self.assertTrue(occupancy.occupied)
-        parking_record_repository.get_slot_by_identity_for_update.assert_not_called()
+        parking_record_repository.get_lock_anchor_by_identity_for_update.assert_not_called()
 
     # trusted gRPC 입차는 로컬 slot metadata 대신 command metadata snapshot을 사용
     def test_should_use_command_slot_metadata__when_trusted_entry_slot_differs_locally(self) -> None:
@@ -207,7 +207,7 @@ class ParkingRecordEntryServiceUnitTests(ParkingRecordServiceTestSupport):
         self.assertEqual(saved_history.slot_type_id, 1)
         self.assertEqual(saved_history.slot_code, "A001")
         self.assertTrue(occupancy.occupied)
-        parking_record_repository.get_slot_by_identity_for_update.assert_not_called()
+        parking_record_repository.get_lock_anchor_by_identity_for_update.assert_not_called()
 
     # 조회 차량 번호 정규화 검증
     def test_should_normalize_vehicle_num__when_entry_queries_active_history(self) -> None:
@@ -267,8 +267,8 @@ class ParkingRecordExitServiceUnitTests(ParkingRecordServiceTestSupport):
         parking_record_repository = Mock()
         vehicle_repository = Mock()
         parking_record_repository.get_active_history_for_vehicle_for_update.return_value = history
-        parking_record_repository.get_slot_for_update.return_value = slot
-        parking_record_repository.get_slot_by_identity_for_update.return_value = slot
+        parking_record_repository.get_lock_anchor_for_update.return_value = slot
+        parking_record_repository.get_lock_anchor_by_identity_for_update.return_value = slot
         parking_record_repository.get_or_create_occupancy_for_update.return_value = occupancy
         parking_record_repository.save_history.side_effect = lambda *, history: history
         parking_record_repository.save_occupancy.side_effect = lambda *, occupancy: occupancy
@@ -314,14 +314,14 @@ class ParkingRecordExitServiceUnitTests(ParkingRecordServiceTestSupport):
         parking_record_repository = Mock()
         vehicle_repository = Mock()
         parking_record_repository.get_active_history_for_vehicle_for_update.return_value = history
-        parking_record_repository.get_slot_for_update.return_value = ParkingSlot(
+        parking_record_repository.get_lock_anchor_for_update.return_value = ParkingSlot(
             slot_id=2,
             zone_id=1,
             slot_type_id=1,
             slot_code="A002",
             is_active=True,
         )
-        parking_record_repository.get_slot_by_identity_for_update.return_value = parking_record_repository.get_slot_for_update.return_value
+        parking_record_repository.get_lock_anchor_by_identity_for_update.return_value = parking_record_repository.get_lock_anchor_for_update.return_value
         service = self.make_service(
             parking_record_repository=parking_record_repository,
             vehicle_repository=vehicle_repository,
@@ -362,8 +362,8 @@ class ParkingRecordExitServiceUnitTests(ParkingRecordServiceTestSupport):
         parking_record_repository = Mock()
         vehicle_repository = Mock()
         parking_record_repository.get_active_history_for_vehicle_for_update.return_value = history
-        parking_record_repository.get_slot_for_update.return_value = slot
-        parking_record_repository.get_slot_by_identity_for_update.return_value = slot
+        parking_record_repository.get_lock_anchor_for_update.return_value = slot
+        parking_record_repository.get_lock_anchor_by_identity_for_update.return_value = slot
         parking_record_repository.get_or_create_occupancy_for_update.return_value = occupancy
         parking_record_repository.save_history.side_effect = lambda *, history: history
         parking_record_repository.save_occupancy.side_effect = lambda *, occupancy: occupancy
@@ -484,8 +484,8 @@ class ParkingRecordProjectionServiceUnitTests(ParkingRecordServiceTestSupport):
         vehicle_repository = Mock()
         projection_writer = Mock()
         parking_record_repository.get_active_history_for_vehicle_for_update.return_value = history
-        parking_record_repository.get_slot_for_update.return_value = slot
-        parking_record_repository.get_slot_by_identity_for_update.return_value = slot
+        parking_record_repository.get_lock_anchor_for_update.return_value = slot
+        parking_record_repository.get_lock_anchor_by_identity_for_update.return_value = slot
         parking_record_repository.get_or_create_occupancy_for_update.return_value = occupancy
         parking_record_repository.save_history.side_effect = lambda *, history: history
         parking_record_repository.save_occupancy.side_effect = lambda *, occupancy: occupancy
