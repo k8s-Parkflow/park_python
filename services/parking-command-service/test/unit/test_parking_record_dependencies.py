@@ -5,13 +5,13 @@ from pathlib import Path
 
 from django.test import SimpleTestCase
 
+from parking_command_service.clients.grpc.vehicle import VehicleGrpcClient
 from parking_command_service.domains.parking_record.application.services import (
     ParkingRecordCommandService,
 )
 from parking_command_service.domains.parking_record.infrastructure.repositories import (
     DjangoParkingRecordRepository,
     DjangoParkingProjectionWriter,
-    DjangoVehicleRepository,
 )
 from parking_command_service.global_shared.application.dependencies import (
     get_parking_record_command_service,
@@ -33,4 +33,4 @@ class ParkingRecordDependenciesUnitTests(SimpleTestCase):
         self.assertIsInstance(service, ParkingRecordCommandService)
         self.assertIsInstance(service.parking_record_repository, DjangoParkingRecordRepository)
         self.assertIsInstance(service.projection_writer, DjangoParkingProjectionWriter)
-        self.assertIsInstance(service.vehicle_repository, DjangoVehicleRepository)
+        self.assertIsInstance(service.vehicle_repository, VehicleGrpcClient)

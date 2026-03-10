@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Any
 
 from django.db import transaction
 from django.utils import timezone
 
+from parking_command_service.clients.grpc.vehicle import VehicleGrpcClient
 from parking_command_service.domains.parking_record.application.dtos import EntryCommand, ExitCommand
 from parking_command_service.domains.parking_record.application.exceptions import (
     ParkingRecordConflictError,
@@ -15,7 +17,6 @@ from parking_command_service.domains.parking_record.application.services import 
 )
 from parking_command_service.domains.parking_record.infrastructure.repositories import (
     DjangoParkingRecordRepository,
-    DjangoVehicleRepository,
 )
 
 
@@ -24,13 +25,14 @@ class ParkingCommandGrpcApplicationService:
         self,
         *,
         parking_record_repository: DjangoParkingRecordRepository | None = None,
+        vehicle_repository: Any | None = None,
         command_service: ParkingRecordCommandService | None = None,
     ) -> None:
         repository = parking_record_repository or DjangoParkingRecordRepository()
         self.parking_record_repository = repository
         self.command_service = command_service or ParkingRecordCommandService(
             parking_record_repository=repository,
-            vehicle_repository=DjangoVehicleRepository(),
+            vehicle_repository=vehicle_repository or VehicleGrpcClient(),
             projection_writer=None,
         )
 

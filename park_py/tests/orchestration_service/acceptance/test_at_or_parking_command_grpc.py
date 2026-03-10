@@ -7,6 +7,8 @@ from django.test import TransactionTestCase, override_settings
 from orchestration_service.clients.grpc.parking_command import ParkingCommandGrpcClient
 from orchestration_service.clients.grpc.vehicle import VehicleGrpcClient
 from orchestration_service.clients.grpc.zone import ZoneGrpcClient
+from parking_command_service.clients.grpc.vehicle import VehicleGrpcClient as ParkingCommandVehicleGrpcClient
+from parking_command_service.grpc.application import ParkingCommandGrpcApplicationService
 from parking_command_service.models import ParkingHistory, ParkingSlot, SlotOccupancy
 from parking_command_service.grpc.servicers import ParkingCommandGrpcServicer
 from park_py.tests.grpc_support import build_direct_stub
@@ -51,9 +53,16 @@ class OrchestrationParkingCommandGrpcAcceptanceTests(TransactionTestCase):
                 method_names=["ValidateEntryPolicy", "GetZone"],
             )
         )
+        parking_command_vehicle_lookup = ParkingCommandVehicleGrpcClient(
+            stub=build_direct_stub(servicer=VehicleGrpcServicer(), method_names=["GetVehicle"])
+        )
         parking_command_gateway = ParkingCommandGrpcClient(
             stub=build_direct_stub(
-                servicer=ParkingCommandGrpcServicer(),
+                servicer=ParkingCommandGrpcServicer(
+                    application_service=ParkingCommandGrpcApplicationService(
+                        vehicle_repository=parking_command_vehicle_lookup,
+                    )
+                ),
                 method_names=["CreateEntry", "CompensateEntry"],
             )
         )

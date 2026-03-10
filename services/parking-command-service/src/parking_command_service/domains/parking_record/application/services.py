@@ -6,6 +6,7 @@ from typing import Protocol
 from django.db import DatabaseError, IntegrityError, transaction
 from django.utils import timezone
 
+from parking_command_service.clients.grpc.vehicle import VehicleGrpcClient
 from parking_command_service.domains.parking_record.application.dtos import (
     EntryCommand,
     ExitCommand,
@@ -20,7 +21,6 @@ from parking_command_service.domains.parking_record.application.exceptions impor
 from parking_command_service.domains.parking_record.domain import ParkingHistory, SlotOccupancy
 from parking_command_service.domains.parking_record.infrastructure.repositories import (
     DjangoParkingRecordRepository,
-    DjangoVehicleRepository,
 )
 from parking_command_service.global_shared.utils.vehicle_nums import normalize_vehicle_num
 
@@ -53,7 +53,7 @@ class ParkingRecordCommandService:
         projection_writer: ParkingProjectionWriter | None = None,
     ) -> None:
         self.parking_record_repository = parking_record_repository or DjangoParkingRecordRepository()
-        self.vehicle_repository = vehicle_repository or DjangoVehicleRepository()
+        self.vehicle_repository = vehicle_repository or VehicleGrpcClient()
         self.projection_writer = projection_writer
 
     def create_entry(self, *, command: EntryCommand) -> ParkingRecordSnapshot:
