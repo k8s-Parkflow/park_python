@@ -53,16 +53,10 @@ class ExitSagaOrchestrationService:
 
         try:
             projection = self.parking_query_client.get_current_parking(vehicle_num=vehicle_num)
-            command_result = self.parking_command_client.create_exit(
-                operation_id=operation_id,
-                vehicle_num=vehicle_num,
-                requested_at=requested_at,
-            )
         except ApplicationError as exc:
-            failed_step = "PARKING_COMMAND_EXIT" if exc.details and exc.details.get("dependency") == "parking-command-service" else "VALIDATE_ACTIVE_PARKING"
             self.operation_repository.mark_failed(
                 operation_id=operation_id,
-                failed_step=failed_step,
+                failed_step="VALIDATE_ACTIVE_PARKING",
                 error_payload=build_error_payload(
                     code=exc.code,
                     message=exc.message,
@@ -74,7 +68,34 @@ class ExitSagaOrchestrationService:
         except DownstreamHttpError as exc:
             self.operation_repository.mark_failed(
                 operation_id=operation_id,
-                failed_step="PARKING_COMMAND_EXIT" if exc.dependency == "parking-command-service" else "VALIDATE_ACTIVE_PARKING",
+                failed_step="VALIDATE_ACTIVE_PARKING",
+                error_payload=exc.payload,
+                error_status=exc.status_code,
+            )
+            raise_application_error_from_downstream(exc)
+
+        try:
+            command_result = self.parking_command_client.create_exit(
+                operation_id=operation_id,
+                vehicle_num=vehicle_num,
+                requested_at=requested_at,
+            )
+        except ApplicationError as exc:
+            self.operation_repository.mark_failed(
+                operation_id=operation_id,
+                failed_step="PARKING_COMMAND_EXIT",
+                error_payload=build_error_payload(
+                    code=exc.code,
+                    message=exc.message,
+                    details=exc.details,
+                ),
+                error_status=exc.status,
+            )
+            raise
+        except DownstreamHttpError as exc:
+            self.operation_repository.mark_failed(
+                operation_id=operation_id,
+                failed_step="PARKING_COMMAND_EXIT",
                 error_payload=exc.payload,
                 error_status=exc.status_code,
             )

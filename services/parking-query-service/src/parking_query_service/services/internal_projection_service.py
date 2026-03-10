@@ -3,6 +3,8 @@ from __future__ import annotations
 from django.db import transaction
 from django.utils.dateparse import parse_datetime
 
+from park_py.error_handling import ApplicationError, ErrorCode
+
 from parking_query_service.models import CurrentParkingView
 from parking_query_service.models import ParkingQueryOperation
 from parking_query_service.models import ZoneAvailability
@@ -122,6 +124,16 @@ def project_exit(*, operation_id: str, vehicle_num: str) -> dict:
                 zone_id=projection.zone_id,
                 slot_type=projection.slot_type,
             )
+            if availability.occupied_count <= 0:
+                raise ApplicationError(
+                    code=ErrorCode.CONFLICT,
+                    status=409,
+                    details={
+                        "error_code": "projection_count_underflow",
+                        "zone_id": projection.zone_id,
+                        "slot_type": projection.slot_type,
+                    },
+                )
             projection.delete()
             availability.occupied_count -= 1
             availability.available_count += 1

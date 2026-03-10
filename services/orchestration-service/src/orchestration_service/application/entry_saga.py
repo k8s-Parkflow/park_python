@@ -104,12 +104,21 @@ class EntrySagaOrchestrationService:
                 requested_at=requested_at,
             )
         except ApplicationError:
-            command_result = self.parking_command_client.create_entry(
-                operation_id=operation_id,
-                vehicle_num=vehicle_num,
-                slot_id=slot_id,
-                requested_at=requested_at,
-            )
+            try:
+                command_result = self.parking_command_client.create_entry(
+                    operation_id=operation_id,
+                    vehicle_num=vehicle_num,
+                    slot_id=slot_id,
+                    requested_at=requested_at,
+                )
+            except (ApplicationError, DownstreamHttpError) as exc:
+                self._mark_command_failed(operation_id=operation_id, error=exc)
+                if isinstance(exc, DownstreamHttpError):
+                    raise_application_error_from_downstream(exc)
+                raise
+        except DownstreamHttpError as exc:
+            self._mark_command_failed(operation_id=operation_id, error=exc)
+            raise_application_error_from_downstream(exc)
         self.operation_repository.mark_in_progress(
             operation_id=operation_id,
             current_step="PARKING_COMMAND_ENTRY",
@@ -162,3 +171,29 @@ class EntrySagaOrchestrationService:
             response_payload=response_payload,
         )
         return self.operation_repository.to_response(completed)
+
+    def _mark_command_failed(
+        self,
+        *,
+        operation_id: str,
+        error: ApplicationError | DownstreamHttpError,
+    ) -> None:
+        if isinstance(error, DownstreamHttpError):
+            self.operation_repository.mark_failed(
+                operation_id=operation_id,
+                failed_step="PARKING_COMMAND_ENTRY",
+                error_payload=error.payload,
+                error_status=error.status_code,
+            )
+            return
+
+        self.operation_repository.mark_failed(
+            operation_id=operation_id,
+            failed_step="PARKING_COMMAND_ENTRY",
+            error_payload=build_error_payload(
+                code=error.code,
+                message=error.message,
+                details=error.details,
+            ),
+            error_status=error.status,
+        )

@@ -78,7 +78,11 @@ def cancel_entry(*, operation_id: str, history_id: int) -> dict:
                 response = {"history_id": history_id, "slot_released": True}
             else:
                 occupancy = SlotOccupancy.objects.filter(slot=history.slot).first()
-                if occupancy is not None and occupancy.occupied:
+                if (
+                    occupancy is not None
+                    and occupancy.occupied
+                    and occupancy.history_id == history.history_id
+                ):
                     occupancy.release()
                     occupancy.save()
                 history.delete()
