@@ -17,4 +17,8 @@ class OperationStatusQueryService:
             "slot_id": operation.slot_id,
             "last_error_code": operation.last_error_code,
             "last_error_message": operation.last_error_message,
+            "compensation_attempts": operation.compensation_attempts,
+            "next_retry_at": operation.next_retry_at.isoformat() if operation.next_retry_at else None,
+            "expires_at": operation.expires_at.isoformat() if operation.expires_at else None,
+            "cancelled_at": operation.cancelled_at.isoformat() if operation.cancelled_at else None,
         }

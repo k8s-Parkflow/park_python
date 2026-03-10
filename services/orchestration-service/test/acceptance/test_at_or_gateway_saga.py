@@ -108,6 +108,51 @@ class OrchestrationGatewayAcceptanceTests(TestCase):
             },
         )
 
+    @patch("orchestration_service.views.EntrySagaOrchestrationService")
+    def test_should_return_internal_error_payload__when_entry_compensation_is_cancelled(
+        self,
+        entry_saga_service_class,
+    ) -> None:
+        """[AT-OR-ENTRY-05] 입차 보상 취소 응답"""
+
+        entry_saga_service_class.return_value.execute.return_value = {
+            "operation_id": "entry-op-003",
+            "status": "CANCELLED",
+            "failed_step": "UPDATE_QUERY_ENTRY",
+        }
+
+        # Given
+        payload = {
+            "vehicle_num": "12가3456",
+            "slot_id": 8,
+            "requested_at": "2026-03-10T10:05:00+09:00",
+        }
+
+        # When
+        response = self.client.post(
+            "/api/v1/parking/entries",
+            data=payload,
+            content_type="application/json",
+            HTTP_IDEMPOTENCY_KEY="entry-idempotency-key-003",
+        )
+
+        # Then
+        self.assertEqual(response.status_code, 500)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "error": {
+                    "code": "internal_server_error",
+                    "message": "보상 트랜잭션이 제한 시간 내 완료되지 않아 사가가 취소되었습니다.",
+                    "details": {
+                        "operation_id": "entry-op-003",
+                        "status": "CANCELLED",
+                        "failed_step": "UPDATE_QUERY_ENTRY",
+                    },
+                }
+            },
+        )
+
     @patch("orchestration_service.views.ExitSagaOrchestrationService")
     def test_should_complete_exit_saga_via_gateway__when_dependencies_succeed(
         self,

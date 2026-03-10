@@ -12,6 +12,10 @@ class SagaOperation(models.Model):
     slot_id = models.BigIntegerField(null=True, blank=True)
     last_error_code = models.CharField(max_length=64, null=True, blank=True)
     last_error_message = models.CharField(max_length=255, null=True, blank=True)
+    compensation_attempts = models.IntegerField(default=0)
+    next_retry_at = models.DateTimeField(null=True, blank=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+    cancelled_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

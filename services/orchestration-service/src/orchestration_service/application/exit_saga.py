@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from uuid import uuid4
 
+from orchestration_service.application.compensation import CompensationRunner
 from orchestration_service.application.errors import raise_application_error_from_downstream
 from orchestration_service.clients.http import DownstreamHttpError
 from orchestration_service.clients.parking_command import ParkingCommandServiceClient
@@ -14,6 +15,7 @@ class ExitSagaOrchestrationService:
         self.parking_command_client = ParkingCommandServiceClient(base_url=base_url)
         self.parking_query_client = ParkingQueryServiceClient(base_url=base_url)
         self.operation_repository = SagaOperationRepository()
+        self.compensation_runner = CompensationRunner(repository=self.operation_repository)
 
     def execute(
         self,
@@ -62,24 +64,20 @@ class ExitSagaOrchestrationService:
         try:
             self.parking_query_client.project_exit(vehicle_num=vehicle_num)
         except DownstreamHttpError as exc:
-            self.parking_query_client.restore_exit(
-                vehicle_num=projection["vehicle_num"],
-                slot_id=projection["slot_id"],
-                zone_id=projection["zone_id"],
-                slot_type=projection["slot_type"],
-                entry_at=projection["entry_at"],
-            )
-            self.parking_command_client.restore_exit(history_id=command_result["history_id"])
-            self.operation_repository.mark_compensated(
+            return self.compensation_runner.run(
                 operation_id=operation_id,
                 failed_step="UPDATE_QUERY_EXIT",
-                error_payload=exc.payload,
+                compensations=[
+                    lambda: self.parking_query_client.restore_exit(
+                        vehicle_num=projection["vehicle_num"],
+                        slot_id=projection["slot_id"],
+                        zone_id=projection["zone_id"],
+                        slot_type=projection["slot_type"],
+                        entry_at=projection["entry_at"],
+                    ),
+                    lambda: self.parking_command_client.restore_exit(history_id=command_result["history_id"]),
+                ],
             )
-            return {
-                "operation_id": operation_id,
-                "status": "COMPENSATED",
-                "failed_step": "UPDATE_QUERY_EXIT",
-            }
 
         completed = self.operation_repository.mark_completed(
             operation_id=operation_id,
@@ -95,4 +93,3 @@ class ExitSagaOrchestrationService:
             "slot_id": command_result["slot_id"],
             "exit_at": command_result["exit_at"],
         }
-

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from django.utils import timezone
+
 from orchestration_service.models import SagaOperation
 
 
@@ -92,8 +94,67 @@ class SagaOperationRepository:
         operation.current_step = failed_step
         operation.last_error_code = error_payload.get("error", {}).get("code")
         operation.last_error_message = error_payload.get("error", {}).get("message")
+        operation.next_retry_at = None
         operation.save(
-            update_fields=["status", "current_step", "last_error_code", "last_error_message", "updated_at"]
+            update_fields=["status", "current_step", "last_error_code", "last_error_message", "next_retry_at", "updated_at"]
+        )
+        return operation
+
+    def mark_compensation_retry(
+        self,
+        *,
+        operation_id: str,
+        failed_step: str,
+        error_payload: dict,
+        next_retry_at,
+        expires_at=None,
+    ) -> SagaOperation:
+        operation = self.get(operation_id=operation_id)
+        operation.status = "COMPENSATING"
+        operation.current_step = failed_step
+        operation.last_error_code = error_payload.get("error", {}).get("code")
+        operation.last_error_message = error_payload.get("error", {}).get("message")
+        operation.compensation_attempts += 1
+        operation.next_retry_at = next_retry_at
+        operation.expires_at = expires_at or operation.expires_at
+        operation.save(
+            update_fields=[
+                "status",
+                "current_step",
+                "last_error_code",
+                "last_error_message",
+                "compensation_attempts",
+                "next_retry_at",
+                "expires_at",
+                "updated_at",
+            ]
+        )
+        return operation
+
+    def mark_cancelled(
+        self,
+        *,
+        operation_id: str,
+        failed_step: str,
+        error_payload: dict,
+    ) -> SagaOperation:
+        operation = self.get(operation_id=operation_id)
+        operation.status = "CANCELLED"
+        operation.current_step = failed_step
+        operation.last_error_code = error_payload.get("error", {}).get("code")
+        operation.last_error_message = error_payload.get("error", {}).get("message")
+        operation.next_retry_at = None
+        operation.cancelled_at = timezone.now()
+        operation.save(
+            update_fields=[
+                "status",
+                "current_step",
+                "last_error_code",
+                "last_error_message",
+                "next_retry_at",
+                "cancelled_at",
+                "updated_at",
+            ]
         )
         return operation
 
@@ -112,4 +173,8 @@ class SagaOperationRepository:
             response["last_error_code"] = operation.last_error_code
         if operation.last_error_message is not None:
             response["last_error_message"] = operation.last_error_message
+        if operation.next_retry_at is not None:
+            response["next_retry_at"] = operation.next_retry_at.isoformat()
+        if operation.cancelled_at is not None:
+            response["cancelled_at"] = operation.cancelled_at.isoformat()
         return response

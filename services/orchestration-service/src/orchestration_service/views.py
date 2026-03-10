@@ -35,6 +35,19 @@ def _build_compensated_response(*, message: str, result: dict[str, Any]) -> Json
     )
 
 
+def _build_cancelled_response(*, result: dict[str, Any]) -> JsonResponse:
+    return build_error_response(
+        code=ErrorCode.INTERNAL_SERVER_ERROR,
+        message="보상 트랜잭션이 제한 시간 내 완료되지 않아 사가가 취소되었습니다.",
+        status=HTTPStatus.INTERNAL_SERVER_ERROR,
+        details={
+            "operation_id": result["operation_id"],
+            "status": result["status"],
+            "failed_step": result["failed_step"],
+        },
+    )
+
+
 def _resolve_base_url(request: HttpRequest) -> str:
     return f"{request.scheme}://{request.get_host()}"
 
@@ -55,6 +68,8 @@ def create_parking_entry(request: HttpRequest) -> JsonResponse:
             message="입차 SAGA 처리 중 보상 트랜잭션이 실행되었습니다.",
             result=result,
         )
+    if result["status"] == "CANCELLED":
+        return _build_cancelled_response(result=result)
 
     return JsonResponse(result, status=HTTPStatus.CREATED)
 
@@ -74,6 +89,8 @@ def create_parking_exit(request: HttpRequest) -> JsonResponse:
             message="출차 SAGA 처리 중 보상 트랜잭션이 실행되었습니다.",
             result=result,
         )
+    if result["status"] == "CANCELLED":
+        return _build_cancelled_response(result=result)
 
     return JsonResponse(result, status=HTTPStatus.OK)
 
