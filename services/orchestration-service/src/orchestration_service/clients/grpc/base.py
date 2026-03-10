@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from typing import Callable, TypeVar
 
 import grpc
 
+from contracts.gen.python.common.v1 import common_pb2
 from orchestration_service.application.errors import DownstreamError
 
 
@@ -27,6 +29,13 @@ def map_rpc_error(*, dependency: str, error: grpc.RpcError) -> DownstreamError:
             error_code="validation_error",
             message=details,
             status=400,
+        )
+    if status_code in {grpc.StatusCode.ALREADY_EXISTS, grpc.StatusCode.FAILED_PRECONDITION}:
+        return DownstreamError(
+            dependency=dependency,
+            error_code="conflict",
+            message=details,
+            status=409,
         )
     if status_code == grpc.StatusCode.UNAVAILABLE:
         return DownstreamError(
@@ -81,3 +90,17 @@ class GrpcClientBase:
     def close(self) -> None:
         if self._channel is not None:
             self._channel.close()
+
+
+def build_request_context(
+    *,
+    idempotency_key: str = "",
+    requested_at: str | None = None,
+) -> common_pb2.RequestContext:
+    context = common_pb2.RequestContext(idempotency_key=idempotency_key)
+    if requested_at:
+        requested_datetime = datetime.fromisoformat(requested_at)
+        if requested_datetime.tzinfo is None:
+            requested_datetime = requested_datetime.replace(tzinfo=timezone.utc)
+        context.requested_at.FromDatetime(requested_datetime.astimezone(timezone.utc))
+    return context

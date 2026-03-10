@@ -8,6 +8,9 @@ from parking_command_service.domains.parking_record.domain import (
 
 
 class DjangoParkingRecordRepository:
+    def get_slot(self, *, slot_id: int) -> ParkingSlot | None:
+        return ParkingSlot.objects.filter(slot_id=slot_id).first()
+
     def get_slot_for_update(self, *, slot_id: int) -> ParkingSlot | None:
         return ParkingSlot.objects.select_for_update().filter(slot_id=slot_id).first()
 
@@ -33,6 +36,14 @@ class DjangoParkingRecordRepository:
             ParkingHistory.objects.select_for_update()
             .select_related("slot")
             .filter(vehicle_num=vehicle_num, exit_at__isnull=True)
+            .first()
+        )
+
+    def get_history_for_update(self, *, history_id: int) -> ParkingHistory | None:
+        return (
+            ParkingHistory.objects.select_for_update()
+            .select_related("slot")
+            .filter(history_id=history_id)
             .first()
         )
 

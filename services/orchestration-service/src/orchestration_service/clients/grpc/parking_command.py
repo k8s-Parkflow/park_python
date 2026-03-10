@@ -1,14 +1,108 @@
-class ParkingCommandGrpcClient:
-    def create_entry(self, **_kwargs):
-        raise NotImplementedError
+from __future__ import annotations
+
+import os
+
+import grpc
+
+from contracts.gen.python.parking_command.v1 import (
+    parking_command_pb2,
+    parking_command_pb2_grpc,
+)
+from orchestration_service.clients.grpc.base import (
+    GrpcClientBase,
+    build_request_context,
+)
+
+
+def _timestamp_to_iso_or_none(timestamp) -> str | None:
+    if timestamp.seconds == 0 and timestamp.nanos == 0:
+        return None
+    return timestamp.ToDatetime().isoformat()
+
+
+def _build_entry_payload(response) -> dict:
+    return {
+        "history_id": response.history_id,
+        "slot_id": response.slot_id,
+        "vehicle_num": response.vehicle_num,
+        "entry_at": _timestamp_to_iso_or_none(response.entry_at),
+        "status": response.status,
+    }
+
+
+def _build_compensation_payload(response) -> dict:
+    return {
+        "history_id": response.history_id,
+        "slot_released": response.slot_released,
+        "compensated_at": _timestamp_to_iso_or_none(response.compensated_at),
+    }
+
+
+class ParkingCommandGrpcClient(GrpcClientBase):
+    def __init__(
+        self,
+        *,
+        target: str | None = None,
+        timeout: float = 5.0,
+        channel: grpc.Channel | None = None,
+        stub=None,
+    ) -> None:
+        super().__init__(
+            target=target or os.getenv("PARKING_COMMAND_SERVICE_GRPC_TARGET", "127.0.0.1:50053"),
+            timeout=timeout,
+            channel=channel,
+            stub=stub,
+        )
+
+    def create_entry(
+        self,
+        *,
+        operation_id: str,
+        vehicle_num: str,
+        slot_id: int,
+        requested_at: str,
+    ) -> dict:
+        stub = self.get_stub(parking_command_pb2_grpc.ParkingCommandServiceStub)
+        request = parking_command_pb2.CreateEntryRequest(
+            context=build_request_context(requested_at=requested_at),
+            operation_id=operation_id,
+            vehicle_num=vehicle_num,
+            slot_id=slot_id,
+        )
+        response = self.invoke_unary(
+            dependency="parking-command-service",
+            rpc_call=stub.CreateEntry,
+            request=request,
+        )
+        return _build_entry_payload(response)
+
+    def compensate_entry(
+        self,
+        *,
+        operation_id: str,
+        history_id: int,
+        slot_id: int,
+        vehicle_num: str,
+    ) -> dict:
+        stub = self.get_stub(parking_command_pb2_grpc.ParkingCommandServiceStub)
+        request = parking_command_pb2.CompensateEntryRequest(
+            context=build_request_context(),
+            operation_id=operation_id,
+            history_id=history_id,
+            slot_id=slot_id,
+            vehicle_num=vehicle_num,
+        )
+        response = self.invoke_unary(
+            dependency="parking-command-service",
+            rpc_call=stub.CompensateEntry,
+            request=request,
+        )
+        return _build_compensation_payload(response)
 
     def validate_active_parking(self, **_kwargs):
         raise NotImplementedError
 
     def exit_parking(self, **_kwargs):
-        raise NotImplementedError
-
-    def compensate_entry(self, **_kwargs):
         raise NotImplementedError
 
     def compensate_exit(self, **_kwargs):
