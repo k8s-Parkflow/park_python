@@ -1,4 +1,5 @@
-from django.http import HttpRequest
+from django.core.exceptions import ValidationError
+from django.http import HttpRequest, JsonResponse
 from drf_spectacular.utils import (
     OpenApiParameter,
     OpenApiResponse,
@@ -8,6 +9,8 @@ from drf_spectacular.utils import (
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
+from parking_query_service.dependencies import build_current_location_service
+from parking_query_service.forms import CurrentLocationQueryForm
 from parking_query_service.serializers import (
     ErrorResponseSerializer,
     TotalAvailabilitySerializer,
@@ -16,6 +19,17 @@ from parking_query_service.serializers import (
 from parking_query_service.services.zone_availability_service import (
     ZoneAvailabilityService,
 )
+
+
+def get_current_location(_request: HttpRequest, vehicle_num: str) -> JsonResponse:
+    form = CurrentLocationQueryForm(data={"vehicle_num": vehicle_num})
+    if not form.is_valid():
+        raise ValidationError(form.errors)
+
+    payload = build_current_location_service().get_current_location(
+        form.cleaned_data["vehicle_num"]
+    )
+    return JsonResponse(payload, status=200)
 
 
 # HTTP 요청에서 타입 값을 읽고 JSON HTTP 응답을 반환한다.

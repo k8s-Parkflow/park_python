@@ -16,11 +16,12 @@ Including another URLconf
 """
 from django.conf import settings
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 from park_py.error_handling import handler404 as json_handler404
 from park_py.error_handling import handler500 as json_handler500
+from park_py.openapi import openapi_json_view, swagger_ui_view
 from parking_query_service.views import availability
 
 urlpatterns = []
@@ -32,10 +33,22 @@ urlpatterns.append(
     path("api/zones/availabilities", availability),
 )
 urlpatterns.append(
+    path("", include("parking_query_service.urls")),
+)
+urlpatterns.append(
+    path("", include("parking_command_service.urls")),
+)
+urlpatterns.append(
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
 )
 urlpatterns.append(
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
+)
+urlpatterns.append(
+    path("api/docs/openapi.json", openapi_json_view, name="openapi-json"),
+)
+urlpatterns.append(
+    path("api/docs/swagger", swagger_ui_view, name="command-swagger-ui"),
 )
 
 handler404 = json_handler404

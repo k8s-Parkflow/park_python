@@ -30,6 +30,7 @@ def raise_runtime_error(_request: HttpRequest) -> HttpResponse:
 
 urlpatterns = [
     path("", include("parking_query_service.urls")),
+    path("", include("parking_command_service.urls")),
     path("test-errors/application/", raise_application_error),
     path("test-errors/validation/", raise_validation_error),
     path("test-errors/permission/", raise_permission_denied),
