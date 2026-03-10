@@ -1,0 +1,33 @@
+# Git
+.git
+.gitignore
+
+# Python 관련
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.venv
+env/
+venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Django 관련
+db.sqlite3
+media/
+staticfiles/
+
+# 테스트 및 커버리지
+.coverage
+htmlcov/
+.pytest_cache/
+nosetests.xml
+coverage.xml
+
+# 가상머신 및 OS 관련
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.bak
