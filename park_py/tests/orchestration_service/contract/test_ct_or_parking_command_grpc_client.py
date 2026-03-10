@@ -86,12 +86,16 @@ class OrchestrationParkingCommandGrpcClientContractTests(SimpleTestCase):
             operation_id="entry-op-001",
             vehicle_num="12가3456",
             slot_id=7,
+            zone_id=1,
+            slot_code="A001",
             requested_at="2026-03-10T10:00:00+09:00",
         )
 
         # Then
         self.assertEqual(stub.create_request.operation_id, "entry-op-001")
         self.assertEqual(stub.create_request.slot_id, 7)
+        self.assertEqual(stub.create_request.zone_id, 1)
+        self.assertEqual(stub.create_request.slot_code, "A001")
         self.assertEqual(stub.create_request.vehicle_num, "12가3456")
         self.assertEqual(
             stub.create_request.context.requested_at.ToDatetime().isoformat(),

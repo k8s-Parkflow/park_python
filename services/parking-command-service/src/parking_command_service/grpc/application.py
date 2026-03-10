@@ -41,16 +41,17 @@ class ParkingCommandGrpcApplicationService:
         *,
         vehicle_num: str,
         slot_id: int,
+        zone_id: int,
+        slot_code: str,
         requested_at: datetime | None,
     ):
-        slot = self._get_slot_or_raise(slot_id=slot_id)
         return self.command_service.create_entry(
-            command=EntryCommand(
+            command=self._build_entry_command(
                 vehicle_num=vehicle_num,
-                zone_id=slot.zone_id,
-                slot_code=slot.slot_code,
-                slot_id=slot.slot_id,
-                entry_at=requested_at,
+                zone_id=zone_id,
+                slot_code=slot_code,
+                slot_id=slot_id,
+                requested_at=requested_at,
             )
         )
 
@@ -92,12 +93,12 @@ class ParkingCommandGrpcApplicationService:
     def exit_parking(self, *, vehicle_num: str, requested_at: datetime | None):
         history = self._get_active_history_or_raise(vehicle_num=vehicle_num)
         return self.command_service.create_exit(
-            command=ExitCommand(
+            command=self._build_exit_command(
                 vehicle_num=vehicle_num,
                 zone_id=history.slot.zone_id,
                 slot_code=history.slot.slot_code,
                 slot_id=history.slot_id,
-                exit_at=requested_at,
+                requested_at=requested_at,
             )
         )
 
@@ -129,12 +130,6 @@ class ParkingCommandGrpcApplicationService:
             "compensated_at": compensated_at,
         }
 
-    def _get_slot_or_raise(self, *, slot_id: int):
-        slot = self.parking_record_repository.get_slot(slot_id=slot_id)
-        if slot is None:
-            raise ParkingRecordNotFoundError("존재하지 않는 슬롯입니다.")
-        return slot
-
     def _get_active_history_or_raise(self, *, vehicle_num: str):
         history = self.parking_record_repository.get_active_history_for_vehicle(
             vehicle_num=vehicle_num
@@ -144,6 +139,40 @@ class ParkingCommandGrpcApplicationService:
         if history.slot is None:
             raise ParkingRecordConflictError("활성 주차 이력의 슬롯 정보가 없습니다.")
         return history
+
+    @staticmethod
+    def _build_entry_command(
+        *,
+        vehicle_num: str,
+        zone_id: int,
+        slot_code: str,
+        slot_id: int,
+        requested_at: datetime | None,
+    ) -> EntryCommand:
+        return EntryCommand(
+            vehicle_num=vehicle_num,
+            zone_id=zone_id,
+            slot_code=slot_code,
+            slot_id=slot_id,
+            entry_at=requested_at,
+        )
+
+    @staticmethod
+    def _build_exit_command(
+        *,
+        vehicle_num: str,
+        zone_id: int,
+        slot_code: str,
+        slot_id: int,
+        requested_at: datetime | None,
+    ) -> ExitCommand:
+        return ExitCommand(
+            vehicle_num=vehicle_num,
+            zone_id=zone_id,
+            slot_code=slot_code,
+            slot_id=slot_id,
+            exit_at=requested_at,
+        )
 
 
 def _slot_type_name(*, slot_type_id: int) -> str:

@@ -10,13 +10,11 @@ from parking_command_service.grpc.application import ParkingCommandGrpcApplicati
 
 
 class ParkingCommandGrpcApplicationUnitTests(TestCase):
-    def test_should_build_entry_command_from_slot__when_create_entry_is_called(self) -> None:
-        """[UT-PC-GRPC-01] slot 기반 create-entry command 조립"""
+    def test_should_build_entry_command_from_zone_metadata__when_create_entry_is_called(self) -> None:
+        """[UT-PC-GRPC-01] zone metadata 기반 create-entry command 조립"""
 
         # Given
-        slot = Mock(zone_id=1, slot_code="A001", slot_id=7)
         repository = Mock()
-        repository.get_slot.return_value = slot
         command_service = Mock()
         command_service.create_entry.return_value = ParkingRecordSnapshot(
             history_id=101,
@@ -37,6 +35,8 @@ class ParkingCommandGrpcApplicationUnitTests(TestCase):
         snapshot = service.create_entry(
             vehicle_num="12가3456",
             slot_id=7,
+            zone_id=1,
+            slot_code="A001",
             requested_at=datetime(2026, 3, 10, 1, 0, tzinfo=timezone.utc),
         )
 
@@ -45,6 +45,7 @@ class ParkingCommandGrpcApplicationUnitTests(TestCase):
         command = command_service.create_entry.call_args.kwargs["command"]
         self.assertEqual(command.zone_id, 1)
         self.assertEqual(command.slot_code, "A001")
+        repository.get_slot.assert_not_called()
 
     def test_should_return_existing_compensation_result__when_entry_is_already_released(self) -> None:
         """[UT-PC-GRPC-02] compensate-entry 멱등 처리"""

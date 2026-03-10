@@ -18,6 +18,8 @@ message CreateEntryRequest {
   string operation_id = 2;
   string vehicle_num = 3;
   int64 slot_id = 4;
+  int64 zone_id = 5;
+  string slot_code = 6;
 }
 
 message CreateEntryResponse {

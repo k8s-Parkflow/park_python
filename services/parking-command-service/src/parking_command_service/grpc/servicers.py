@@ -32,6 +32,8 @@ class ParkingCommandGrpcServicer(parking_command_pb2_grpc.ParkingCommandServiceS
             snapshot = self.application_service.create_entry(
                 vehicle_num=request.vehicle_num,
                 slot_id=request.slot_id,
+                zone_id=request.zone_id,
+                slot_code=request.slot_code,
                 requested_at=timestamp_to_datetime(request.context.requested_at),
             )
         except (ParkingRecordNotFoundError, ParkingRecordBadRequestError, ParkingRecordConflictError) as error:

@@ -71,6 +71,25 @@ def _build_exit_compensation_payload(response) -> dict:
     }
 
 
+def _build_create_entry_request(
+    *,
+    operation_id: str,
+    vehicle_num: str,
+    slot_id: int,
+    zone_id: int,
+    slot_code: str,
+    requested_at: str,
+):
+    return parking_command_pb2.CreateEntryRequest(
+        context=build_request_context(requested_at=requested_at),
+        operation_id=operation_id,
+        vehicle_num=vehicle_num,
+        slot_id=slot_id,
+        zone_id=zone_id,
+        slot_code=slot_code,
+    )
+
+
 class ParkingCommandGrpcClient(GrpcClientBase):
     def __init__(
         self,
@@ -93,14 +112,18 @@ class ParkingCommandGrpcClient(GrpcClientBase):
         operation_id: str,
         vehicle_num: str,
         slot_id: int,
+        zone_id: int,
+        slot_code: str,
         requested_at: str,
     ) -> dict:
         stub = self.get_stub(parking_command_pb2_grpc.ParkingCommandServiceStub)
-        request = parking_command_pb2.CreateEntryRequest(
-            context=build_request_context(requested_at=requested_at),
+        request = _build_create_entry_request(
             operation_id=operation_id,
             vehicle_num=vehicle_num,
             slot_id=slot_id,
+            zone_id=zone_id,
+            slot_code=slot_code,
+            requested_at=requested_at,
         )
         response = self.invoke_unary(
             dependency="parking-command-service",

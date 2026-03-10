@@ -34,6 +34,7 @@ class OrchestrationVehicleZoneGrpcAcceptanceTests(TransactionTestCase):
             slot_id=7,
             zone=zone,
             slot_type=slot_type,
+            slot_code="A001",
             is_active=True,
         )
         vehicle_gateway = VehicleGrpcClient(

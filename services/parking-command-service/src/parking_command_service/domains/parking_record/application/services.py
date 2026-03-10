@@ -138,8 +138,10 @@ class ParkingRecordCommandService:
             zone_id=command.zone_id,
             slot_code=command.slot_code,
         )
-        if slot_by_id is None or slot_by_identity is None:
+        if slot_by_id is None:
             raise ParkingRecordNotFoundError("존재하지 않는 슬롯입니다.")
+        if slot_by_identity is None:
+            raise ParkingRecordBadRequestError("슬롯 식별자가 서로 일치하지 않습니다.")
         if slot_by_id.slot_id != slot_by_identity.slot_id:
             raise ParkingRecordBadRequestError("슬롯 식별자가 서로 일치하지 않습니다.")
         return slot_by_id

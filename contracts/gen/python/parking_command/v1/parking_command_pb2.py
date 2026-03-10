@@ -26,33 +26,33 @@ from common.v1 import common_pb2 as common_dot_v1_dot_common__pb2
 from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n(parking_command/v1/parking_command.proto\x12\x12parking_command.v1\x1a\x16\x63ommon/v1/common.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"|\n\x12\x43reateEntryRequest\x12*\n\x07\x63ontext\x18\x01 \x01(\x0b\x32\x19.common.v1.RequestContext\x12\x14\n\x0coperation_id\x18\x02 \x01(\t\x12\x13\n\x0bvehicle_num\x18\x03 \x01(\t\x12\x0f\n\x07slot_id\x18\x04 \x01(\x03\"\xa0\x01\n\x13\x43reateEntryResponse\x12\x12\n\nhistory_id\x18\x01 \x01(\x03\x12\x0f\n\x07slot_id\x18\x02 \x01(\x03\x12\x13\n\x0bvehicle_num\x18\x03 \x01(\t\x12,\n\x08\x65ntry_at\x18\x04 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x0e\n\x06status\x18\x05 \x01(\t\x12\x11\n\tslot_code\x18\x06 \x01(\t\"_\n\x1cValidateActiveParkingRequest\x12*\n\x07\x63ontext\x18\x01 \x01(\x0b\x32\x19.common.v1.RequestContext\x12\x13\n\x0bvehicle_num\x18\x02 \x01(\t\"\xce\x01\n\x1dValidateActiveParkingResponse\x12\x12\n\nhistory_id\x18\x01 \x01(\x03\x12\x0f\n\x07slot_id\x18\x02 \x01(\x03\x12\x13\n\x0bvehicle_num\x18\x03 \x01(\t\x12,\n\x08\x65ntry_at\x18\x04 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x0e\n\x06status\x18\x05 \x01(\t\x12\x0f\n\x07zone_id\x18\x06 \x01(\x03\x12\x11\n\tslot_type\x18\x07 \x01(\t\x12\x11\n\tslot_code\x18\x08 \x01(\t\"k\n\x12\x45xitParkingRequest\x12*\n\x07\x63ontext\x18\x01 \x01(\x0b\x32\x19.common.v1.RequestContext\x12\x14\n\x0coperation_id\x18\x02 \x01(\t\x12\x13\n\x0bvehicle_num\x18\x03 \x01(\t\"\x9f\x01\n\x13\x45xitParkingResponse\x12\x12\n\nhistory_id\x18\x01 \x01(\x03\x12\x0f\n\x07slot_id\x18\x02 \x01(\x03\x12\x13\n\x0bvehicle_num\x18\x03 \x01(\t\x12+\n\x07\x65xit_at\x18\x04 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x0e\n\x06status\x18\x05 \x01(\t\x12\x11\n\tslot_code\x18\x06 \x01(\t\"\x94\x01\n\x16\x43ompensateEntryRequest\x12*\n\x07\x63ontext\x18\x01 \x01(\x0b\x32\x19.common.v1.RequestContext\x12\x14\n\x0coperation_id\x18\x02 \x01(\t\x12\x12\n\nhistory_id\x18\x03 \x01(\x03\x12\x0f\n\x07slot_id\x18\x04 \x01(\x03\x12\x13\n\x0bvehicle_num\x18\x05 \x01(\t\"x\n\x17\x43ompensateEntryResponse\x12\x12\n\nhistory_id\x18\x01 \x01(\x03\x12\x15\n\rslot_released\x18\x02 \x01(\x08\x12\x32\n\x0e\x63ompensated_at\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"\x93\x01\n\x15\x43ompensateExitRequest\x12*\n\x07\x63ontext\x18\x01 \x01(\x0b\x32\x19.common.v1.RequestContext\x12\x14\n\x0coperation_id\x18\x02 \x01(\t\x12\x12\n\nhistory_id\x18\x03 \x01(\x03\x12\x0f\n\x07slot_id\x18\x04 \x01(\x03\x12\x13\n\x0bvehicle_num\x18\x05 \x01(\t\"w\n\x16\x43ompensateExitResponse\x12\x12\n\nhistory_id\x18\x01 \x01(\x03\x12\x15\n\rslot_occupied\x18\x02 \x01(\x08\x12\x32\n\x0e\x63ompensated_at\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp2\xaa\x04\n\x15ParkingCommandService\x12^\n\x0b\x43reateEntry\x12&.parking_command.v1.CreateEntryRequest\x1a\'.parking_command.v1.CreateEntryResponse\x12|\n\x15ValidateActiveParking\x12\x30.parking_command.v1.ValidateActiveParkingRequest\x1a\x31.parking_command.v1.ValidateActiveParkingResponse\x12^\n\x0b\x45xitParking\x12&.parking_command.v1.ExitParkingRequest\x1a\'.parking_command.v1.ExitParkingResponse\x12j\n\x0f\x43ompensateEntry\x12*.parking_command.v1.CompensateEntryRequest\x1a+.parking_command.v1.CompensateEntryResponse\x12g\n\x0e\x43ompensateExit\x12).parking_command.v1.CompensateExitRequest\x1a*.parking_command.v1.CompensateExitResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n(parking_command/v1/parking_command.proto\x12\x12parking_command.v1\x1a\x16\x63ommon/v1/common.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xa0\x01\n\x12\x43reateEntryRequest\x12*\n\x07\x63ontext\x18\x01 \x01(\x0b\x32\x19.common.v1.RequestContext\x12\x14\n\x0coperation_id\x18\x02 \x01(\t\x12\x13\n\x0bvehicle_num\x18\x03 \x01(\t\x12\x0f\n\x07slot_id\x18\x04 \x01(\x03\x12\x0f\n\x07zone_id\x18\x05 \x01(\x03\x12\x11\n\tslot_code\x18\x06 \x01(\t\"\xa0\x01\n\x13\x43reateEntryResponse\x12\x12\n\nhistory_id\x18\x01 \x01(\x03\x12\x0f\n\x07slot_id\x18\x02 \x01(\x03\x12\x13\n\x0bvehicle_num\x18\x03 \x01(\t\x12,\n\x08\x65ntry_at\x18\x04 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x0e\n\x06status\x18\x05 \x01(\t\x12\x11\n\tslot_code\x18\x06 \x01(\t\"_\n\x1cValidateActiveParkingRequest\x12*\n\x07\x63ontext\x18\x01 \x01(\x0b\x32\x19.common.v1.RequestContext\x12\x13\n\x0bvehicle_num\x18\x02 \x01(\t\"\xce\x01\n\x1dValidateActiveParkingResponse\x12\x12\n\nhistory_id\x18\x01 \x01(\x03\x12\x0f\n\x07slot_id\x18\x02 \x01(\x03\x12\x13\n\x0bvehicle_num\x18\x03 \x01(\t\x12,\n\x08\x65ntry_at\x18\x04 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x0e\n\x06status\x18\x05 \x01(\t\x12\x0f\n\x07zone_id\x18\x06 \x01(\x03\x12\x11\n\tslot_type\x18\x07 \x01(\t\x12\x11\n\tslot_code\x18\x08 \x01(\t\"k\n\x12\x45xitParkingRequest\x12*\n\x07\x63ontext\x18\x01 \x01(\x0b\x32\x19.common.v1.RequestContext\x12\x14\n\x0coperation_id\x18\x02 \x01(\t\x12\x13\n\x0bvehicle_num\x18\x03 \x01(\t\"\x9f\x01\n\x13\x45xitParkingResponse\x12\x12\n\nhistory_id\x18\x01 \x01(\x03\x12\x0f\n\x07slot_id\x18\x02 \x01(\x03\x12\x13\n\x0bvehicle_num\x18\x03 \x01(\t\x12+\n\x07\x65xit_at\x18\x04 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x0e\n\x06status\x18\x05 \x01(\t\x12\x11\n\tslot_code\x18\x06 \x01(\t\"\x94\x01\n\x16\x43ompensateEntryRequest\x12*\n\x07\x63ontext\x18\x01 \x01(\x0b\x32\x19.common.v1.RequestContext\x12\x14\n\x0coperation_id\x18\x02 \x01(\t\x12\x12\n\nhistory_id\x18\x03 \x01(\x03\x12\x0f\n\x07slot_id\x18\x04 \x01(\x03\x12\x13\n\x0bvehicle_num\x18\x05 \x01(\t\"x\n\x17\x43ompensateEntryResponse\x12\x12\n\nhistory_id\x18\x01 \x01(\x03\x12\x15\n\rslot_released\x18\x02 \x01(\x08\x12\x32\n\x0e\x63ompensated_at\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"\x93\x01\n\x15\x43ompensateExitRequest\x12*\n\x07\x63ontext\x18\x01 \x01(\x0b\x32\x19.common.v1.RequestContext\x12\x14\n\x0coperation_id\x18\x02 \x01(\t\x12\x12\n\nhistory_id\x18\x03 \x01(\x03\x12\x0f\n\x07slot_id\x18\x04 \x01(\x03\x12\x13\n\x0bvehicle_num\x18\x05 \x01(\t\"w\n\x16\x43ompensateExitResponse\x12\x12\n\nhistory_id\x18\x01 \x01(\x03\x12\x15\n\rslot_occupied\x18\x02 \x01(\x08\x12\x32\n\x0e\x63ompensated_at\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp2\xaa\x04\n\x15ParkingCommandService\x12^\n\x0b\x43reateEntry\x12&.parking_command.v1.CreateEntryRequest\x1a\'.parking_command.v1.CreateEntryResponse\x12|\n\x15ValidateActiveParking\x12\x30.parking_command.v1.ValidateActiveParkingRequest\x1a\x31.parking_command.v1.ValidateActiveParkingResponse\x12^\n\x0b\x45xitParking\x12&.parking_command.v1.ExitParkingRequest\x1a\'.parking_command.v1.ExitParkingResponse\x12j\n\x0f\x43ompensateEntry\x12*.parking_command.v1.CompensateEntryRequest\x1a+.parking_command.v1.CompensateEntryResponse\x12g\n\x0e\x43ompensateExit\x12).parking_command.v1.CompensateExitRequest\x1a*.parking_command.v1.CompensateExitResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'parking_command.v1.parking_command_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_CREATEENTRYREQUEST']._serialized_start=121
-  _globals['_CREATEENTRYREQUEST']._serialized_end=245
-  _globals['_CREATEENTRYRESPONSE']._serialized_start=248
-  _globals['_CREATEENTRYRESPONSE']._serialized_end=408
-  _globals['_VALIDATEACTIVEPARKINGREQUEST']._serialized_start=410
-  _globals['_VALIDATEACTIVEPARKINGREQUEST']._serialized_end=505
-  _globals['_VALIDATEACTIVEPARKINGRESPONSE']._serialized_start=508
-  _globals['_VALIDATEACTIVEPARKINGRESPONSE']._serialized_end=714
-  _globals['_EXITPARKINGREQUEST']._serialized_start=716
-  _globals['_EXITPARKINGREQUEST']._serialized_end=823
-  _globals['_EXITPARKINGRESPONSE']._serialized_start=826
-  _globals['_EXITPARKINGRESPONSE']._serialized_end=985
-  _globals['_COMPENSATEENTRYREQUEST']._serialized_start=988
-  _globals['_COMPENSATEENTRYREQUEST']._serialized_end=1136
-  _globals['_COMPENSATEENTRYRESPONSE']._serialized_start=1138
-  _globals['_COMPENSATEENTRYRESPONSE']._serialized_end=1258
-  _globals['_COMPENSATEEXITREQUEST']._serialized_start=1261
-  _globals['_COMPENSATEEXITREQUEST']._serialized_end=1408
-  _globals['_COMPENSATEEXITRESPONSE']._serialized_start=1410
-  _globals['_COMPENSATEEXITRESPONSE']._serialized_end=1529
-  _globals['_PARKINGCOMMANDSERVICE']._serialized_start=1532
-  _globals['_PARKINGCOMMANDSERVICE']._serialized_end=2086
+  _globals['_CREATEENTRYREQUEST']._serialized_start=122
+  _globals['_CREATEENTRYREQUEST']._serialized_end=282
+  _globals['_CREATEENTRYRESPONSE']._serialized_start=285
+  _globals['_CREATEENTRYRESPONSE']._serialized_end=445
+  _globals['_VALIDATEACTIVEPARKINGREQUEST']._serialized_start=447
+  _globals['_VALIDATEACTIVEPARKINGREQUEST']._serialized_end=542
+  _globals['_VALIDATEACTIVEPARKINGRESPONSE']._serialized_start=545
+  _globals['_VALIDATEACTIVEPARKINGRESPONSE']._serialized_end=751
+  _globals['_EXITPARKINGREQUEST']._serialized_start=753
+  _globals['_EXITPARKINGREQUEST']._serialized_end=860
+  _globals['_EXITPARKINGRESPONSE']._serialized_start=863
+  _globals['_EXITPARKINGRESPONSE']._serialized_end=1022
+  _globals['_COMPENSATEENTRYREQUEST']._serialized_start=1025
+  _globals['_COMPENSATEENTRYREQUEST']._serialized_end=1173
+  _globals['_COMPENSATEENTRYRESPONSE']._serialized_start=1175
+  _globals['_COMPENSATEENTRYRESPONSE']._serialized_end=1295
+  _globals['_COMPENSATEEXITREQUEST']._serialized_start=1298
+  _globals['_COMPENSATEEXITREQUEST']._serialized_end=1445
+  _globals['_COMPENSATEEXITRESPONSE']._serialized_start=1447
+  _globals['_COMPENSATEEXITRESPONSE']._serialized_end=1566
+  _globals['_PARKINGCOMMANDSERVICE']._serialized_start=1569
+  _globals['_PARKINGCOMMANDSERVICE']._serialized_end=2123
 # @@protoc_insertion_point(module_scope)

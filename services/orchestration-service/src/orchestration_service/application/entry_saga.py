@@ -84,6 +84,8 @@ class EntrySagaOrchestrationService:
                 operation_id=operation_id,
                 vehicle_num=vehicle_num,
                 slot_id=slot_id,
+                zone_id=zone_payload["zone_id"],
+                slot_code=zone_payload["slot_code"],
                 requested_at=requested_at,
             )
             self.operation_repository.mark_step(

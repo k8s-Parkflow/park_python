@@ -43,7 +43,7 @@ class ProtoContractShapeTests(unittest.TestCase):
         # Then
         self.assertEqual(
             request_fields,
-            ["context", "operation_id", "vehicle_num", "slot_id"],
+            ["context", "operation_id", "vehicle_num", "slot_id", "zone_id", "slot_code"],
         )
         self.assertEqual(
             response_fields,
