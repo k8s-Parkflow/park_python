@@ -88,6 +88,15 @@ class OrchestrationRealSagaHttpAcceptanceTests(LiveServerTestCase):
         self.assertEqual(availability.occupied_count, 1)
         self.assertEqual(availability.available_count, 0)
 
+        replay_status_code, replay_body = post_json(
+            f"{self.live_server_url}/api/v1/parking/entries",
+            payload,
+            headers={"Idempotency-Key": "entry-real-http-001"},
+        )
+
+        self.assertEqual(replay_status_code, 201)
+        self.assertEqual(replay_body, body)
+
     def test_should_compensate_entry_over_real_http__when_query_projection_fails(self) -> None:
         """[AT-OR-REAL-02] 실제 HTTP 기반 입차 보상"""
 
@@ -125,6 +134,15 @@ class OrchestrationRealSagaHttpAcceptanceTests(LiveServerTestCase):
         self.assertFalse(occupancy.occupied)
         self.assertIsNone(occupancy.vehicle_num)
         self.assertIsNone(occupancy.history)
+
+        replay_status_code, replay_body = post_json(
+            f"{self.live_server_url}/api/v1/parking/entries",
+            payload,
+            headers={"Idempotency-Key": "entry-real-http-002"},
+        )
+
+        self.assertEqual(replay_status_code, 409)
+        self.assertEqual(replay_body, body)
 
     def test_should_complete_exit_saga_over_real_http__when_all_participants_succeed(self) -> None:
         """[AT-OR-REAL-03] 실제 HTTP 기반 출차 성공"""

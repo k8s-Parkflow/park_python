@@ -62,23 +62,59 @@ class SagaOperationRepository:
         current_step: str,
         history_id: int | None = None,
         slot_id: int | None = None,
+        response_payload: dict | None = None,
     ) -> SagaOperation:
         operation = self.get(operation_id=operation_id)
         operation.status = "COMPLETED"
         operation.current_step = current_step
+        operation.failed_step = None
         operation.history_id = history_id or operation.history_id
         operation.slot_id = slot_id or operation.slot_id
-        operation.save(update_fields=["status", "current_step", "history_id", "slot_id", "updated_at"])
+        operation.response_payload = response_payload or operation.response_payload
+        operation.error_status = None
+        operation.error_payload = None
+        operation.save(
+            update_fields=[
+                "status",
+                "current_step",
+                "failed_step",
+                "history_id",
+                "slot_id",
+                "response_payload",
+                "error_status",
+                "error_payload",
+                "updated_at",
+            ]
+        )
         return operation
 
-    def mark_failed(self, *, operation_id: str, failed_step: str, error_payload: dict) -> SagaOperation:
+    def mark_failed(
+        self,
+        *,
+        operation_id: str,
+        failed_step: str,
+        error_payload: dict,
+        error_status: int,
+    ) -> SagaOperation:
         operation = self.get(operation_id=operation_id)
         operation.status = "FAILED"
         operation.current_step = failed_step
+        operation.failed_step = failed_step
         operation.last_error_code = error_payload.get("error", {}).get("code")
         operation.last_error_message = error_payload.get("error", {}).get("message")
+        operation.error_status = error_status
+        operation.error_payload = error_payload
         operation.save(
-            update_fields=["status", "current_step", "last_error_code", "last_error_message", "updated_at"]
+            update_fields=[
+                "status",
+                "current_step",
+                "failed_step",
+                "last_error_code",
+                "last_error_message",
+                "error_status",
+                "error_payload",
+                "updated_at",
+            ]
         )
         return operation
 
@@ -88,22 +124,27 @@ class SagaOperationRepository:
         operation_id: str,
         failed_step: str,
         error_payload: dict,
+        response_payload: dict,
     ) -> SagaOperation:
         operation = self.get(operation_id=operation_id)
         operation.status = "COMPENSATED"
         operation.current_step = failed_step
+        operation.failed_step = failed_step
         operation.last_error_code = error_payload.get("error", {}).get("code")
         operation.last_error_message = error_payload.get("error", {}).get("message")
         operation.next_retry_at = None
         operation.completed_compensations = []
+        operation.response_payload = response_payload
         operation.save(
             update_fields=[
                 "status",
                 "current_step",
+                "failed_step",
                 "last_error_code",
                 "last_error_message",
                 "next_retry_at",
                 "completed_compensations",
+                "response_payload",
                 "updated_at",
             ]
         )
@@ -130,6 +171,7 @@ class SagaOperationRepository:
         operation = self.get(operation_id=operation_id)
         operation.status = "COMPENSATING"
         operation.current_step = failed_step
+        operation.failed_step = failed_step
         operation.last_error_code = error_payload.get("error", {}).get("code")
         operation.last_error_message = error_payload.get("error", {}).get("message")
         operation.compensation_attempts += 1
@@ -139,6 +181,7 @@ class SagaOperationRepository:
             update_fields=[
                 "status",
                 "current_step",
+                "failed_step",
                 "last_error_code",
                 "last_error_message",
                 "compensation_attempts",
@@ -155,32 +198,42 @@ class SagaOperationRepository:
         operation_id: str,
         failed_step: str,
         error_payload: dict,
+        response_payload: dict,
     ) -> SagaOperation:
         operation = self.get(operation_id=operation_id)
         operation.status = "CANCELLED"
         operation.current_step = failed_step
+        operation.failed_step = failed_step
         operation.last_error_code = error_payload.get("error", {}).get("code")
         operation.last_error_message = error_payload.get("error", {}).get("message")
         operation.next_retry_at = None
         operation.cancelled_at = timezone.now()
+        operation.response_payload = response_payload
         operation.save(
             update_fields=[
                 "status",
                 "current_step",
+                "failed_step",
                 "last_error_code",
                 "last_error_message",
                 "next_retry_at",
                 "cancelled_at",
+                "response_payload",
                 "updated_at",
             ]
         )
         return operation
 
     def to_response(self, operation: SagaOperation) -> dict:
+        if operation.response_payload is not None:
+            return dict(operation.response_payload)
+
         response = {
             "operation_id": operation.operation_id,
             "status": operation.status,
         }
+        if operation.failed_step is not None:
+            response["failed_step"] = operation.failed_step
         if operation.history_id is not None:
             response["history_id"] = operation.history_id
         if operation.vehicle_num is not None:

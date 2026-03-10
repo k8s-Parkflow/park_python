@@ -89,3 +89,49 @@ class OrchestrationSagaOperationRepositoryTests(TestCase):
         self.assertEqual(saved.slot_id, 7)
         self.assertEqual(saved.last_error_code, "projection_update_failed")
         self.assertEqual(saved.last_error_message, "parking-query-service timeout")
+
+    def test_should_return_snapshot_payload__when_completed_response_is_replayed(self) -> None:
+        """[RT-OR-DB-04] 응답 snapshot 재사용"""
+
+        from orchestration_service.repositories.operation import SagaOperationRepository
+
+        repository = SagaOperationRepository()
+        operation = repository.save(
+            operation_id="entry-op-001",
+            saga_type="ENTRY",
+            status="IN_PROGRESS",
+            current_step="PARKING_COMMAND_ENTRY",
+            idempotency_key="entry-idempotency-key-001",
+            history_id=101,
+            vehicle_num="12가3456",
+            slot_id=7,
+        )
+
+        repository.mark_completed(
+            operation_id=operation.operation_id,
+            current_step="UPDATE_QUERY_ENTRY",
+            history_id=101,
+            slot_id=7,
+            response_payload={
+                "operation_id": "entry-op-001",
+                "status": "COMPLETED",
+                "history_id": 101,
+                "vehicle_num": "12가3456",
+                "slot_id": 7,
+                "entry_at": "2026-03-10T10:00:00+09:00",
+            },
+        )
+
+        saved = repository.get(operation_id="entry-op-001")
+
+        self.assertEqual(
+            repository.to_response(saved),
+            {
+                "operation_id": "entry-op-001",
+                "status": "COMPLETED",
+                "history_id": 101,
+                "vehicle_num": "12가3456",
+                "slot_id": 7,
+                "entry_at": "2026-03-10T10:00:00+09:00",
+            },
+        )

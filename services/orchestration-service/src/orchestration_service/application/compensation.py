@@ -64,6 +64,11 @@ class CompensationRunner:
                     operation_id=operation_id,
                     failed_step=failed_step,
                     error_payload=last_error_payload,
+                    response_payload={
+                        "operation_id": operation_id,
+                        "status": "COMPENSATED",
+                        "failed_step": failed_step,
+                    },
                 )
                 return {
                     "operation_id": operation_id,
@@ -80,6 +85,11 @@ class CompensationRunner:
                         operation_id=operation_id,
                         failed_step=failed_step,
                         error_payload=last_error_payload,
+                        response_payload={
+                            "operation_id": operation_id,
+                            "status": "CANCELLED",
+                            "failed_step": failed_step,
+                        },
                     )
                     return {
                         "operation_id": operation_id,

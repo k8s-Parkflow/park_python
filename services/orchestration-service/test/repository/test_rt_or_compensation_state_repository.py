@@ -43,6 +43,7 @@ class OrchestrationCompensationStateRepositoryTests(TestCase):
         self.assertEqual(saved.compensation_attempts, 1)
         self.assertEqual(saved.next_retry_at, next_retry_at)
         self.assertEqual(saved.current_step, "UPDATE_QUERY_ENTRY")
+        self.assertEqual(saved.failed_step, "UPDATE_QUERY_ENTRY")
 
     def test_should_persist_cancelled_state__when_compensation_is_abandoned(self) -> None:
         """[RT-OR-COMP-02] 보상 취소 상태 저장"""
@@ -62,8 +63,33 @@ class OrchestrationCompensationStateRepositoryTests(TestCase):
             operation_id=operation.operation_id,
             failed_step="UPDATE_QUERY_ENTRY",
             error_payload={"error": {"code": "dependency_timeout", "message": "timeout"}},
+            response_payload={
+                "operation_id": operation.operation_id,
+                "status": "CANCELLED",
+                "failed_step": "UPDATE_QUERY_ENTRY",
+            },
         )
 
         # Then
         self.assertEqual(updated.status, "CANCELLED")
         self.assertIsNotNone(updated.cancelled_at)
+
+    def test_should_persist_completed_compensation_steps__when_step_finishes(self) -> None:
+        """[RT-OR-COMP-03] 완료된 보상 단계 저장"""
+
+        from orchestration_service.repositories.operation import SagaOperationRepository
+
+        repository = SagaOperationRepository()
+        operation = repository.save(
+            operation_id="entry-op-001",
+            saga_type="ENTRY",
+            status="COMPENSATING",
+            idempotency_key="entry-key-001",
+        )
+
+        updated = repository.mark_compensation_step_completed(
+            operation_id=operation.operation_id,
+            step_key="REVERT_QUERY_ENTRY",
+        )
+
+        self.assertEqual(updated.completed_compensations, ["REVERT_QUERY_ENTRY"])

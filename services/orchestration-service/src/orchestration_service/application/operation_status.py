@@ -12,6 +12,7 @@ class OperationStatusQueryService:
             "saga_type": operation.saga_type,
             "status": operation.status,
             "current_step": operation.current_step,
+            "failed_step": operation.failed_step,
             "history_id": operation.history_id,
             "vehicle_num": operation.vehicle_num,
             "slot_id": operation.slot_id,
