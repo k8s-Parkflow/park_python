@@ -33,6 +33,7 @@ class ParkingQueryGrpcApplicationService:
         slot_id: int,
         slot_code: str,
         zone_id: int,
+        zone_name: str,
         slot_type: str,
         entry_at: datetime | None,
     ) -> dict:
@@ -42,6 +43,7 @@ class ParkingQueryGrpcApplicationService:
             slot_id=slot_id,
             slot_code=slot_code,
             zone_id=zone_id,
+            zone_name=zone_name,
             slot_type=slot_type,
             entry_at=entry_at,
         )
@@ -74,6 +76,7 @@ class ParkingQueryGrpcApplicationService:
         slot_id: int,
         slot_code: str,
         zone_id: int,
+        zone_name: str,
         slot_type: str,
         entry_at: datetime | None,
     ) -> dict:
@@ -83,6 +86,7 @@ class ParkingQueryGrpcApplicationService:
             slot_id=slot_id,
             slot_code=slot_code,
             zone_id=zone_id,
+            zone_name=zone_name,
             slot_type=slot_type,
             entry_at=entry_at,
         )
@@ -103,6 +107,7 @@ class ParkingQueryGrpcApplicationService:
             "entry_at": projection.entry_at,
             "updated_at": projection.updated_at,
             "slot_code": projection.slot_code or "",
+            "zone_name": projection.zone_name or "",
         }
 
     def get_zone_availability(self, *, slot_type: str) -> dict:
@@ -121,6 +126,7 @@ class ParkingQueryGrpcApplicationService:
         slot_id: int,
         slot_code: str,
         zone_id: int,
+        zone_name: str,
         slot_type: str,
         entry_at: datetime | None,
     ):
@@ -139,8 +145,10 @@ class ParkingQueryGrpcApplicationService:
                 "vehicle_num": vehicle_num,
                 "history_id": history_id,
                 "zone_id": zone_id,
+                "zone_name": zone_name,
                 "slot_id": slot_id,
                 "slot_code": slot_code,
+                "slot_name": slot_code,
                 "slot_type": slot_type,
                 "entry_at": incoming_entry_at,
             }

@@ -25,10 +25,12 @@ class ExitSagaOrchestrationService:
         self,
         *,
         operation_repository: SagaOperationRepository,
+        zone_gateway,
         parking_command_gateway,
         parking_query_gateway,
     ) -> None:
         self.operation_repository = operation_repository
+        self.zone_gateway = zone_gateway
         self.parking_command_gateway = parking_command_gateway
         self.parking_query_gateway = parking_query_gateway
 
@@ -58,6 +60,7 @@ class ExitSagaOrchestrationService:
 
         active_parking = None
         exit_payload = None
+        zone_name = ""
 
         try:
             active_parking = self.parking_command_gateway.validate_active_parking(
@@ -109,6 +112,11 @@ class ExitSagaOrchestrationService:
                 )
                 return result
 
+            zone_name = active_parking.get("zone_name", "")
+            if not zone_name:
+                zone_payload = self.zone_gateway.get_zone(zone_id=active_parking["zone_id"])
+                zone_name = zone_payload["zone_name"]
+
             self.parking_query_gateway.compensate_exit_projection(
                 operation_id=operation_id,
                 history_id=exit_payload["history_id"],
@@ -116,6 +124,7 @@ class ExitSagaOrchestrationService:
                 slot_id=exit_payload["slot_id"],
                 slot_code=active_parking["slot_code"],
                 zone_id=active_parking["zone_id"],
+                zone_name=zone_name,
                 slot_type=active_parking["slot_type"],
                 entry_at=active_parking["entry_at"],
             )

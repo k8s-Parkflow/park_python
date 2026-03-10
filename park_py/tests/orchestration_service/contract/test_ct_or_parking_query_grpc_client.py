@@ -37,6 +37,7 @@ class _FakeParkingQueryStub:
             slot_id=7,
             slot_code="A001",
             zone_id=1,
+            zone_name="A-1",
             slot_type="GENERAL",
         )
 
@@ -56,11 +57,13 @@ class OrchestrationParkingQueryGrpcClientContractTests(SimpleTestCase):
             slot_code="A001",
             zone_id=1,
             slot_type="GENERAL",
+            zone_name="A-1",
             entry_at="2026-03-10T10:00:00+09:00",
         )
 
         self.assertEqual(stub.apply_entry_request.history_id, 101)
         self.assertEqual(stub.apply_entry_request.slot_code, "A001")
+        self.assertEqual(stub.apply_entry_request.zone_name, "A-1")
         self.assertTrue(payload["projected"])
 
     def test_should_build_apply_exit_request_and_map_response__when_called(self) -> None:
@@ -105,12 +108,14 @@ class OrchestrationParkingQueryGrpcClientContractTests(SimpleTestCase):
             slot_code="A001",
             zone_id=1,
             slot_type="GENERAL",
+            zone_name="A-1",
             entry_at="2026-03-10T10:00:00+09:00",
         )
 
         self.assertEqual(stub.compensate_entry_request.zone_id, 1)
         self.assertEqual(stub.compensate_exit_request.slot_id, 7)
         self.assertEqual(stub.compensate_exit_request.slot_code, "A001")
+        self.assertEqual(stub.compensate_exit_request.zone_name, "A-1")
         self.assertTrue(entry_payload["compensated"])
         self.assertTrue(exit_payload["compensated"])
 
@@ -125,3 +130,4 @@ class OrchestrationParkingQueryGrpcClientContractTests(SimpleTestCase):
         self.assertEqual(stub.current_request.vehicle_num, "12가3456")
         self.assertEqual(payload["slot_id"], 7)
         self.assertEqual(payload["slot_code"], "A001")
+        self.assertEqual(payload["zone_name"], "A-1")

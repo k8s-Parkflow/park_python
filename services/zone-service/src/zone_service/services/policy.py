@@ -26,6 +26,8 @@ def build_validate_entry_policy_payload(*, parking_slot: ParkingSlot, vehicle_ty
         "slot_type": slot_type_name,
         "zone_active": zone.is_active,
         "entry_allowed": entry_allowed,
+        "zone_name": zone.zone_name,
+        "slot_code": parking_slot.slot_code,
     }
 
 

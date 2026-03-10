@@ -22,12 +22,25 @@ class ParkingQueryGrpcApplicationUnitTests(SimpleTestCase):
             slot_id=7,
             slot_code="A001",
             zone_id=1,
+            zone_name="A-1",
             slot_type="GENERAL",
             entry_at=datetime(2026, 3, 10, 1, 0, tzinfo=timezone.utc),
         )
 
         self.assertTrue(payload["projected"])
-        repository.save_projection.assert_called_once()
+        repository.save_projection.assert_called_once_with(
+            {
+                "vehicle_num": "12가3456",
+                "history_id": 101,
+                "zone_id": 1,
+                "zone_name": "A-1",
+                "slot_id": 7,
+                "slot_code": "A001",
+                "slot_name": "A001",
+                "slot_type": "GENERAL",
+                "entry_at": datetime(2026, 3, 10, 1, 0, tzinfo=timezone.utc),
+            }
+        )
 
     def test_should_restore_projection__when_compensate_exit_projection_is_called(self) -> None:
         """[UT-PQ-GRPC-02] compensate-exit projection 복원"""
@@ -42,9 +55,22 @@ class ParkingQueryGrpcApplicationUnitTests(SimpleTestCase):
             slot_id=7,
             slot_code="A001",
             zone_id=1,
+            zone_name="A-1",
             slot_type="GENERAL",
             entry_at=datetime(2026, 3, 10, 1, 0, tzinfo=timezone.utc),
         )
 
         self.assertTrue(payload["compensated"])
-        repository.save_projection.assert_called_once()
+        repository.save_projection.assert_called_once_with(
+            {
+                "vehicle_num": "12가3456",
+                "history_id": 101,
+                "zone_id": 1,
+                "zone_name": "A-1",
+                "slot_id": 7,
+                "slot_code": "A001",
+                "slot_name": "A001",
+                "slot_type": "GENERAL",
+                "entry_at": datetime(2026, 3, 10, 1, 0, tzinfo=timezone.utc),
+            }
+        )

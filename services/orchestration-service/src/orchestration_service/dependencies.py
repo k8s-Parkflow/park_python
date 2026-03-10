@@ -41,6 +41,7 @@ def build_entry_saga_service() -> EntrySagaOrchestrationService:
 def build_exit_saga_service() -> ExitSagaOrchestrationService:
     return ExitSagaOrchestrationService(
         operation_repository=build_operation_repository(),
+        zone_gateway=build_zone_gateway(),
         parking_command_gateway=build_parking_command_gateway(),
         parking_query_gateway=build_parking_query_gateway(),
     )

@@ -100,6 +100,7 @@ class EntrySagaOrchestrationService:
                 slot_id=entry_payload["slot_id"],
                 slot_code=entry_payload["slot_code"],
                 zone_id=zone_payload["zone_id"],
+                zone_name=zone_payload["zone_name"],
                 slot_type=zone_payload["slot_type"],
                 entry_at=entry_payload["entry_at"],
             )

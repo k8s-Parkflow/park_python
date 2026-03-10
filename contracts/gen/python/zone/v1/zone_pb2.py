@@ -25,7 +25,7 @@ _sym_db = _symbol_database.Default()
 from common.v1 import common_pb2 as common_dot_v1_dot_common__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x12zone/v1/zone.proto\x12\x07zone.v1\x1a\x16\x63ommon/v1/common.proto\"o\n\x1aValidateEntryPolicyRequest\x12*\n\x07\x63ontext\x18\x01 \x01(\x0b\x32\x19.common.v1.RequestContext\x12\x0f\n\x07slot_id\x18\x02 \x01(\x03\x12\x14\n\x0cvehicle_type\x18\x03 \x01(\t\"~\n\x1bValidateEntryPolicyResponse\x12\x0f\n\x07slot_id\x18\x01 \x01(\x03\x12\x0f\n\x07zone_id\x18\x02 \x01(\x03\x12\x11\n\tslot_type\x18\x03 \x01(\t\x12\x13\n\x0bzone_active\x18\x04 \x01(\x08\x12\x15\n\rentry_allowed\x18\x05 \x01(\x08\"!\n\x0eGetZoneRequest\x12\x0f\n\x07zone_id\x18\x01 \x01(\x03\"H\n\x0fGetZoneResponse\x12\x0f\n\x07zone_id\x18\x01 \x01(\x03\x12\x11\n\tzone_name\x18\x02 \x01(\t\x12\x11\n\tis_active\x18\x03 \x01(\x08\x32\xad\x01\n\x0bZoneService\x12`\n\x13ValidateEntryPolicy\x12#.zone.v1.ValidateEntryPolicyRequest\x1a$.zone.v1.ValidateEntryPolicyResponse\x12<\n\x07GetZone\x12\x17.zone.v1.GetZoneRequest\x1a\x18.zone.v1.GetZoneResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x12zone/v1/zone.proto\x12\x07zone.v1\x1a\x16\x63ommon/v1/common.proto\"o\n\x1aValidateEntryPolicyRequest\x12*\n\x07\x63ontext\x18\x01 \x01(\x0b\x32\x19.common.v1.RequestContext\x12\x0f\n\x07slot_id\x18\x02 \x01(\x03\x12\x14\n\x0cvehicle_type\x18\x03 \x01(\t\"\xa4\x01\n\x1bValidateEntryPolicyResponse\x12\x0f\n\x07slot_id\x18\x01 \x01(\x03\x12\x0f\n\x07zone_id\x18\x02 \x01(\x03\x12\x11\n\tslot_type\x18\x03 \x01(\t\x12\x13\n\x0bzone_active\x18\x04 \x01(\x08\x12\x15\n\rentry_allowed\x18\x05 \x01(\x08\x12\x11\n\tzone_name\x18\x06 \x01(\t\x12\x11\n\tslot_code\x18\x07 \x01(\t\"!\n\x0eGetZoneRequest\x12\x0f\n\x07zone_id\x18\x01 \x01(\x03\"H\n\x0fGetZoneResponse\x12\x0f\n\x07zone_id\x18\x01 \x01(\x03\x12\x11\n\tzone_name\x18\x02 \x01(\t\x12\x11\n\tis_active\x18\x03 \x01(\x08\x32\xad\x01\n\x0bZoneService\x12`\n\x13ValidateEntryPolicy\x12#.zone.v1.ValidateEntryPolicyRequest\x1a$.zone.v1.ValidateEntryPolicyResponse\x12<\n\x07GetZone\x12\x17.zone.v1.GetZoneRequest\x1a\x18.zone.v1.GetZoneResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -34,12 +34,12 @@ if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
   _globals['_VALIDATEENTRYPOLICYREQUEST']._serialized_start=55
   _globals['_VALIDATEENTRYPOLICYREQUEST']._serialized_end=166
-  _globals['_VALIDATEENTRYPOLICYRESPONSE']._serialized_start=168
-  _globals['_VALIDATEENTRYPOLICYRESPONSE']._serialized_end=294
-  _globals['_GETZONEREQUEST']._serialized_start=296
-  _globals['_GETZONEREQUEST']._serialized_end=329
-  _globals['_GETZONERESPONSE']._serialized_start=331
-  _globals['_GETZONERESPONSE']._serialized_end=403
-  _globals['_ZONESERVICE']._serialized_start=406
-  _globals['_ZONESERVICE']._serialized_end=579
+  _globals['_VALIDATEENTRYPOLICYRESPONSE']._serialized_start=169
+  _globals['_VALIDATEENTRYPOLICYRESPONSE']._serialized_end=333
+  _globals['_GETZONEREQUEST']._serialized_start=335
+  _globals['_GETZONEREQUEST']._serialized_end=368
+  _globals['_GETZONERESPONSE']._serialized_start=370
+  _globals['_GETZONERESPONSE']._serialized_end=442
+  _globals['_ZONESERVICE']._serialized_start=445
+  _globals['_ZONESERVICE']._serialized_end=618
 # @@protoc_insertion_point(module_scope)

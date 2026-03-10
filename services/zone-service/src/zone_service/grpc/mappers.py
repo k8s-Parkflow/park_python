@@ -11,6 +11,8 @@ def build_validate_entry_policy_response(*, payload: dict) -> zone_pb2.ValidateE
         slot_type=payload["slot_type"],
         zone_active=payload["zone_active"],
         entry_allowed=payload["entry_allowed"],
+        zone_name=payload["zone_name"],
+        slot_code=payload["slot_code"],
     )
 
 

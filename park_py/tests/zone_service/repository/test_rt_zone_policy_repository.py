@@ -13,7 +13,13 @@ class ZonePolicyRepositoryTests(TestCase):
         # Given
         zone = Zone.objects.create(zone_name="A-1", is_active=True)
         slot_type = SlotType.objects.create(type_name="GENERAL")
-        ParkingSlot.objects.create(slot_id=7, zone=zone, slot_type=slot_type, is_active=True)
+        ParkingSlot.objects.create(
+            slot_id=7,
+            zone=zone,
+            slot_type=slot_type,
+            slot_code="A001",
+            is_active=True,
+        )
 
         # When
         parking_slot = ParkingSlotRepository().get(slot_id=7)
@@ -22,3 +28,4 @@ class ZonePolicyRepositoryTests(TestCase):
         self.assertEqual(parking_slot.slot_id, 7)
         self.assertEqual(parking_slot.zone.zone_name, "A-1")
         self.assertEqual(parking_slot.slot_type.type_name, "GENERAL")
+        self.assertEqual(parking_slot.slot_code, "A001")

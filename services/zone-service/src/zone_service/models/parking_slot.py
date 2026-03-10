@@ -12,6 +12,7 @@ class ParkingSlot(models.Model):
         on_delete=models.PROTECT,
         related_name="parking_slots",
     )
+    slot_code = models.CharField(max_length=50, default="")
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

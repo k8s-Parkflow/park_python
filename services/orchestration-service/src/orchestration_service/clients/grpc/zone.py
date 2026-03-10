@@ -41,6 +41,8 @@ class ZoneGrpcClient(GrpcClientBase):
             "slot_type": response.slot_type,
             "zone_active": response.zone_active,
             "entry_allowed": response.entry_allowed,
+            "zone_name": response.zone_name,
+            "slot_code": response.slot_code,
         }
 
     def get_zone(self, *, zone_id: int) -> dict:

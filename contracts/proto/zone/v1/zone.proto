@@ -21,6 +21,8 @@ message ValidateEntryPolicyResponse {
   string slot_type = 3;
   bool zone_active = 4;
   bool entry_allowed = 5;
+  string zone_name = 6;
+  string slot_code = 7;
 }
 
 message GetZoneRequest {

@@ -34,6 +34,8 @@ class _FakeZoneStub:
             slot_type="GENERAL",
             zone_active=True,
             entry_allowed=True,
+            zone_name="A-1",
+            slot_code="A001",
         )
 
 
@@ -80,5 +82,7 @@ class OrchestrationGrpcClientContractTests(SimpleTestCase):
                 "slot_type": "GENERAL",
                 "zone_active": True,
                 "entry_allowed": True,
+                "zone_name": "A-1",
+                "slot_code": "A001",
             },
         )

@@ -33,6 +33,7 @@ class ParkingQueryGrpcServicer(parking_query_pb2_grpc.ParkingQueryServiceService
             slot_id=request.slot_id,
             slot_code=request.slot_code,
             zone_id=request.zone_id,
+            zone_name=request.zone_name,
             slot_type=request.slot_type,
             entry_at=timestamp_to_datetime(request.entry_at),
         )
@@ -58,6 +59,7 @@ class ParkingQueryGrpcServicer(parking_query_pb2_grpc.ParkingQueryServiceService
             slot_id=request.slot_id,
             slot_code=request.slot_code,
             zone_id=request.zone_id,
+            zone_name=request.zone_name,
             slot_type=request.slot_type,
             entry_at=timestamp_to_datetime(request.entry_at),
         )

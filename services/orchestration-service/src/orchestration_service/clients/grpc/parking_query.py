@@ -53,6 +53,7 @@ class ParkingQueryGrpcClient(GrpcClientBase):
         slot_id: int,
         slot_code: str,
         zone_id: int,
+        zone_name: str,
         slot_type: str,
         entry_at: str,
     ) -> dict:
@@ -66,6 +67,7 @@ class ParkingQueryGrpcClient(GrpcClientBase):
             zone_id=zone_id,
             slot_type=slot_type,
             slot_code=slot_code,
+            zone_name=zone_name,
         )
         request.entry_at.CopyFrom(request.context.requested_at)
         response = self.invoke_unary(
@@ -149,6 +151,7 @@ class ParkingQueryGrpcClient(GrpcClientBase):
         slot_id: int,
         slot_code: str,
         zone_id: int,
+        zone_name: str,
         slot_type: str,
         entry_at: str,
     ) -> dict:
@@ -162,6 +165,7 @@ class ParkingQueryGrpcClient(GrpcClientBase):
             zone_id=zone_id,
             slot_type=slot_type,
             slot_code=slot_code,
+            zone_name=zone_name,
         )
         request.entry_at.CopyFrom(request.context.requested_at)
         response = self.invoke_unary(
@@ -190,4 +194,5 @@ class ParkingQueryGrpcClient(GrpcClientBase):
             "entry_at": _timestamp_to_iso_or_none(response.entry_at),
             "updated_at": _timestamp_to_iso_or_none(response.updated_at),
             "slot_code": response.slot_code,
+            "zone_name": response.zone_name,
         }

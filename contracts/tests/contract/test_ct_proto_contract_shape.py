@@ -77,6 +77,7 @@ class ProtoContractShapeTests(unittest.TestCase):
                 "slot_type",
                 "entry_at",
                 "slot_code",
+                "zone_name",
             ],
         )
         self.assertEqual(
@@ -88,6 +89,32 @@ class ProtoContractShapeTests(unittest.TestCase):
                 "slot_type",
                 "entry_at",
                 "updated_at",
+                "slot_code",
+                "zone_name",
+            ],
+        )
+
+    def test_should_match_zone_validate_entry_policy_contract__when_generated_module_is_loaded(
+        self,
+    ) -> None:
+        # Given
+        zone_pb2 = self.generated.import_module("zone.v1.zone_pb2")
+
+        # When
+        response_fields = list(
+            zone_pb2.ValidateEntryPolicyResponse.DESCRIPTOR.fields_by_name.keys()
+        )
+
+        # Then
+        self.assertEqual(
+            response_fields,
+            [
+                "slot_id",
+                "zone_id",
+                "slot_type",
+                "zone_active",
+                "entry_allowed",
+                "zone_name",
                 "slot_code",
             ],
         )

@@ -33,7 +33,13 @@ class OrchestrationParkingQueryGrpcAcceptanceTests(TransactionTestCase):
         Vehicle.objects.create(vehicle_num="12가3456", vehicle_type=VehicleType.General)
         zone = Zone.objects.create(zone_name="A-1", is_active=True)
         slot_type = SlotType.objects.create(type_name="GENERAL")
-        ZoneParkingSlot.objects.create(slot_id=7, zone=zone, slot_type=slot_type, is_active=True)
+        ZoneParkingSlot.objects.create(
+            slot_id=7,
+            zone=zone,
+            slot_type=slot_type,
+            slot_code="A001",
+            is_active=True,
+        )
         ParkingSlot.objects.create(
             slot_id=7,
             zone_id=zone.zone_id,
@@ -117,6 +123,8 @@ class OrchestrationParkingQueryGrpcAcceptanceTests(TransactionTestCase):
         self.assertEqual(projection.slot_id, 7)
         self.assertEqual(projection.slot_code, "A001")
         self.assertEqual(projection.zone_id, zone.zone_id)
+        self.assertEqual(projection.zone_name, "A-1")
+        self.assertEqual(projection.slot_name, "A001")
         self.assertEqual(projection.slot_type, "GENERAL")
 
     def test_should_complete_exit_saga_with_real_parking_query_grpc__when_projection_is_removed(self) -> None:

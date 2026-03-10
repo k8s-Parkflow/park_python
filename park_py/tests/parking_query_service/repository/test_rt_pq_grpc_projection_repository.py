@@ -17,6 +17,7 @@ class ParkingQueryGrpcProjectionRepositoryTests(TestCase):
                 "vehicle_num": "12가3456",
                 "history_id": 101,
                 "zone_id": 1,
+                "zone_name": "A-1",
                 "slot_id": 7,
                 "slot_code": "A001",
                 "slot_type": "GENERAL",
@@ -27,8 +28,10 @@ class ParkingQueryGrpcProjectionRepositoryTests(TestCase):
         projection = CurrentParkingView.objects.get(vehicle_num="12가3456")
         self.assertEqual(projection.history_id, 101)
         self.assertEqual(projection.zone_id, 1)
+        self.assertEqual(projection.zone_name, "A-1")
         self.assertEqual(projection.slot_id, 7)
         self.assertEqual(projection.slot_code, "A001")
+        self.assertEqual(projection.slot_name, "A001")
 
     def test_should_delete_projection__when_vehicle_num_is_removed(self) -> None:
         """[RT-PQ-GRPC-02] grpc projection 삭제"""

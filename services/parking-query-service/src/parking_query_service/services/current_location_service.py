@@ -83,15 +83,24 @@ class CurrentLocationService:
         self, current_location: CurrentLocationSource
     ) -> CurrentLocationPayload:
         return {
-            "vehicle_num": self._value_of(current_location, "vehicle_num"),
-            "zone_name": self._value_of(current_location, "zone_name"),
-            "slot_name": self._value_of(current_location, "slot_name"),
+            "vehicle_num": self._required_value_of(current_location, "vehicle_num"),
+            "zone_name": self._required_value_of(current_location, "zone_name"),
+            "slot_name": self._optional_value_of(current_location, "slot_name")
+            or self._required_value_of(current_location, "slot_code"),
         }
 
     @staticmethod
-    def _value_of(
+    def _required_value_of(
         source: CurrentLocationSource, field_name: str
     ) -> str:
         if isinstance(source, Mapping):
             return source[field_name]
         return getattr(source, field_name)
+
+    @staticmethod
+    def _optional_value_of(
+        source: CurrentLocationSource, field_name: str
+    ) -> Optional[str]:
+        if isinstance(source, Mapping):
+            return source.get(field_name)
+        return getattr(source, field_name, None)

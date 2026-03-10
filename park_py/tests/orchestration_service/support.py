@@ -25,6 +25,8 @@ class FakeZoneGateway:
             "slot_type": "GENERAL",
             "zone_active": True,
             "entry_allowed": True,
+            "zone_name": "A-1",
+            "slot_code": "A001",
         }
         self.error = error
 
@@ -33,6 +35,16 @@ class FakeZoneGateway:
         if self.error:
             raise self.error
         return {**self.payload, "slot_id": slot_id, "vehicle_type": vehicle_type}
+
+    def get_zone(self, *, zone_id: int) -> dict:
+        self.call_log.append("zone-service")
+        if self.error:
+            raise self.error
+        return {
+            "zone_id": zone_id,
+            "zone_name": self.payload["zone_name"],
+            "is_active": True,
+        }
 
 
 class FakeParkingCommandGateway:

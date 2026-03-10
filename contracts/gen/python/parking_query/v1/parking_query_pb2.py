@@ -26,7 +26,7 @@ from common.v1 import common_pb2 as common_dot_v1_dot_common__pb2
 from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n$parking_query/v1/parking_query.proto\x12\x10parking_query.v1\x1a\x16\x63ommon/v1/common.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xfe\x01\n\x1b\x41pplyEntryProjectionRequest\x12*\n\x07\x63ontext\x18\x01 \x01(\x0b\x32\x19.common.v1.RequestContext\x12\x14\n\x0coperation_id\x18\x02 \x01(\t\x12\x12\n\nhistory_id\x18\x03 \x01(\x03\x12\x13\n\x0bvehicle_num\x18\x04 \x01(\t\x12\x0f\n\x07slot_id\x18\x05 \x01(\x03\x12\x0f\n\x07zone_id\x18\x06 \x01(\x03\x12\x11\n\tslot_type\x18\x07 \x01(\t\x12,\n\x08\x65ntry_at\x18\x08 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x11\n\tslot_code\x18\t \x01(\t\"a\n\x1c\x41pplyEntryProjectionResponse\x12\x11\n\tprojected\x18\x01 \x01(\x08\x12.\n\nupdated_at\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"\xfc\x01\n\x1a\x41pplyExitProjectionRequest\x12*\n\x07\x63ontext\x18\x01 \x01(\x0b\x32\x19.common.v1.RequestContext\x12\x14\n\x0coperation_id\x18\x02 \x01(\t\x12\x12\n\nhistory_id\x18\x03 \x01(\x03\x12\x13\n\x0bvehicle_num\x18\x04 \x01(\t\x12\x0f\n\x07slot_id\x18\x05 \x01(\x03\x12\x0f\n\x07zone_id\x18\x06 \x01(\x03\x12\x11\n\tslot_type\x18\x07 \x01(\t\x12+\n\x07\x65xit_at\x18\x08 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x11\n\tslot_code\x18\t \x01(\t\"`\n\x1b\x41pplyExitProjectionResponse\x12\x11\n\tprojected\x18\x01 \x01(\x08\x12.\n\nupdated_at\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"\xb1\x01\n CompensateEntryProjectionRequest\x12*\n\x07\x63ontext\x18\x01 \x01(\x0b\x32\x19.common.v1.RequestContext\x12\x14\n\x0coperation_id\x18\x02 \x01(\t\x12\x12\n\nhistory_id\x18\x03 \x01(\x03\x12\x13\n\x0bvehicle_num\x18\x04 \x01(\t\x12\x0f\n\x07zone_id\x18\x05 \x01(\x03\x12\x11\n\tslot_type\x18\x06 \x01(\t\"h\n!CompensateEntryProjectionResponse\x12\x13\n\x0b\x63ompensated\x18\x01 \x01(\x08\x12.\n\nupdated_at\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"\x82\x02\n\x1f\x43ompensateExitProjectionRequest\x12*\n\x07\x63ontext\x18\x01 \x01(\x0b\x32\x19.common.v1.RequestContext\x12\x14\n\x0coperation_id\x18\x02 \x01(\t\x12\x12\n\nhistory_id\x18\x03 \x01(\x03\x12\x13\n\x0bvehicle_num\x18\x04 \x01(\t\x12\x0f\n\x07slot_id\x18\x05 \x01(\x03\x12\x0f\n\x07zone_id\x18\x06 \x01(\x03\x12\x11\n\tslot_type\x18\x07 \x01(\t\x12,\n\x08\x65ntry_at\x18\x08 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x11\n\tslot_code\x18\t \x01(\t\"g\n CompensateExitProjectionResponse\x12\x13\n\x0b\x63ompensated\x18\x01 \x01(\x08\x12.\n\nupdated_at\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"/\n\x18GetCurrentParkingRequest\x12\x13\n\x0bvehicle_num\x18\x01 \x01(\t\"\xd6\x01\n\x19GetCurrentParkingResponse\x12\x13\n\x0bvehicle_num\x18\x01 \x01(\t\x12\x0f\n\x07slot_id\x18\x02 \x01(\x03\x12\x0f\n\x07zone_id\x18\x03 \x01(\x03\x12\x11\n\tslot_type\x18\x04 \x01(\t\x12,\n\x08\x65ntry_at\x18\x05 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12.\n\nupdated_at\x18\x06 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x11\n\tslot_code\x18\x07 \x01(\t\"/\n\x1aGetZoneAvailabilityRequest\x12\x11\n\tslot_type\x18\x01 \x01(\t\"y\n\x1bGetZoneAvailabilityResponse\x12\x11\n\tslot_type\x18\x01 \x01(\t\x12\x17\n\x0f\x61vailable_count\x18\x02 \x01(\x05\x12.\n\nupdated_at\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp2\xed\x05\n\x13ParkingQueryService\x12u\n\x14\x41pplyEntryProjection\x12-.parking_query.v1.ApplyEntryProjectionRequest\x1a..parking_query.v1.ApplyEntryProjectionResponse\x12r\n\x13\x41pplyExitProjection\x12,.parking_query.v1.ApplyExitProjectionRequest\x1a-.parking_query.v1.ApplyExitProjectionResponse\x12\x84\x01\n\x19\x43ompensateEntryProjection\x12\x32.parking_query.v1.CompensateEntryProjectionRequest\x1a\x33.parking_query.v1.CompensateEntryProjectionResponse\x12\x81\x01\n\x18\x43ompensateExitProjection\x12\x31.parking_query.v1.CompensateExitProjectionRequest\x1a\x32.parking_query.v1.CompensateExitProjectionResponse\x12l\n\x11GetCurrentParking\x12*.parking_query.v1.GetCurrentParkingRequest\x1a+.parking_query.v1.GetCurrentParkingResponse\x12r\n\x13GetZoneAvailability\x12,.parking_query.v1.GetZoneAvailabilityRequest\x1a-.parking_query.v1.GetZoneAvailabilityResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n$parking_query/v1/parking_query.proto\x12\x10parking_query.v1\x1a\x16\x63ommon/v1/common.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x91\x02\n\x1b\x41pplyEntryProjectionRequest\x12*\n\x07\x63ontext\x18\x01 \x01(\x0b\x32\x19.common.v1.RequestContext\x12\x14\n\x0coperation_id\x18\x02 \x01(\t\x12\x12\n\nhistory_id\x18\x03 \x01(\x03\x12\x13\n\x0bvehicle_num\x18\x04 \x01(\t\x12\x0f\n\x07slot_id\x18\x05 \x01(\x03\x12\x0f\n\x07zone_id\x18\x06 \x01(\x03\x12\x11\n\tslot_type\x18\x07 \x01(\t\x12,\n\x08\x65ntry_at\x18\x08 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x11\n\tslot_code\x18\t \x01(\t\x12\x11\n\tzone_name\x18\n \x01(\t\"a\n\x1c\x41pplyEntryProjectionResponse\x12\x11\n\tprojected\x18\x01 \x01(\x08\x12.\n\nupdated_at\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"\xfc\x01\n\x1a\x41pplyExitProjectionRequest\x12*\n\x07\x63ontext\x18\x01 \x01(\x0b\x32\x19.common.v1.RequestContext\x12\x14\n\x0coperation_id\x18\x02 \x01(\t\x12\x12\n\nhistory_id\x18\x03 \x01(\x03\x12\x13\n\x0bvehicle_num\x18\x04 \x01(\t\x12\x0f\n\x07slot_id\x18\x05 \x01(\x03\x12\x0f\n\x07zone_id\x18\x06 \x01(\x03\x12\x11\n\tslot_type\x18\x07 \x01(\t\x12+\n\x07\x65xit_at\x18\x08 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x11\n\tslot_code\x18\t \x01(\t\"`\n\x1b\x41pplyExitProjectionResponse\x12\x11\n\tprojected\x18\x01 \x01(\x08\x12.\n\nupdated_at\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"\xb1\x01\n CompensateEntryProjectionRequest\x12*\n\x07\x63ontext\x18\x01 \x01(\x0b\x32\x19.common.v1.RequestContext\x12\x14\n\x0coperation_id\x18\x02 \x01(\t\x12\x12\n\nhistory_id\x18\x03 \x01(\x03\x12\x13\n\x0bvehicle_num\x18\x04 \x01(\t\x12\x0f\n\x07zone_id\x18\x05 \x01(\x03\x12\x11\n\tslot_type\x18\x06 \x01(\t\"h\n!CompensateEntryProjectionResponse\x12\x13\n\x0b\x63ompensated\x18\x01 \x01(\x08\x12.\n\nupdated_at\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"\x95\x02\n\x1f\x43ompensateExitProjectionRequest\x12*\n\x07\x63ontext\x18\x01 \x01(\x0b\x32\x19.common.v1.RequestContext\x12\x14\n\x0coperation_id\x18\x02 \x01(\t\x12\x12\n\nhistory_id\x18\x03 \x01(\x03\x12\x13\n\x0bvehicle_num\x18\x04 \x01(\t\x12\x0f\n\x07slot_id\x18\x05 \x01(\x03\x12\x0f\n\x07zone_id\x18\x06 \x01(\x03\x12\x11\n\tslot_type\x18\x07 \x01(\t\x12,\n\x08\x65ntry_at\x18\x08 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x11\n\tslot_code\x18\t \x01(\t\x12\x11\n\tzone_name\x18\n \x01(\t\"g\n CompensateExitProjectionResponse\x12\x13\n\x0b\x63ompensated\x18\x01 \x01(\x08\x12.\n\nupdated_at\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"/\n\x18GetCurrentParkingRequest\x12\x13\n\x0bvehicle_num\x18\x01 \x01(\t\"\xe9\x01\n\x19GetCurrentParkingResponse\x12\x13\n\x0bvehicle_num\x18\x01 \x01(\t\x12\x0f\n\x07slot_id\x18\x02 \x01(\x03\x12\x0f\n\x07zone_id\x18\x03 \x01(\x03\x12\x11\n\tslot_type\x18\x04 \x01(\t\x12,\n\x08\x65ntry_at\x18\x05 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12.\n\nupdated_at\x18\x06 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x11\n\tslot_code\x18\x07 \x01(\t\x12\x11\n\tzone_name\x18\x08 \x01(\t\"/\n\x1aGetZoneAvailabilityRequest\x12\x11\n\tslot_type\x18\x01 \x01(\t\"y\n\x1bGetZoneAvailabilityResponse\x12\x11\n\tslot_type\x18\x01 \x01(\t\x12\x17\n\x0f\x61vailable_count\x18\x02 \x01(\x05\x12.\n\nupdated_at\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp2\xed\x05\n\x13ParkingQueryService\x12u\n\x14\x41pplyEntryProjection\x12-.parking_query.v1.ApplyEntryProjectionRequest\x1a..parking_query.v1.ApplyEntryProjectionResponse\x12r\n\x13\x41pplyExitProjection\x12,.parking_query.v1.ApplyExitProjectionRequest\x1a-.parking_query.v1.ApplyExitProjectionResponse\x12\x84\x01\n\x19\x43ompensateEntryProjection\x12\x32.parking_query.v1.CompensateEntryProjectionRequest\x1a\x33.parking_query.v1.CompensateEntryProjectionResponse\x12\x81\x01\n\x18\x43ompensateExitProjection\x12\x31.parking_query.v1.CompensateExitProjectionRequest\x1a\x32.parking_query.v1.CompensateExitProjectionResponse\x12l\n\x11GetCurrentParking\x12*.parking_query.v1.GetCurrentParkingRequest\x1a+.parking_query.v1.GetCurrentParkingResponse\x12r\n\x13GetZoneAvailability\x12,.parking_query.v1.GetZoneAvailabilityRequest\x1a-.parking_query.v1.GetZoneAvailabilityResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -34,29 +34,29 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'parking_query.v1.parking_qu
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
   _globals['_APPLYENTRYPROJECTIONREQUEST']._serialized_start=116
-  _globals['_APPLYENTRYPROJECTIONREQUEST']._serialized_end=370
-  _globals['_APPLYENTRYPROJECTIONRESPONSE']._serialized_start=372
-  _globals['_APPLYENTRYPROJECTIONRESPONSE']._serialized_end=469
-  _globals['_APPLYEXITPROJECTIONREQUEST']._serialized_start=472
-  _globals['_APPLYEXITPROJECTIONREQUEST']._serialized_end=724
-  _globals['_APPLYEXITPROJECTIONRESPONSE']._serialized_start=726
-  _globals['_APPLYEXITPROJECTIONRESPONSE']._serialized_end=822
-  _globals['_COMPENSATEENTRYPROJECTIONREQUEST']._serialized_start=825
-  _globals['_COMPENSATEENTRYPROJECTIONREQUEST']._serialized_end=1002
-  _globals['_COMPENSATEENTRYPROJECTIONRESPONSE']._serialized_start=1004
-  _globals['_COMPENSATEENTRYPROJECTIONRESPONSE']._serialized_end=1108
-  _globals['_COMPENSATEEXITPROJECTIONREQUEST']._serialized_start=1111
-  _globals['_COMPENSATEEXITPROJECTIONREQUEST']._serialized_end=1369
-  _globals['_COMPENSATEEXITPROJECTIONRESPONSE']._serialized_start=1371
-  _globals['_COMPENSATEEXITPROJECTIONRESPONSE']._serialized_end=1474
-  _globals['_GETCURRENTPARKINGREQUEST']._serialized_start=1476
-  _globals['_GETCURRENTPARKINGREQUEST']._serialized_end=1523
-  _globals['_GETCURRENTPARKINGRESPONSE']._serialized_start=1526
-  _globals['_GETCURRENTPARKINGRESPONSE']._serialized_end=1740
-  _globals['_GETZONEAVAILABILITYREQUEST']._serialized_start=1742
-  _globals['_GETZONEAVAILABILITYREQUEST']._serialized_end=1789
-  _globals['_GETZONEAVAILABILITYRESPONSE']._serialized_start=1791
-  _globals['_GETZONEAVAILABILITYRESPONSE']._serialized_end=1912
-  _globals['_PARKINGQUERYSERVICE']._serialized_start=1915
-  _globals['_PARKINGQUERYSERVICE']._serialized_end=2664
+  _globals['_APPLYENTRYPROJECTIONREQUEST']._serialized_end=389
+  _globals['_APPLYENTRYPROJECTIONRESPONSE']._serialized_start=391
+  _globals['_APPLYENTRYPROJECTIONRESPONSE']._serialized_end=488
+  _globals['_APPLYEXITPROJECTIONREQUEST']._serialized_start=491
+  _globals['_APPLYEXITPROJECTIONREQUEST']._serialized_end=743
+  _globals['_APPLYEXITPROJECTIONRESPONSE']._serialized_start=745
+  _globals['_APPLYEXITPROJECTIONRESPONSE']._serialized_end=841
+  _globals['_COMPENSATEENTRYPROJECTIONREQUEST']._serialized_start=844
+  _globals['_COMPENSATEENTRYPROJECTIONREQUEST']._serialized_end=1021
+  _globals['_COMPENSATEENTRYPROJECTIONRESPONSE']._serialized_start=1023
+  _globals['_COMPENSATEENTRYPROJECTIONRESPONSE']._serialized_end=1127
+  _globals['_COMPENSATEEXITPROJECTIONREQUEST']._serialized_start=1130
+  _globals['_COMPENSATEEXITPROJECTIONREQUEST']._serialized_end=1407
+  _globals['_COMPENSATEEXITPROJECTIONRESPONSE']._serialized_start=1409
+  _globals['_COMPENSATEEXITPROJECTIONRESPONSE']._serialized_end=1512
+  _globals['_GETCURRENTPARKINGREQUEST']._serialized_start=1514
+  _globals['_GETCURRENTPARKINGREQUEST']._serialized_end=1561
+  _globals['_GETCURRENTPARKINGRESPONSE']._serialized_start=1564
+  _globals['_GETCURRENTPARKINGRESPONSE']._serialized_end=1797
+  _globals['_GETZONEAVAILABILITYREQUEST']._serialized_start=1799
+  _globals['_GETZONEAVAILABILITYREQUEST']._serialized_end=1846
+  _globals['_GETZONEAVAILABILITYRESPONSE']._serialized_start=1848
+  _globals['_GETZONEAVAILABILITYRESPONSE']._serialized_end=1969
+  _globals['_PARKINGQUERYSERVICE']._serialized_start=1972
+  _globals['_PARKINGQUERYSERVICE']._serialized_end=2721
 # @@protoc_insertion_point(module_scope)
