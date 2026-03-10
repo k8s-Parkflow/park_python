@@ -19,13 +19,21 @@ def parse_entry_command(*, body: bytes) -> EntryCommand:
     errors: dict[str, list[str]] = {}
 
     vehicle_num = _normalize_vehicle_num(payload=payload, errors=errors)
+    zone_id = _require_int(payload=payload, field_name="zone_id", errors=errors)
+    slot_code = _require_string(payload=payload, field_name="slot_code", errors=errors)
     slot_id = _require_int(payload=payload, field_name="slot_id", errors=errors)
     entry_at = _parse_optional_datetime(payload=payload, field_name="entry_at", errors=errors)
 
     if errors:
         raise ValidationError(errors)
 
-    return EntryCommand(vehicle_num=vehicle_num, slot_id=slot_id, entry_at=entry_at)
+    return EntryCommand(
+        vehicle_num=vehicle_num,
+        zone_id=zone_id,
+        slot_code=slot_code,
+        slot_id=slot_id,
+        entry_at=entry_at,
+    )
 
 
 def parse_exit_command(*, body: bytes) -> ExitCommand:
@@ -33,12 +41,21 @@ def parse_exit_command(*, body: bytes) -> ExitCommand:
     errors: dict[str, list[str]] = {}
 
     vehicle_num = _normalize_vehicle_num(payload=payload, errors=errors)
+    zone_id = _require_int(payload=payload, field_name="zone_id", errors=errors)
+    slot_code = _require_string(payload=payload, field_name="slot_code", errors=errors)
+    slot_id = _require_int(payload=payload, field_name="slot_id", errors=errors)
     exit_at = _parse_optional_datetime(payload=payload, field_name="exit_at", errors=errors)
 
     if errors:
         raise ValidationError(errors)
 
-    return ExitCommand(vehicle_num=vehicle_num, exit_at=exit_at)
+    return ExitCommand(
+        vehicle_num=vehicle_num,
+        zone_id=zone_id,
+        slot_code=slot_code,
+        slot_id=slot_id,
+        exit_at=exit_at,
+    )
 
 
 def _parse_json_body(*, body: bytes) -> dict[str, object]:
@@ -86,6 +103,22 @@ def _require_int(
     if not isinstance(value, int):
         errors[field_name] = ["정수여야 합니다."]
         return 0
+    return value
+
+
+def _require_string(
+    *,
+    payload: dict[str, object],
+    field_name: str,
+    errors: dict[str, list[str]],
+) -> str:
+    value = payload.get(field_name)
+    if value is None:
+        errors[field_name] = ["필수 입력값입니다."]
+        return ""
+    if not isinstance(value, str):
+        errors[field_name] = ["문자열이어야 합니다."]
+        return ""
     return value
 
 

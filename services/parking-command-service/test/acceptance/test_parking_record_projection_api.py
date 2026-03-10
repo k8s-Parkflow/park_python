@@ -28,7 +28,7 @@ from support.factories import (  # noqa: E402
 # projection API 인수 테스트 클래스
 class ParkingRecordProjectionAcceptanceTests(TestCase):
     # 입차 후 현재 위치 projection 생성 검증
-    def test_should_create_query_projection__when_entry_api_succeeds(self) -> None:
+    def test_should_create_projection__when_entry_succeeds(self) -> None:
         # Given
         vehicle = create_vehicle()
         target_slot = create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_code="A001")
@@ -36,7 +36,13 @@ class ParkingRecordProjectionAcceptanceTests(TestCase):
         create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_code="A002")
 
         # When
-        response = post_entry(self.client, vehicle_num=vehicle.vehicle_num, slot_id=target_slot.slot_id)
+        response = post_entry(
+            self.client,
+            vehicle_num=vehicle.vehicle_num,
+            zone_id=target_slot.zone_id,
+            slot_code=target_slot.slot_code,
+            slot_id=target_slot.slot_id,
+        )
 
         # Then
         self.assertEqual(response.status_code, 201)
@@ -48,7 +54,7 @@ class ParkingRecordProjectionAcceptanceTests(TestCase):
         self.assertEqual(zone_availability.available_count, 1)
 
     # 출차 후 현재 위치 projection 제거 검증
-    def test_should_remove_query_projection__when_exit_api_succeeds(self) -> None:
+    def test_should_remove_projection__when_exit_succeeds(self) -> None:
         # Given
         vehicle = create_vehicle()
         target_slot = create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_code="A001")
@@ -61,7 +67,14 @@ class ParkingRecordProjectionAcceptanceTests(TestCase):
         DjangoParkingProjectionWriter().record_entry(history=history)
 
         # When
-        response = post_exit(self.client, vehicle_num=vehicle.vehicle_num, exit_at=timezone.now())
+        response = post_exit(
+            self.client,
+            vehicle_num=vehicle.vehicle_num,
+            zone_id=target_slot.zone_id,
+            slot_code=target_slot.slot_code,
+            slot_id=target_slot.slot_id,
+            exit_at=timezone.now(),
+        )
 
         # Then
         self.assertEqual(response.status_code, 200)

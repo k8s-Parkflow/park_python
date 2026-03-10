@@ -12,6 +12,7 @@ from parking_command_service.domains.parking_record.application.dtos import (
     ParkingRecordSnapshot,
 )
 from parking_command_service.domains.parking_record.application.exceptions import (
+    ParkingRecordBadRequestError,
     ParkingRecordConflictError,
     ParkingRecordNotFoundError,
 )
@@ -24,6 +25,7 @@ from parking_command_service.domains.parking_record.infrastructure.repositories 
 
 class ParkingRecordRepository(Protocol):
     def get_slot_for_update(self, *, slot_id: int): ...
+    def get_slot_by_identity_for_update(self, *, zone_id: int, slot_code: str): ...
     def get_or_create_occupancy_for_update(self, *, slot): ...
     def has_active_history_for_vehicle(self, *, vehicle_num: str) -> bool: ...
     def get_active_history_for_vehicle_for_update(self, *, vehicle_num: str): ...
@@ -69,9 +71,11 @@ class ParkingRecordCommandService:
             raise ParkingRecordNotFoundError("존재하지 않는 차량입니다.")
 
         # 슬롯과 점유 행을 같은 트랜잭션 안에서 잠가 이중 입차를 줄이는 흐름
-        slot = self.parking_record_repository.get_slot_for_update(slot_id=command.slot_id)
-        if slot is None:
-            raise ParkingRecordNotFoundError("존재하지 않는 슬롯입니다.")
+        slot = self._get_command_slot(
+            slot_id=command.slot_id,
+            zone_id=command.zone_id,
+            slot_code=command.slot_code,
+        )
 
         occupancy = self.parking_record_repository.get_or_create_occupancy_for_update(slot=slot)
         if not slot.is_active:
@@ -112,6 +116,14 @@ class ParkingRecordCommandService:
         if history is None:
             raise ParkingRecordNotFoundError("활성 주차 이력이 없습니다.")
 
+        slot = self._get_command_slot(
+            slot_id=command.slot_id,
+            zone_id=command.zone_id,
+            slot_code=command.slot_code,
+        )
+        if slot.slot_id != history.slot_id:
+            raise ParkingRecordConflictError("출차 요청 위치가 현재 점유 위치와 일치하지 않습니다.")
+
         occupancy = self.parking_record_repository.get_or_create_occupancy_for_update(slot=history.slot)
         exit_at = command.exit_at or timezone.now()
         history.exit(exited_at=exit_at)
@@ -125,11 +137,25 @@ class ParkingRecordCommandService:
 
         return _build_snapshot(history=history)
 
+    def _get_command_slot(self, *, slot_id: int, zone_id: int, slot_code: str):
+        slot_by_id = self.parking_record_repository.get_slot_for_update(slot_id=slot_id)
+        slot_by_identity = self.parking_record_repository.get_slot_by_identity_for_update(
+            zone_id=zone_id,
+            slot_code=slot_code,
+        )
+        if slot_by_id is None or slot_by_identity is None:
+            raise ParkingRecordNotFoundError("존재하지 않는 슬롯입니다.")
+        if slot_by_id.slot_id != slot_by_identity.slot_id:
+            raise ParkingRecordBadRequestError("슬롯 식별자가 서로 일치하지 않습니다.")
+        return slot_by_id
+
 
 def _build_snapshot(*, history: ParkingHistory) -> ParkingRecordSnapshot:
     return ParkingRecordSnapshot(
         history_id=history.history_id,
         vehicle_num=history.vehicle_num,
+        zone_id=history.slot.zone_id,
+        slot_code=history.slot.slot_code,
         slot_id=history.slot_id,
         status=history.status,
         entry_at=history.entry_at,

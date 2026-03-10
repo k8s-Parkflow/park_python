@@ -7,6 +7,8 @@ from datetime import datetime
 @dataclass(frozen=True)
 class EntryCommand:
     vehicle_num: str
+    zone_id: int
+    slot_code: str
     slot_id: int
     entry_at: datetime | None
 
@@ -14,6 +16,9 @@ class EntryCommand:
 @dataclass(frozen=True)
 class ExitCommand:
     vehicle_num: str
+    zone_id: int
+    slot_code: str
+    slot_id: int
     exit_at: datetime | None
 
 
@@ -21,6 +26,8 @@ class ExitCommand:
 class ParkingRecordSnapshot:
     history_id: int
     vehicle_num: str
+    zone_id: int
+    slot_code: str
     slot_id: int
     status: str
     entry_at: datetime
@@ -30,6 +37,8 @@ class ParkingRecordSnapshot:
         return {
             "history_id": self.history_id,
             "vehicle_num": self.vehicle_num,
+            "zone_id": self.zone_id,
+            "slot_code": self.slot_code,
             "slot_id": self.slot_id,
             "status": self.status,
             "entry_at": self.entry_at.isoformat(),

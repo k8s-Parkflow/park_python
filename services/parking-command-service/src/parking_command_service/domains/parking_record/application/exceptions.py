@@ -13,3 +13,8 @@ class ParkingRecordNotFoundError(ApplicationError):
 class ParkingRecordConflictError(ApplicationError):
     def __init__(self, message: str) -> None:
         super().__init__(message=message, code=ErrorCode.CONFLICT, status=HTTPStatus.CONFLICT)
+
+
+class ParkingRecordBadRequestError(ApplicationError):
+    def __init__(self, message: str, *, details=None) -> None:
+        super().__init__(message=message, code=ErrorCode.BAD_REQUEST, status=HTTPStatus.BAD_REQUEST, details=details)
