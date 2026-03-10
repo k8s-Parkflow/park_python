@@ -27,6 +27,32 @@ class ZoneGrpcClient(GrpcClientBase):
             stub=stub,
         )
 
+    def validate_entry_policy(self, *, slot_id: int, vehicle_type: str) -> dict | None:
+        stub = self.get_stub(zone_pb2_grpc.ZoneServiceStub)
+        request = zone_pb2.ValidateEntryPolicyRequest(
+            slot_id=slot_id,
+            vehicle_type=vehicle_type,
+        )
+
+        try:
+            response = stub.ValidateEntryPolicy(request, timeout=self.timeout)
+        except grpc.RpcError as error:
+            if error.code() == grpc.StatusCode.NOT_FOUND:
+                return None
+            raise DownstreamDependencyError(
+                message="구역 정책 서비스 호출에 실패했습니다."
+            ) from error
+
+        return {
+            "slot_id": response.slot_id,
+            "zone_id": response.zone_id,
+            "slot_type": response.slot_type,
+            "zone_active": response.zone_active,
+            "entry_allowed": response.entry_allowed,
+            "zone_name": response.zone_name,
+            "slot_code": response.slot_code,
+        }
+
     def get_zone(self, *, zone_id: int) -> dict:
         stub = self.get_stub(zone_pb2_grpc.ZoneServiceStub)
         request = zone_pb2.GetZoneRequest(zone_id=zone_id)

@@ -172,7 +172,15 @@ class ParkingRecordRepositoryTests(TestCase):
         create_vehicle(vehicle_num="69가3455")
         service = ParkingRecordCommandService(
             parking_record_repository=DjangoParkingRecordRepository(),
-            vehicle_repository=Mock(exists=Mock(return_value=True)),
+            vehicle_repository=Mock(
+                get_vehicle=Mock(
+                    return_value={
+                        "vehicle_num": "69가3455",
+                        "vehicle_type": "GENERAL",
+                        "active": True,
+                    }
+                )
+            ),
         )
 
         # When
@@ -200,7 +208,15 @@ class ParkingRecordRepositoryTests(TestCase):
         create_vehicle(vehicle_num="69가3455")
         service = ParkingRecordCommandService(
             parking_record_repository=DjangoParkingRecordRepository(),
-            vehicle_repository=Mock(exists=Mock(return_value=True)),
+            vehicle_repository=Mock(
+                get_vehicle=Mock(
+                    return_value={
+                        "vehicle_num": "69가3455",
+                        "vehicle_type": "GENERAL",
+                        "active": True,
+                    }
+                )
+            ),
         )
 
         # When
@@ -231,7 +247,15 @@ class ParkingRecordRepositoryTests(TestCase):
         create_vehicle(vehicle_num="69가3455")
         service = ParkingRecordCommandService(
             parking_record_repository=DjangoParkingRecordRepository(),
-            vehicle_repository=Mock(exists=Mock(return_value=True)),
+            vehicle_repository=Mock(
+                get_vehicle=Mock(
+                    return_value={
+                        "vehicle_num": "69가3455",
+                        "vehicle_type": "GENERAL",
+                        "active": True,
+                    }
+                )
+            ),
         )
 
         # When / Then
@@ -266,7 +290,28 @@ class ParkingRecordRepositoryConcurrencyTests(TransactionTestCase):
         def run_entry(vehicle_num: str, *, mark_started: bool = False) -> None:
             close_old_connections()
             service = ParkingRecordCommandService(
-                vehicle_repository=Mock(exists=Mock(return_value=True))
+                vehicle_repository=Mock(
+                    get_vehicle=Mock(
+                        return_value={
+                            "vehicle_num": vehicle_num,
+                            "vehicle_type": "GENERAL",
+                            "active": True,
+                        }
+                    )
+                ),
+                zone_policy_gateway=Mock(
+                    validate_entry_policy=Mock(
+                        return_value={
+                            "slot_id": slot.slot_id,
+                            "zone_id": slot.zone_id,
+                            "slot_type": "GENERAL",
+                            "zone_active": True,
+                            "entry_allowed": True,
+                            "zone_name": f"ZONE-{slot.zone_id}",
+                            "slot_code": slot.slot_code,
+                        }
+                    )
+                ),
             )
             try:
                 if mark_started:

@@ -51,6 +51,26 @@ class ParkingCommandVehicleGrpcClientContractTests(SimpleTestCase):
         self.assertEqual(stub.request.vehicle_num, "12가3456")
         self.assertTrue(exists)
 
+    def test_should_map_vehicle_payload__when_vehicle_exists(self) -> None:
+        """[CT-PC-VEHICLE-GRPC-03] vehicle payload 조회 계약"""
+
+        from parking_command_service.clients.grpc.vehicle import VehicleGrpcClient
+
+        stub = _FakeVehicleStub()
+        client = VehicleGrpcClient(stub=stub)
+
+        payload = client.get_vehicle(vehicle_num="12가3456")
+
+        self.assertEqual(stub.request.vehicle_num, "12가3456")
+        self.assertEqual(
+            payload,
+            {
+                "vehicle_num": "12가3456",
+                "vehicle_type": "GENERAL",
+                "active": True,
+            },
+        )
+
     def test_should_return_false__when_vehicle_service_returns_not_found(self) -> None:
         """[CT-PC-VEHICLE-GRPC-02] vehicle 미존재 응답 계약"""
 

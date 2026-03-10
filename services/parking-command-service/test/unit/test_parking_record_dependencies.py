@@ -37,4 +37,5 @@ class ParkingRecordDependenciesUnitTests(SimpleTestCase):
         self.assertIsInstance(service.parking_record_repository, DjangoParkingRecordRepository)
         self.assertIsInstance(service.projection_writer, ParkingQueryGrpcProjectionWriter)
         self.assertIsInstance(service.vehicle_repository, VehicleGrpcClient)
+        self.assertIsInstance(service.zone_policy_gateway, ZoneGrpcClient)
         self.assertIsInstance(service.projection_writer.zone_lookup, ZoneGrpcClient)

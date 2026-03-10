@@ -6,6 +6,7 @@ from typing import Protocol
 from django.db import DatabaseError, IntegrityError, transaction
 from django.utils import timezone
 
+from parking_command_service.clients.grpc.zone import ZoneGrpcClient
 from parking_command_service.clients.grpc.vehicle import VehicleGrpcClient
 from parking_command_service.domains.parking_record.application.dtos import (
     EntryCommand,
@@ -27,7 +28,6 @@ from parking_command_service.global_shared.utils.vehicle_nums import normalize_v
 
 class ParkingRecordRepository(Protocol):
     def get_lock_anchor_for_update(self, *, slot_id: int): ...
-    def get_lock_anchor_by_identity_for_update(self, *, zone_id: int, slot_code: str): ...
     def get_or_create_occupancy_for_update(self, *, lock_anchor): ...
     def has_active_history_for_vehicle(self, *, vehicle_num: str) -> bool: ...
     def get_active_history_for_vehicle_for_update(self, *, vehicle_num: str): ...
@@ -36,7 +36,11 @@ class ParkingRecordRepository(Protocol):
 
 
 class VehicleRepository(Protocol):
-    def exists(self, *, vehicle_num: str) -> bool: ...
+    def get_vehicle(self, *, vehicle_num: str): ...
+
+
+class ZonePolicyGateway(Protocol):
+    def validate_entry_policy(self, *, slot_id: int, vehicle_type: str): ...
 
 
 class ParkingProjectionWriter(Protocol):
@@ -50,10 +54,12 @@ class ParkingRecordCommandService:
         *,
         parking_record_repository: ParkingRecordRepository | None = None,
         vehicle_repository: VehicleRepository | None = None,
+        zone_policy_gateway: ZonePolicyGateway | None = None,
         projection_writer: ParkingProjectionWriter | None = None,
     ) -> None:
         self.parking_record_repository = parking_record_repository or DjangoParkingRecordRepository()
         self.vehicle_repository = vehicle_repository or VehicleGrpcClient()
+        self.zone_policy_gateway = zone_policy_gateway or ZoneGrpcClient()
         self.projection_writer = projection_writer
 
     def create_entry(self, *, command: EntryCommand) -> ParkingRecordSnapshot:
@@ -91,20 +97,23 @@ class ParkingRecordCommandService:
         if trust_zone_metadata:
             _validate_trusted_slot_snapshot(command=command)
         vehicle_num = _normalize_lookup_vehicle_num(command.vehicle_num)
-        if not self.vehicle_repository.exists(vehicle_num=vehicle_num):
+        vehicle_payload = self.vehicle_repository.get_vehicle(vehicle_num=vehicle_num)
+        if vehicle_payload is None:
             raise ParkingRecordNotFoundError("존재하지 않는 차량입니다.")
-
-        # lock anchor와 점유 행을 같은 트랜잭션 안에서 잠가 이중 입차를 줄인다.
-        lock_anchor = self._resolve_lock_anchor(
+        slot_snapshot = self._resolve_slot_snapshot(
             command=command,
             trust_zone_metadata=trust_zone_metadata,
+            vehicle_type=vehicle_payload["vehicle_type"],
         )
+
+        # lock anchor와 점유 행을 같은 트랜잭션 안에서 잠가 이중 입차를 줄인다.
+        lock_anchor = self.parking_record_repository.get_lock_anchor_for_update(slot_id=command.slot_id)
+        if lock_anchor is None:
+            raise ParkingRecordNotFoundError("존재하지 않는 슬롯입니다.")
 
         occupancy = self.parking_record_repository.get_or_create_occupancy_for_update(
             lock_anchor=lock_anchor
         )
-        if not trust_zone_metadata and not lock_anchor.is_active:
-            raise ParkingRecordConflictError("비활성화된 슬롯입니다.")
         if occupancy.occupied:
             raise ParkingRecordConflictError("이미 점유 중인 슬롯입니다.")
         if self.parking_record_repository.has_active_history_for_vehicle(vehicle_num=vehicle_num):
@@ -114,9 +123,9 @@ class ParkingRecordCommandService:
             slot=lock_anchor,
             vehicle_num=vehicle_num,
             entry_at=command.entry_at or timezone.now(),
-            zone_id=command.zone_id,
-            slot_type_id=_resolve_slot_type_id(command=command, lock_anchor=lock_anchor),
-            slot_code=command.slot_code,
+            zone_id=slot_snapshot["zone_id"],
+            slot_type_id=slot_snapshot["slot_type_id"],
+            slot_code=slot_snapshot["slot_code"],
         )
 
         try:
@@ -126,7 +135,7 @@ class ParkingRecordCommandService:
                 vehicle_num=vehicle_num,
                 history=history,
                 occupied_at=command.entry_at or history.entry_at,
-                enforce_slot_active=not trust_zone_metadata,
+                enforce_slot_active=False,
             )
             self.parking_record_repository.save_occupancy(occupancy=occupancy)
             if self.projection_writer is not None:
@@ -163,26 +172,36 @@ class ParkingRecordCommandService:
 
         return _build_snapshot(history=history)
 
-    def _resolve_lock_anchor(
+    def _resolve_slot_snapshot(
         self,
         *,
         command: SlotCommand,
         trust_zone_metadata: bool,
-    ):
-        anchor_by_id = self.parking_record_repository.get_lock_anchor_for_update(slot_id=command.slot_id)
-        if anchor_by_id is None:
-            raise ParkingRecordNotFoundError("존재하지 않는 슬롯입니다.")
+        vehicle_type: str,
+    ) -> dict:
         if trust_zone_metadata:
-            return anchor_by_id
-        anchor_by_identity = self.parking_record_repository.get_lock_anchor_by_identity_for_update(
-            zone_id=command.zone_id,
-            slot_code=command.slot_code,
+            return {
+                "zone_id": command.zone_id,
+                "slot_code": command.slot_code,
+                "slot_type_id": _slot_type_name_to_id(command.slot_type),
+            }
+        payload = self.zone_policy_gateway.validate_entry_policy(
+            slot_id=command.slot_id,
+            vehicle_type=vehicle_type,
         )
-        if anchor_by_identity is None:
+        if payload is None:
+            raise ParkingRecordNotFoundError("존재하지 않는 슬롯입니다.")
+        if payload["zone_id"] != command.zone_id or payload["slot_code"] != command.slot_code:
             raise ParkingRecordBadRequestError("슬롯 식별자가 서로 일치하지 않습니다.")
-        if anchor_by_id.slot_id != anchor_by_identity.slot_id:
-            raise ParkingRecordBadRequestError("슬롯 식별자가 서로 일치하지 않습니다.")
-        return anchor_by_id
+        if not payload["entry_allowed"]:
+            if payload["zone_active"]:
+                raise ParkingRecordConflictError("비활성화된 슬롯입니다.")
+            raise ParkingRecordConflictError("입차가 허용되지 않는 슬롯입니다.")
+        return {
+            "zone_id": payload["zone_id"],
+            "slot_code": payload["slot_code"],
+            "slot_type_id": _slot_type_name_to_id(payload["slot_type"]),
+        }
 
     def _validate_exit_request(self, *, history: ParkingHistory, command: ExitCommand) -> None:
         if command.slot_id != history.slot_id:
@@ -219,6 +238,14 @@ def _validate_trusted_slot_snapshot(*, command: EntryCommand) -> None:
         raise ParkingRecordBadRequestError("trusted 입차에는 slot_type이 필요합니다.")
 
 
+def _slot_type_name_to_id(slot_type: str | None) -> int:
+    return {
+        "GENERAL": 1,
+        "EV": 2,
+        "DISABLED": 3,
+    }.get(slot_type or "", 0)
+
+
 def _history_zone_id(history) -> int:
     zone_id = getattr(history, "zone_id", 0) or 0
     if not zone_id:
@@ -231,13 +258,3 @@ def _history_slot_code(history) -> str:
     if not slot_code:
         raise ParkingRecordConflictError("주차 이력의 slot_code snapshot 정보가 없습니다.")
     return slot_code
-
-
-def _resolve_slot_type_id(*, command: EntryCommand, lock_anchor) -> int:
-    if command.slot_type is None:
-        return lock_anchor.slot_type_id
-    return {
-        "GENERAL": 1,
-        "EV": 2,
-        "DISABLED": 3,
-    }.get(command.slot_type, lock_anchor.slot_type_id)

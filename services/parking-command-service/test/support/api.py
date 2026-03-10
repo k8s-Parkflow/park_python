@@ -93,6 +93,12 @@ def build_test_command_service() -> ParkingRecordCommandService:
                 method_names=["GetVehicle"],
             )
         ),
+        zone_policy_gateway=ZoneGrpcClient(
+            stub=build_direct_stub(
+                servicer=ZoneGrpcServicer(),
+                method_names=["ValidateEntryPolicy"],
+            )
+        ),
         projection_writer=build_test_projection_writer(),
     )
 

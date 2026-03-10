@@ -27,18 +27,24 @@ class VehicleGrpcClient(GrpcClientBase):
             stub=stub,
         )
 
-    def exists(self, *, vehicle_num: str) -> bool:
+    def get_vehicle(self, *, vehicle_num: str) -> dict | None:
         stub = self.get_stub(vehicle_pb2_grpc.VehicleServiceStub)
         request = vehicle_pb2.GetVehicleRequest(vehicle_num=vehicle_num)
 
         try:
-            stub.GetVehicle(request, timeout=self.timeout)
+            response = stub.GetVehicle(request, timeout=self.timeout)
         except grpc.RpcError as error:
             if error.code() == grpc.StatusCode.NOT_FOUND:
-                return False
+                return None
             raise DownstreamDependencyError(
                 message="차량 조회 서비스 호출에 실패했습니다."
             ) from error
 
-        return True
+        return {
+            "vehicle_num": response.vehicle_num,
+            "vehicle_type": response.vehicle_type,
+            "active": response.active,
+        }
 
+    def exists(self, *, vehicle_num: str) -> bool:
+        return self.get_vehicle(vehicle_num=vehicle_num) is not None

@@ -8,6 +8,7 @@ from parking_command_service.domains.parking_record.domain import (
 )
 from vehicle_service.models import Vehicle
 from vehicle_service.models.enums import VehicleType
+from zone_service.models import ParkingSlot as ZoneParkingSlot
 from zone_service.models import SlotType, Zone
 
 
@@ -46,14 +47,29 @@ def create_slot(
     slot_code: str = "A001",
     is_active: bool = True,
 ) -> ParkingSlot:
-    create_zone(zone_id=zone_id)
-    create_slot_type(slot_type_id=slot_type_id, type_name=slot_type_name or f"TYPE-{slot_type_id}")
-    return ParkingSlot.objects.create(
+    zone = create_zone(zone_id=zone_id)
+    resolved_slot_type_name = slot_type_name or {
+        1: "GENERAL",
+        2: "EV",
+        3: "DISABLED",
+    }.get(slot_type_id, f"TYPE-{slot_type_id}")
+    slot_type = create_slot_type(slot_type_id=slot_type_id, type_name=resolved_slot_type_name)
+    lock_anchor = ParkingSlot.objects.create(
         zone_id=zone_id,
         slot_type_id=slot_type_id,
         slot_code=slot_code,
         is_active=is_active,
     )
+    ZoneParkingSlot.objects.update_or_create(
+        slot_id=lock_anchor.slot_id,
+        defaults={
+            "zone": zone,
+            "slot_type": slot_type,
+            "slot_code": slot_code,
+            "is_active": is_active,
+        },
+    )
+    return lock_anchor
 
 
 # 슬롯 타입 테스트 데이터 생성 유틸리티
