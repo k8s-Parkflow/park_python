@@ -35,9 +35,9 @@ class ParkingQueryGrpcProjectionWriter(GrpcClientBase):
             history_id=history.history_id,
             vehicle_num=history.vehicle_num,
             slot_id=history.slot_id,
-            zone_id=history.slot.zone_id,
-            slot_type=_slot_type_name(slot_type_id=history.slot.slot_type_id),
-            slot_code=history.slot.slot_code,
+            zone_id=_history_zone_id(history),
+            slot_type=_slot_type_name(slot_type_id=_history_slot_type_id(history)),
+            slot_code=_history_slot_code(history),
         )
         request.entry_at.CopyFrom(request.context.requested_at)
         self._invoke(stub_method_name="ApplyEntryProjection", request=request)
@@ -50,9 +50,9 @@ class ParkingQueryGrpcProjectionWriter(GrpcClientBase):
             history_id=history.history_id,
             vehicle_num=history.vehicle_num,
             slot_id=history.slot_id,
-            zone_id=history.slot.zone_id,
-            slot_type=_slot_type_name(slot_type_id=history.slot.slot_type_id),
-            slot_code=history.slot.slot_code,
+            zone_id=_history_zone_id(history),
+            slot_type=_slot_type_name(slot_type_id=_history_slot_type_id(history)),
+            slot_code=_history_slot_code(history),
         )
         request.exit_at.CopyFrom(request.context.requested_at)
         self._invoke(stub_method_name="ApplyExitProjection", request=request)
@@ -74,3 +74,24 @@ def _slot_type_name(*, slot_type_id: int) -> str:
         2: "EV",
         3: "DISABLED",
     }.get(slot_type_id, str(slot_type_id))
+
+
+def _history_zone_id(history) -> int:
+    zone_id = getattr(history, "zone_id", 0) or 0
+    if zone_id:
+        return zone_id
+    return history.slot.zone_id
+
+
+def _history_slot_type_id(history) -> int:
+    slot_type_id = getattr(history, "slot_type_id", 0) or 0
+    if slot_type_id:
+        return slot_type_id
+    return history.slot.slot_type_id
+
+
+def _history_slot_code(history) -> str:
+    slot_code = getattr(history, "slot_code", "")
+    if slot_code:
+        return slot_code
+    return history.slot.slot_code

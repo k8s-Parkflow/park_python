@@ -44,16 +44,13 @@ class ParkingCommandParkingQueryGrpcWriterUnitTests(SimpleTestCase):
 
 
 def _history_stub():
-    class _Slot:
-        zone_id = 1
-        slot_type_id = 1
-        slot_code = "A001"
-
     class _History:
         history_id = 101
         vehicle_num = "12가3456"
         slot_id = 7
-        slot = _Slot()
+        zone_id = 1
+        slot_type_id = 1
+        slot_code = "A001"
         entry_at = _AwareDateTime("2026-03-10T10:00:00+09:00")
         exit_at = _AwareDateTime("2026-03-10T12:00:00+09:00")
 

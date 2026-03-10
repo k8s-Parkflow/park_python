@@ -116,8 +116,7 @@ class ParkingRecordCommandService:
         if history is None:
             raise ParkingRecordNotFoundError("활성 주차 이력이 없습니다.")
 
-        slot = self._get_command_slot(command=command)
-        self._validate_exit_slot(history=history, slot=slot)
+        self._validate_exit_request(history=history, command=command)
 
         occupancy = self.parking_record_repository.get_or_create_occupancy_for_update(slot=history.slot)
         exit_at = command.exit_at or timezone.now()
@@ -146,8 +145,12 @@ class ParkingRecordCommandService:
             raise ParkingRecordBadRequestError("슬롯 식별자가 서로 일치하지 않습니다.")
         return slot_by_id
 
-    def _validate_exit_slot(self, *, history: ParkingHistory, slot) -> None:
-        if slot.slot_id != history.slot_id:
+    def _validate_exit_request(self, *, history: ParkingHistory, command: ExitCommand) -> None:
+        if command.slot_id != history.slot_id:
+            raise ParkingRecordConflictError("출차 요청 위치가 현재 점유 위치와 일치하지 않습니다.")
+        if command.zone_id != _history_zone_id(history):
+            raise ParkingRecordConflictError("출차 요청 위치가 현재 점유 위치와 일치하지 않습니다.")
+        if command.slot_code != _history_slot_code(history):
             raise ParkingRecordConflictError("출차 요청 위치가 현재 점유 위치와 일치하지 않습니다.")
 
 
@@ -155,8 +158,8 @@ def _build_snapshot(*, history: ParkingHistory) -> ParkingRecordSnapshot:
     return ParkingRecordSnapshot(
         history_id=history.history_id,
         vehicle_num=history.vehicle_num,
-        zone_id=history.slot.zone_id,
-        slot_code=history.slot.slot_code,
+        zone_id=_history_zone_id(history),
+        slot_code=_history_slot_code(history),
         slot_id=history.slot_id,
         status=history.status,
         entry_at=history.entry_at,
@@ -170,3 +173,17 @@ def _is_locked_error(exc: DatabaseError) -> bool:
 
 def _normalize_lookup_vehicle_num(vehicle_num: str) -> str:
     return normalize_vehicle_num(vehicle_num)
+
+
+def _history_zone_id(history) -> int:
+    zone_id = getattr(history, "zone_id", 0) or 0
+    if zone_id:
+        return zone_id
+    return history.slot.zone_id
+
+
+def _history_slot_code(history) -> str:
+    slot_code = getattr(history, "slot_code", "")
+    if slot_code:
+        return slot_code
+    return history.slot.slot_code

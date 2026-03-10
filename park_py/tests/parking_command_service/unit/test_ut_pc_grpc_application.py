@@ -76,7 +76,10 @@ class ParkingCommandGrpcApplicationUnitTests(TestCase):
 
         # Given
         history = Mock()
-        history.slot = Mock(zone_id=1, slot_code="A001")
+        history.zone_id = 1
+        history.slot_code = "A001"
+        history.slot_type_id = 1
+        history.slot = Mock(zone_id=9, slot_code="B999")
         history.slot_id = 7
         repository = Mock()
         repository.get_active_history_for_vehicle.return_value = history
@@ -107,6 +110,33 @@ class ParkingCommandGrpcApplicationUnitTests(TestCase):
         command = command_service.create_exit.call_args.kwargs["command"]
         self.assertEqual(command.zone_id, 1)
         self.assertEqual(command.slot_code, "A001")
+
+    def test_should_build_active_parking_payload_from_history_metadata__when_slot_master_has_changed(self) -> None:
+        """[UT-PC-GRPC-05] active parking payload는 history metadata를 우선한다"""
+
+        history = Mock(
+            history_id=101,
+            slot_id=7,
+            vehicle_num="12가3456",
+            entry_at=datetime(2026, 3, 10, 1, 0, tzinfo=timezone.utc),
+            status="PARKED",
+            zone_id=1,
+            slot_type_id=1,
+            slot_code="A001",
+        )
+        history.slot = Mock(zone_id=9, slot_type_id=2, slot_code="B999")
+        repository = Mock()
+        repository.get_active_history_for_vehicle.return_value = history
+        service = ParkingCommandGrpcApplicationService(
+            parking_record_repository=repository,
+            command_service=Mock(),
+        )
+
+        payload = service.validate_active_parking(vehicle_num="12가3456")
+
+        self.assertEqual(payload["zone_id"], 1)
+        self.assertEqual(payload["slot_type"], "GENERAL")
+        self.assertEqual(payload["slot_code"], "A001")
 
     def test_should_restore_active_parking__when_compensate_exit_is_called(self) -> None:
         """[UT-PC-GRPC-04] compensate-exit 복원 처리"""

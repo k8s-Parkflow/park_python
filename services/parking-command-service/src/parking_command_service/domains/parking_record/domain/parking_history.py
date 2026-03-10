@@ -19,6 +19,9 @@ class ParkingHistory(models.Model):
         db_column="slot_id",
         related_name="parking_histories",
     )
+    zone_id = models.BigIntegerField(default=0)
+    slot_type_id = models.BigIntegerField(default=0)
+    slot_code = models.CharField(max_length=50, default="", db_column="slot_name")
     vehicle_num = models.CharField(max_length=20)
     status = models.CharField(
         max_length=16,
@@ -56,10 +59,17 @@ class ParkingHistory(models.Model):
         # 생성 시점에 차량 번호를 정규화해 활성 세션 유니크 조건과 비교 기준을 맞춘다.
         return cls(
             slot=slot,
+            zone_id=slot.zone_id,
+            slot_type_id=slot.slot_type_id,
+            slot_code=slot.slot_code,
             vehicle_num=normalize_vehicle_num(vehicle_num),
             entry_at=entry_at or timezone.now(),
             status=ParkingHistoryStatus.PARKED,
         )
+
+    def save(self, *args, **kwargs) -> None:
+        self._sync_slot_snapshot()
+        super().save(*args, **kwargs)
 
     def exit(self, *, exited_at: datetime | None = None) -> None:
         if self.status == ParkingHistoryStatus.EXITED:
@@ -79,3 +89,13 @@ class ParkingHistory(models.Model):
 
         self.status = ParkingHistoryStatus.PARKED
         self.exit_at = None
+
+    def _sync_slot_snapshot(self) -> None:
+        if self.slot_id is None or self.slot is None:
+            return
+        if not self.zone_id:
+            self.zone_id = self.slot.zone_id
+        if not self.slot_type_id:
+            self.slot_type_id = self.slot.slot_type_id
+        if not self.slot_code:
+            self.slot_code = self.slot.slot_code

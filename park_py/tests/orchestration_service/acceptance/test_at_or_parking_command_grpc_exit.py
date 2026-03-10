@@ -69,3 +69,49 @@ class OrchestrationParkingCommandGrpcExitAcceptanceTests(TransactionTestCase):
         self.assertEqual(response.json()["status"], "COMPLETED")
         self.assertEqual(ParkingHistory.objects.get(history_id=history.history_id).status, "EXITED")
         self.assertFalse(SlotOccupancy.objects.get(slot_id=7).occupied)
+
+    def test_should_preserve_history_slot_metadata__when_slot_master_changes_after_entry(self) -> None:
+        """[AT-OR-GRPC-PC-EXIT-02] active parking/exit는 history metadata를 우선한다"""
+
+        slot = ParkingSlot.objects.create(
+            slot_id=7,
+            zone_id=1,
+            slot_type_id=1,
+            slot_code="A001",
+            is_active=True,
+        )
+        history = ParkingHistory.objects.create(
+            slot=slot,
+            vehicle_num="12가3456",
+            entry_at=timezone.datetime(2026, 3, 10, 1, 0, tzinfo=timezone.utc),
+        )
+        SlotOccupancy.objects.create(
+            slot=slot,
+            occupied=True,
+            vehicle_num="12가3456",
+            history=history,
+            occupied_at=history.entry_at,
+        )
+        slot.zone_id = 9
+        slot.slot_type_id = 2
+        slot.slot_code = "B999"
+        slot.save(update_fields=["zone_id", "slot_type_id", "slot_code"])
+
+        parking_command_gateway = ParkingCommandGrpcClient(
+            stub=build_direct_stub(
+                servicer=ParkingCommandGrpcServicer(),
+                method_names=["ValidateActiveParking", "ExitParking"],
+            )
+        )
+
+        active_parking = parking_command_gateway.validate_active_parking(vehicle_num="12가3456")
+        exit_payload = parking_command_gateway.exit_parking(
+            operation_id="exit-op-002",
+            vehicle_num="12가3456",
+            requested_at="2026-03-10T12:00:00+09:00",
+        )
+
+        self.assertEqual(active_parking["zone_id"], 1)
+        self.assertEqual(active_parking["slot_type"], "GENERAL")
+        self.assertEqual(active_parking["slot_code"], "A001")
+        self.assertEqual(exit_payload["slot_code"], "A001")

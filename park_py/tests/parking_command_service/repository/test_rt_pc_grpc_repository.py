@@ -10,6 +10,35 @@ from parking_command_service.domains.parking_record.infrastructure.repositories.
 
 
 class ParkingCommandGrpcRepositoryTests(TestCase):
+    def test_should_keep_history_slot_metadata__when_slot_master_changes_later(self) -> None:
+        """[RT-PC-GRPC-04] history snapshot metadata 보존"""
+
+        slot = ParkingSlot.objects.create(
+            slot_id=10,
+            zone_id=1,
+            slot_type_id=1,
+            slot_code="A001",
+            is_active=True,
+        )
+        history = ParkingHistory.objects.create(
+            slot=slot,
+            vehicle_num="98다7654",
+            entry_at=timezone.now(),
+        )
+
+        slot.zone_id = 3
+        slot.slot_type_id = 2
+        slot.slot_code = "B999"
+        slot.save(update_fields=["zone_id", "slot_type_id", "slot_code"])
+
+        loaded = DjangoParkingRecordRepository().get_active_history_for_vehicle(
+            vehicle_num="98다7654"
+        )
+
+        self.assertEqual(loaded.zone_id, 1)
+        self.assertEqual(loaded.slot_type_id, 1)
+        self.assertEqual(loaded.slot_code, "A001")
+
     def test_should_return_slot_by_identity_for_update__when_zone_metadata_matches(self) -> None:
         """[RT-PC-GRPC-03] zone metadata 기반 slot identity 조회"""
 
