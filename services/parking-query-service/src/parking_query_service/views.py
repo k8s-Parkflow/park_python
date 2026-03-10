@@ -33,6 +33,7 @@ def project_parking_entry(request) -> JsonResponse:
     payload = _payload(request)
     try:
         result = project_entry(
+            operation_id=payload["operation_id"],
             vehicle_num=payload["vehicle_num"],
             slot_id=payload["slot_id"],
             zone_id=payload["zone_id"],
@@ -48,7 +49,10 @@ def project_parking_entry(request) -> JsonResponse:
 @require_POST
 def revert_parking_entry_projection(request) -> JsonResponse:
     payload = _payload(request)
-    result = revert_entry(vehicle_num=payload["vehicle_num"])
+    result = revert_entry(
+        operation_id=payload["operation_id"],
+        vehicle_num=payload["vehicle_num"],
+    )
     return JsonResponse(result, status=200)
 
 
@@ -57,7 +61,10 @@ def revert_parking_entry_projection(request) -> JsonResponse:
 def project_parking_exit(request) -> JsonResponse:
     payload = _payload(request)
     try:
-        result = project_exit(vehicle_num=payload["vehicle_num"])
+        result = project_exit(
+            operation_id=payload["operation_id"],
+            vehicle_num=payload["vehicle_num"],
+        )
     except (CurrentParkingView.DoesNotExist, ZoneAvailability.DoesNotExist) as exc:
         raise ApplicationError(code=ErrorCode.NOT_FOUND, status=404) from exc
     return JsonResponse(result, status=200)
@@ -69,6 +76,7 @@ def restore_parking_exit_projection(request) -> JsonResponse:
     payload = _payload(request)
     try:
         result = restore_exit(
+            operation_id=payload["operation_id"],
             vehicle_num=payload["vehicle_num"],
             slot_id=payload["slot_id"],
             zone_id=payload["zone_id"],

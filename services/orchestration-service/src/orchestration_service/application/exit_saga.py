@@ -43,6 +43,7 @@ class ExitSagaOrchestrationService:
         try:
             projection = self.parking_query_client.get_current_parking(vehicle_num=vehicle_num)
             command_result = self.parking_command_client.create_exit(
+                operation_id=operation_id,
                 vehicle_num=vehicle_num,
                 requested_at=requested_at,
             )
@@ -62,20 +63,27 @@ class ExitSagaOrchestrationService:
         )
 
         try:
-            self.parking_query_client.project_exit(vehicle_num=vehicle_num)
+            self.parking_query_client.project_exit(
+                operation_id=operation_id,
+                vehicle_num=vehicle_num,
+            )
         except DownstreamHttpError as exc:
             return self.compensation_runner.run(
                 operation_id=operation_id,
                 failed_step="UPDATE_QUERY_EXIT",
                 compensations=[
                     lambda: self.parking_query_client.restore_exit(
+                        operation_id=operation_id,
                         vehicle_num=projection["vehicle_num"],
                         slot_id=projection["slot_id"],
                         zone_id=projection["zone_id"],
                         slot_type=projection["slot_type"],
                         entry_at=projection["entry_at"],
                     ),
-                    lambda: self.parking_command_client.restore_exit(history_id=command_result["history_id"]),
+                    lambda: self.parking_command_client.restore_exit(
+                        operation_id=operation_id,
+                        history_id=command_result["history_id"],
+                    ),
                 ],
             )
 

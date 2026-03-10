@@ -72,6 +72,7 @@ class EntrySagaOrchestrationService:
             )
 
         command_result = self.parking_command_client.create_entry(
+            operation_id=operation_id,
             vehicle_num=vehicle_num,
             slot_id=slot_id,
             requested_at=requested_at,
@@ -89,14 +90,21 @@ class EntrySagaOrchestrationService:
                 zone_id=zone_policy["zone_id"],
                 slot_type=zone_policy["slot_type"],
                 entry_at=command_result["entry_at"],
+                operation_id=operation_id,
             )
         except DownstreamHttpError as exc:
             return self.compensation_runner.run(
                 operation_id=operation_id,
                 failed_step="UPDATE_QUERY_ENTRY",
                 compensations=[
-                    lambda: self.parking_query_client.revert_entry(vehicle_num=vehicle_num),
-                    lambda: self.parking_command_client.cancel_entry(history_id=command_result["history_id"]),
+                    lambda: self.parking_query_client.revert_entry(
+                        operation_id=operation_id,
+                        vehicle_num=vehicle_num,
+                    ),
+                    lambda: self.parking_command_client.cancel_entry(
+                        operation_id=operation_id,
+                        history_id=command_result["history_id"],
+                    ),
                 ],
             )
 

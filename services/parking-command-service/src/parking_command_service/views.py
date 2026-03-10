@@ -23,6 +23,7 @@ def create_parking_entry(request) -> JsonResponse:
     payload = _payload(request)
     try:
         result = enter_parking(
+            operation_id=payload["operation_id"],
             vehicle_num=payload["vehicle_num"],
             slot_id=payload["slot_id"],
             requested_at=payload["requested_at"],
@@ -37,7 +38,10 @@ def create_parking_entry(request) -> JsonResponse:
 @require_POST
 def cancel_parking_entry(request) -> JsonResponse:
     payload = _payload(request)
-    result = cancel_entry(history_id=payload["history_id"])
+    result = cancel_entry(
+        operation_id=payload["operation_id"],
+        history_id=payload["history_id"],
+    )
     return JsonResponse(result, status=200)
 
 
@@ -47,6 +51,7 @@ def create_parking_exit(request) -> JsonResponse:
     payload = _payload(request)
     try:
         result = exit_parking(
+            operation_id=payload["operation_id"],
             vehicle_num=payload["vehicle_num"],
             requested_at=payload["requested_at"],
         )
@@ -61,7 +66,10 @@ def create_parking_exit(request) -> JsonResponse:
 def restore_parking_exit(request) -> JsonResponse:
     payload = _payload(request)
     try:
-        result = restore_exit(history_id=payload["history_id"])
+        result = restore_exit(
+            operation_id=payload["operation_id"],
+            history_id=payload["history_id"],
+        )
     except ParkingHistory.DoesNotExist as exc:
         raise ApplicationError(code=ErrorCode.NOT_FOUND, status=404) from exc
 

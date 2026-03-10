@@ -19,6 +19,7 @@ class ParkingQueryServiceClient:
     def project_entry(
         self,
         *,
+        operation_id: str,
         vehicle_num: str,
         slot_id: int,
         zone_id: int,
@@ -29,6 +30,7 @@ class ParkingQueryServiceClient:
             dependency="parking-query-service",
             url=f"{self.base_url}/internal/parking-query/entries",
             payload={
+                "operation_id": operation_id,
                 "vehicle_num": vehicle_num,
                 "slot_id": slot_id,
                 "zone_id": zone_id,
@@ -38,24 +40,25 @@ class ParkingQueryServiceClient:
         )
         return self.parse_projection_response(payload)
 
-    def revert_entry(self, *, vehicle_num: str) -> dict:
+    def revert_entry(self, *, operation_id: str, vehicle_num: str) -> dict:
         return self.http_client.post(
             dependency="parking-query-service",
             url=f"{self.base_url}/internal/parking-query/entries/compensations",
-            payload={"vehicle_num": vehicle_num},
+            payload={"operation_id": operation_id, "vehicle_num": vehicle_num},
         )
 
-    def project_exit(self, *, vehicle_num: str) -> dict:
+    def project_exit(self, *, operation_id: str, vehicle_num: str) -> dict:
         payload = self.http_client.post(
             dependency="parking-query-service",
             url=f"{self.base_url}/internal/parking-query/exits",
-            payload={"vehicle_num": vehicle_num},
+            payload={"operation_id": operation_id, "vehicle_num": vehicle_num},
         )
         return self.parse_projection_response(payload)
 
     def restore_exit(
         self,
         *,
+        operation_id: str,
         vehicle_num: str,
         slot_id: int,
         zone_id: int,
@@ -66,6 +69,7 @@ class ParkingQueryServiceClient:
             dependency="parking-query-service",
             url=f"{self.base_url}/internal/parking-query/exits/compensations",
             payload={
+                "operation_id": operation_id,
                 "vehicle_num": vehicle_num,
                 "slot_id": slot_id,
                 "zone_id": zone_id,
