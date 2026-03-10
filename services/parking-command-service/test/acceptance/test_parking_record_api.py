@@ -65,7 +65,7 @@ class ParkingRecordEntryAcceptanceTests(ParkingRecordAcceptanceSupport):
             self.client,
             vehicle_num="69가-3455",
             zone_id=slot.zone_id,
-            slot_code=slot.slot_code,
+            slot_name=slot.slot_name,
             slot_id=slot.slot_id,
             entry_at=entry_at,
         )
@@ -78,7 +78,7 @@ class ParkingRecordEntryAcceptanceTests(ParkingRecordAcceptanceSupport):
                 "history_id": ParkingHistory.objects.get().history_id,
                 "vehicle_num": vehicle.vehicle_num,
                 "zone_id": slot.zone_id,
-                "slot_code": slot.slot_code,
+                "slot_name": slot.slot_name,
                 "slot_id": slot.slot_id,
                 "status": "PARKED",
                 "entry_at": entry_at.isoformat(),
@@ -98,7 +98,7 @@ class ParkingRecordEntryAcceptanceTests(ParkingRecordAcceptanceSupport):
             self.client,
             vehicle_num="69가-3455",
             zone_id=slot.zone_id,
-            slot_code=slot.slot_code,
+            slot_name=slot.slot_name,
             slot_id=slot.slot_id,
         )
 
@@ -117,7 +117,7 @@ class ParkingRecordEntryAcceptanceTests(ParkingRecordAcceptanceSupport):
             self.client,
             vehicle_num="69가-3455",
             zone_id=1,
-            slot_code="A001",
+            slot_name="A001",
             slot_id=9999,
         )
 
@@ -138,7 +138,7 @@ class ParkingRecordEntryAcceptanceTests(ParkingRecordAcceptanceSupport):
             self.client,
             vehicle_num=vehicle.vehicle_num,
             zone_id=slot.zone_id,
-            slot_code=slot.slot_code,
+            slot_name=slot.slot_name,
             slot_id=slot.slot_id,
         )
 
@@ -163,7 +163,7 @@ class ParkingRecordEntryAcceptanceTests(ParkingRecordAcceptanceSupport):
             self.client,
             vehicle_num=another_vehicle.vehicle_num,
             zone_id=slot.zone_id,
-            slot_code=slot.slot_code,
+            slot_name=slot.slot_name,
             slot_id=slot.slot_id,
         )
 
@@ -175,13 +175,13 @@ class ParkingRecordEntryAcceptanceTests(ParkingRecordAcceptanceSupport):
     def test_should_reject_entry__when_vehicle_already_parked(self) -> None:
         # Given
         vehicle = create_vehicle()
-        current_slot = create_slot(slot_code="A001")
+        current_slot = create_slot(slot_name="A001")
         create_occupied_session(
             slot=current_slot,
             vehicle_num=vehicle.vehicle_num,
             entry_at=timezone.now() - timedelta(hours=2),
         )
-        target_slot = create_slot(slot_code="A002")
+        target_slot = create_slot(slot_name="A002")
         create_empty_occupancy(slot=target_slot)
 
         # When
@@ -189,7 +189,7 @@ class ParkingRecordEntryAcceptanceTests(ParkingRecordAcceptanceSupport):
             self.client,
             vehicle_num=vehicle.vehicle_num,
             zone_id=target_slot.zone_id,
-            slot_code=target_slot.slot_code,
+            slot_name=target_slot.slot_name,
             slot_id=target_slot.slot_id,
         )
 
@@ -219,7 +219,7 @@ class ParkingRecordExitAcceptanceTests(ParkingRecordAcceptanceSupport):
             self.client,
             vehicle_num="69가-3455",
             zone_id=slot.zone_id,
-            slot_code=slot.slot_code,
+            slot_name=slot.slot_name,
             slot_id=slot.slot_id,
             exit_at=exit_at,
         )
@@ -232,7 +232,7 @@ class ParkingRecordExitAcceptanceTests(ParkingRecordAcceptanceSupport):
                 "history_id": history.history_id,
                 "vehicle_num": vehicle.vehicle_num,
                 "zone_id": slot.zone_id,
-                "slot_code": slot.slot_code,
+                "slot_name": slot.slot_name,
                 "slot_id": slot.slot_id,
                 "status": "EXITED",
                 "entry_at": entry_at.isoformat(),
@@ -250,7 +250,7 @@ class ParkingRecordExitAcceptanceTests(ParkingRecordAcceptanceSupport):
         create_vehicle()
 
         # When
-        response = post_exit(self.client, vehicle_num="69가-3455", zone_id=1, slot_code="A001", slot_id=1)
+        response = post_exit(self.client, vehicle_num="69가-3455", zone_id=1, slot_name="A001", slot_id=1)
 
         # Then
         self.assertEqual(response.status_code, 404)
@@ -269,7 +269,7 @@ class ParkingRecordExitAcceptanceTests(ParkingRecordAcceptanceSupport):
             self.client,
             vehicle_num=vehicle.vehicle_num,
             zone_id=slot.zone_id,
-            slot_code=slot.slot_code,
+            slot_name=slot.slot_name,
             slot_id=slot.slot_id,
             exit_at=entry_at - timedelta(minutes=1),
         )
@@ -292,7 +292,7 @@ class ParkingRecordValidationAcceptanceTests(ParkingRecordAcceptanceSupport):
             self.client,
             vehicle_num="invalid",
             zone_id=1,
-            slot_code="A001",
+            slot_name="A001",
             slot_id=1,
         )
 
@@ -308,7 +308,7 @@ class ParkingRecordValidationAcceptanceTests(ParkingRecordAcceptanceSupport):
         # When
         response = self.client.post(
             "/api/parking/exit",
-            data='{"vehicle_num":"69가-3455","zone_id":1,"slot_code":"A001","slot_id":1,"exit_at":"2026-03-09T12:10:00"}',
+            data='{"vehicle_num":"69가-3455","zone_id":1,"slot_name":"A001","slot_id":1,"exit_at":"2026-03-09T12:10:00"}',
             content_type="application/json",
         )
 
@@ -338,7 +338,7 @@ class ParkingRecordConcurrencyAcceptanceTests(TransactionTestCase):
                 client,
                 vehicle_num=vehicle_num,
                 zone_id=slot.zone_id,
-                slot_code=slot.slot_code,
+                slot_name=slot.slot_name,
                 slot_id=slot.slot_id,
             )
             responses.append(response.status_code)
@@ -361,9 +361,9 @@ class ParkingRecordConcurrencyAcceptanceTests(TransactionTestCase):
     def test_should_reject_entry__when_slot_identifiers_mismatch(self) -> None:
         # Given
         vehicle = create_vehicle()
-        slot = create_slot(zone_id=1, slot_code="A001")
+        slot = create_slot(zone_id=1, slot_name="A001")
         create_empty_occupancy(slot=slot)
-        another_slot = create_slot(zone_id=2, slot_code="B001")
+        another_slot = create_slot(zone_id=2, slot_name="B001")
         create_empty_occupancy(slot=another_slot)
 
         # When
@@ -371,7 +371,7 @@ class ParkingRecordConcurrencyAcceptanceTests(TransactionTestCase):
             self.client,
             vehicle_num=vehicle.vehicle_num,
             zone_id=slot.zone_id,
-            slot_code=slot.slot_code,
+            slot_name=slot.slot_name,
             slot_id=another_slot.slot_id,
         )
 
@@ -384,8 +384,8 @@ class ParkingRecordConcurrencyAcceptanceTests(TransactionTestCase):
     def test_should_reject_exit__when_location_conflicts(self) -> None:
         # Given
         vehicle = create_vehicle()
-        slot = create_slot(zone_id=1, slot_code="A001")
-        other_slot = create_slot(zone_id=1, slot_code="A002")
+        slot = create_slot(zone_id=1, slot_name="A001")
+        other_slot = create_slot(zone_id=1, slot_name="A002")
         create_occupied_session(
             slot=slot,
             vehicle_num=vehicle.vehicle_num,
@@ -397,7 +397,7 @@ class ParkingRecordConcurrencyAcceptanceTests(TransactionTestCase):
             self.client,
             vehicle_num=vehicle.vehicle_num,
             zone_id=other_slot.zone_id,
-            slot_code=other_slot.slot_code,
+            slot_name=other_slot.slot_name,
             slot_id=other_slot.slot_id,
         )
 

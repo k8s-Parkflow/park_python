@@ -25,7 +25,7 @@ class ParkingHistoryDomainTests(SimpleTestCase):
     # 차량 번호 정규화 검증
     def test_should_normalize_vehicle_num__when_history_started(self) -> None:
         # Given
-        slot = ParkingSlot(slot_id=1, zone_id=1, slot_type_id=1, slot_code="A001", is_active=True)
+        slot = ParkingSlot(slot_id=1, zone_id=1, slot_type_id=1, slot_name="A001", is_active=True)
         entry_at = timezone.now()
 
         # When
@@ -39,7 +39,7 @@ class ParkingHistoryDomainTests(SimpleTestCase):
     # 출차 시각 역전 거부 검증
     def test_should_reject_exit__when_earlier_than_entry(self) -> None:
         # Given
-        slot = ParkingSlot(slot_id=1, zone_id=1, slot_type_id=1, slot_code="A001", is_active=True)
+        slot = ParkingSlot(slot_id=1, zone_id=1, slot_type_id=1, slot_name="A001", is_active=True)
         entry_at = timezone.now()
         history = ParkingHistory.start(slot=slot, vehicle_num="69가3455", entry_at=entry_at)
 
@@ -53,7 +53,7 @@ class SlotOccupancyDomainTests(SimpleTestCase):
     # 점유 및 해제 상태 전이 검증
     def test_should_update_occupancy__when_occupied_and_released(self) -> None:
         # Given
-        slot = ParkingSlot(slot_id=1, zone_id=1, slot_type_id=1, slot_code="A001", is_active=True)
+        slot = ParkingSlot(slot_id=1, zone_id=1, slot_type_id=1, slot_name="A001", is_active=True)
         entry_at = timezone.now()
         history = ParkingHistory(
             history_id=101,

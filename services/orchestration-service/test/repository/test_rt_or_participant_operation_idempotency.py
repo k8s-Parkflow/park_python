@@ -30,7 +30,7 @@ class ParticipantOperationIdempotencyTests(TestCase):
         slot = ParkingSlot.objects.create(
             zone_id=zone.zone_id,
             slot_type_id=slot_type.slot_type_id,
-            slot_code="A-01",
+            slot_name="A-01",
         )
         SlotOccupancy.objects.create(slot=slot)
 

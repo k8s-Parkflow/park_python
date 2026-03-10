@@ -39,7 +39,7 @@ class DjangoParkingProjectionWriter:
                 "history_id": history.history_id,
                 "slot_id": history.slot_id,
                 "zone_id": history.slot.zone_id,
-                "slot_code": history.slot.slot_code,
+                "slot_name": history.slot.slot_name,
                 "slot_type": slot_type_name,
                 "entry_at": history.entry_at,
             },

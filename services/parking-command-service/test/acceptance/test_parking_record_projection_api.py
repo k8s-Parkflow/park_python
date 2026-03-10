@@ -31,16 +31,16 @@ class ParkingRecordProjectionAcceptanceTests(TestCase):
     def test_should_create_projection__when_entry_succeeds(self) -> None:
         # Given
         vehicle = create_vehicle()
-        target_slot = create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_code="A001")
+        target_slot = create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_name="A001")
         create_empty_occupancy(slot=target_slot)
-        create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_code="A002")
+        create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_name="A002")
 
         # When
         response = post_entry(
             self.client,
             vehicle_num=vehicle.vehicle_num,
             zone_id=target_slot.zone_id,
-            slot_code=target_slot.slot_code,
+            slot_name=target_slot.slot_name,
             slot_id=target_slot.slot_id,
         )
 
@@ -49,7 +49,7 @@ class ParkingRecordProjectionAcceptanceTests(TestCase):
         current_view = CurrentParkingView.objects.get(vehicle_num=vehicle.vehicle_num)
         zone_availability = ZoneAvailability.objects.get(zone_id=1, slot_type="GENERAL")
         self.assertEqual(current_view.slot_id, target_slot.slot_id)
-        self.assertEqual(current_view.slot_code, target_slot.slot_code)
+        self.assertEqual(current_view.slot_name, target_slot.slot_name)
         self.assertEqual(zone_availability.total_count, 2)
         self.assertEqual(zone_availability.occupied_count, 1)
         self.assertEqual(zone_availability.available_count, 1)
@@ -58,8 +58,8 @@ class ParkingRecordProjectionAcceptanceTests(TestCase):
     def test_should_remove_projection__when_exit_succeeds(self) -> None:
         # Given
         vehicle = create_vehicle()
-        target_slot = create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_code="A001")
-        create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_code="A002")
+        target_slot = create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_name="A001")
+        create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_name="A002")
         history, _occupancy = create_occupied_session(
             slot=target_slot,
             vehicle_num=vehicle.vehicle_num,
@@ -72,7 +72,7 @@ class ParkingRecordProjectionAcceptanceTests(TestCase):
             self.client,
             vehicle_num=vehicle.vehicle_num,
             zone_id=target_slot.zone_id,
-            slot_code=target_slot.slot_code,
+            slot_name=target_slot.slot_name,
             slot_id=target_slot.slot_id,
             exit_at=timezone.now(),
         )

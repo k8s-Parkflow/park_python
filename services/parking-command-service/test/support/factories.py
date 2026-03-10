@@ -22,14 +22,14 @@ def create_slot(
     zone_id: int = 1,
     slot_type_id: int = 1,
     slot_type_name: str | None = None,
-    slot_code: str = "A001",
+    slot_name: str = "A001",
     is_active: bool = True,
 ) -> ParkingSlot:
     create_slot_type(slot_type_id=slot_type_id, type_name=slot_type_name or f"TYPE-{slot_type_id}")
     return ParkingSlot.objects.create(
         zone_id=zone_id,
         slot_type_id=slot_type_id,
-        slot_code=slot_code,
+        slot_name=slot_name,
         is_active=is_active,
     )
 

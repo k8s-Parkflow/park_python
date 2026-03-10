@@ -30,8 +30,8 @@ class ParkingRecordProjectionRepositoryTests(TestCase):
     def test_should_record_entry_projection__when_entry_saved(self) -> None:
         # Given
         vehicle = create_vehicle()
-        target_slot = create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_code="A001")
-        create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_code="A002")
+        target_slot = create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_name="A001")
+        create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_name="A002")
         history, _occupancy = create_occupied_session(
             slot=target_slot,
             vehicle_num=vehicle.vehicle_num,
@@ -48,7 +48,7 @@ class ParkingRecordProjectionRepositoryTests(TestCase):
         self.assertEqual(current_view.history_id, history.history_id)
         self.assertEqual(current_view.slot_id, target_slot.slot_id)
         self.assertEqual(current_view.zone_id, 1)
-        self.assertEqual(current_view.slot_code, target_slot.slot_code)
+        self.assertEqual(current_view.slot_name, target_slot.slot_name)
         self.assertEqual(current_view.slot_type, "GENERAL")
         self.assertEqual(zone_availability.total_count, 2)
         self.assertEqual(zone_availability.occupied_count, 1)
@@ -58,8 +58,8 @@ class ParkingRecordProjectionRepositoryTests(TestCase):
     def test_should_record_exit_projection__when_exit_saved(self) -> None:
         # Given
         vehicle = create_vehicle()
-        target_slot = create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_code="A001")
-        create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_code="A002")
+        target_slot = create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_name="A001")
+        create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_name="A002")
         history, _occupancy = create_occupied_session(
             slot=target_slot,
             vehicle_num=vehicle.vehicle_num,
@@ -86,8 +86,8 @@ class ParkingRecordProjectionRepositoryTests(TestCase):
     def test_should_keep_newer_projection__when_older_history_arrives_late(self) -> None:
         # Given
         vehicle = create_vehicle()
-        older_slot = create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_code="A001")
-        newer_slot = create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_code="A002")
+        older_slot = create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_name="A001")
+        newer_slot = create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_name="A002")
         older_history = create_active_history(
             slot=older_slot,
             vehicle_num=vehicle.vehicle_num,
@@ -98,7 +98,7 @@ class ParkingRecordProjectionRepositoryTests(TestCase):
             history_id=999,
             slot_id=newer_slot.slot_id,
             zone_id=newer_slot.zone_id,
-            slot_code=newer_slot.slot_code,
+            slot_name=newer_slot.slot_name,
             slot_type="GENERAL",
             entry_at=timezone.now() - timedelta(hours=1),
         )
@@ -111,14 +111,14 @@ class ParkingRecordProjectionRepositoryTests(TestCase):
         # Then
         current_view = CurrentParkingView.objects.get(vehicle_num=vehicle.vehicle_num)
         self.assertEqual(current_view.slot_id, newer_slot.slot_id)
-        self.assertEqual(current_view.slot_code, newer_slot.slot_code)
+        self.assertEqual(current_view.slot_name, newer_slot.slot_name)
 
     # 동일 입차 시각에서는 더 큰 history_id를 유지하는 projection 회귀 검증
     def test_should_keep_higher_history_id__when_entry_time_ties(self) -> None:
         # Given
         vehicle = create_vehicle()
-        first_slot = create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_code="A001")
-        second_slot = create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_code="A002")
+        first_slot = create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_name="A001")
+        second_slot = create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_name="A002")
         tied_entry_at = timezone.now() - timedelta(hours=1)
         older_history = create_active_history(
             slot=first_slot,
@@ -130,7 +130,7 @@ class ParkingRecordProjectionRepositoryTests(TestCase):
             history_id=older_history.history_id + 1,
             slot_id=second_slot.slot_id,
             zone_id=second_slot.zone_id,
-            slot_code=second_slot.slot_code,
+            slot_name=second_slot.slot_name,
             slot_type="GENERAL",
             entry_at=tied_entry_at,
         )
@@ -144,18 +144,18 @@ class ParkingRecordProjectionRepositoryTests(TestCase):
         current_view = CurrentParkingView.objects.get(vehicle_num=vehicle.vehicle_num)
         self.assertEqual(current_view.history_id, older_history.history_id + 1)
         self.assertEqual(current_view.slot_id, second_slot.slot_id)
-        self.assertEqual(current_view.slot_code, second_slot.slot_code)
+        self.assertEqual(current_view.slot_name, second_slot.slot_name)
 
     # 비활성 슬롯 제외 가용 집계 검증
     def test_should_exclude_inactive_slots__when_syncing_availability(self) -> None:
         # Given
         vehicle = create_vehicle()
-        active_slot = create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_code="A001")
+        active_slot = create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_name="A001")
         create_slot(
             zone_id=1,
             slot_type_id=1,
             slot_type_name="GENERAL",
-            slot_code="A099",
+            slot_name="A099",
             is_active=False,
         )
         history, _occupancy = create_occupied_session(

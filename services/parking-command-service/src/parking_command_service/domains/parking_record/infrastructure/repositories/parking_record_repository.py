@@ -11,10 +11,10 @@ class DjangoParkingRecordRepository:
     def get_slot_for_update(self, *, slot_id: int) -> ParkingSlot | None:
         return ParkingSlot.objects.select_for_update().filter(slot_id=slot_id).first()
 
-    def get_slot_by_identity_for_update(self, *, zone_id: int, slot_code: str) -> ParkingSlot | None:
+    def get_slot_by_identity_for_update(self, *, zone_id: int, slot_name: str) -> ParkingSlot | None:
         return (
             ParkingSlot.objects.select_for_update()
-            .filter(zone_id=zone_id, slot_code=slot_code)
+            .filter(zone_id=zone_id, slot_name=slot_name)
             .first()
         )
 

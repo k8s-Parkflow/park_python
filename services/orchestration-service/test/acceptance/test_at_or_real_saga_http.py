@@ -49,7 +49,7 @@ class OrchestrationRealSagaHttpAcceptanceTests(LiveServerTestCase):
         slot = ParkingSlot.objects.create(
             zone_id=zone.zone_id,
             slot_type_id=slot_type.slot_type_id,
-            slot_code="A-01",
+            slot_name="A-01",
         )
         SlotOccupancy.objects.create(slot=slot)
         ZoneAvailability.objects.create(
@@ -107,7 +107,7 @@ class OrchestrationRealSagaHttpAcceptanceTests(LiveServerTestCase):
         slot = ParkingSlot.objects.create(
             zone_id=zone.zone_id,
             slot_type_id=slot_type.slot_type_id,
-            slot_code="B-01",
+            slot_name="B-01",
         )
         SlotOccupancy.objects.create(slot=slot)
 
@@ -154,7 +154,7 @@ class OrchestrationRealSagaHttpAcceptanceTests(LiveServerTestCase):
         slot = ParkingSlot.objects.create(
             zone_id=zone.zone_id,
             slot_type_id=slot_type.slot_type_id,
-            slot_code="C-01",
+            slot_name="C-01",
         )
         history = ParkingHistory.start(
             slot=slot,
