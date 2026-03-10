@@ -51,6 +51,7 @@ class ParkingQueryGrpcClient(GrpcClientBase):
         history_id: int,
         vehicle_num: str,
         slot_id: int,
+        slot_code: str,
         zone_id: int,
         slot_type: str,
         entry_at: str,
@@ -64,6 +65,7 @@ class ParkingQueryGrpcClient(GrpcClientBase):
             slot_id=slot_id,
             zone_id=zone_id,
             slot_type=slot_type,
+            slot_code=slot_code,
         )
         request.entry_at.CopyFrom(request.context.requested_at)
         response = self.invoke_unary(
@@ -83,6 +85,7 @@ class ParkingQueryGrpcClient(GrpcClientBase):
         history_id: int,
         vehicle_num: str,
         slot_id: int,
+        slot_code: str,
         zone_id: int,
         slot_type: str,
         exit_at: str,
@@ -96,6 +99,7 @@ class ParkingQueryGrpcClient(GrpcClientBase):
             slot_id=slot_id,
             zone_id=zone_id,
             slot_type=slot_type,
+            slot_code=slot_code,
         )
         request.exit_at.CopyFrom(request.context.requested_at)
         response = self.invoke_unary(
@@ -143,6 +147,7 @@ class ParkingQueryGrpcClient(GrpcClientBase):
         history_id: int,
         vehicle_num: str,
         slot_id: int,
+        slot_code: str,
         zone_id: int,
         slot_type: str,
         entry_at: str,
@@ -156,6 +161,7 @@ class ParkingQueryGrpcClient(GrpcClientBase):
             slot_id=slot_id,
             zone_id=zone_id,
             slot_type=slot_type,
+            slot_code=slot_code,
         )
         request.entry_at.CopyFrom(request.context.requested_at)
         response = self.invoke_unary(
@@ -183,4 +189,5 @@ class ParkingQueryGrpcClient(GrpcClientBase):
             "slot_type": response.slot_type,
             "entry_at": _timestamp_to_iso_or_none(response.entry_at),
             "updated_at": _timestamp_to_iso_or_none(response.updated_at),
+            "slot_code": response.slot_code,
         }

@@ -21,6 +21,7 @@ class _FakeParkingCommandStub:
         return parking_command_pb2.CreateEntryResponse(
             history_id=101,
             slot_id=request.slot_id,
+            slot_code="A001",
             vehicle_num=request.vehicle_num,
             status="PARKED",
         )
@@ -44,6 +45,7 @@ class _FakeParkingCommandStub:
                 "entry_at": parking_command_pb2.ValidateActiveParkingResponse().entry_at,
                 "status": "PARKED",
                 "zone_id": 1,
+                "slot_code": "A001",
                 "slot_type": "GENERAL",
             },
         )()
@@ -53,6 +55,7 @@ class _FakeParkingCommandStub:
         return parking_command_pb2.ExitParkingResponse(
             history_id=101,
             slot_id=7,
+            slot_code="A001",
             vehicle_num=request.vehicle_num,
             status="EXITED",
         )
@@ -98,6 +101,7 @@ class OrchestrationParkingCommandGrpcClientContractTests(SimpleTestCase):
             .isoformat(),
         )
         self.assertEqual(payload["history_id"], 101)
+        self.assertEqual(payload["slot_code"], "A001")
         self.assertEqual(payload["status"], "PARKED")
 
     def test_should_build_compensate_entry_request_and_map_response__when_called(self) -> None:
@@ -133,6 +137,7 @@ class OrchestrationParkingCommandGrpcClientContractTests(SimpleTestCase):
         # Then
         self.assertEqual(stub.validate_request.vehicle_num, "12가3456")
         self.assertEqual(payload["zone_id"], 1)
+        self.assertEqual(payload["slot_code"], "A001")
         self.assertEqual(payload["slot_type"], "GENERAL")
 
     def test_should_build_exit_request_and_map_response__when_called(self) -> None:
@@ -151,6 +156,7 @@ class OrchestrationParkingCommandGrpcClientContractTests(SimpleTestCase):
 
         # Then
         self.assertEqual(stub.exit_request.operation_id, "exit-op-001")
+        self.assertEqual(payload["slot_code"], "A001")
         self.assertEqual(payload["status"], "EXITED")
 
     def test_should_build_compensate_exit_request_and_map_response__when_called(self) -> None:

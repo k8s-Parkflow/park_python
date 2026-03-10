@@ -33,6 +33,7 @@ class CurrentLocationRepository:
                 "history_id": projection["history_id"],
                 "zone_id": projection["zone_id"],
                 "slot_id": projection["slot_id"],
+                "slot_code": projection.get("slot_code"),
                 "slot_type": projection["slot_type"],
                 "entry_at": projection["entry_at"],
             },

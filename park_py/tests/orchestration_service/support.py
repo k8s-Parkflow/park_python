@@ -54,6 +54,7 @@ class FakeParkingCommandGateway:
             "vehicle_num": "12가3456",
             "entry_at": "2026-03-10T10:00:00+09:00",
             "status": "PARKED",
+            "slot_code": "A001",
         }
         self.active_payload = active_payload or {
             "history_id": 101,
@@ -63,6 +64,7 @@ class FakeParkingCommandGateway:
             "vehicle_num": "12가3456",
             "entry_at": "2026-03-10T10:00:00+09:00",
             "status": "PARKED",
+            "slot_code": "A001",
         }
         self.exit_payload = exit_payload or {
             "history_id": 101,
@@ -70,6 +72,7 @@ class FakeParkingCommandGateway:
             "vehicle_num": "12가3456",
             "exit_at": "2026-03-10T12:00:00+09:00",
             "status": "EXITED",
+            "slot_code": "A001",
         }
         self.validate_error = validate_error
         self.entry_error = entry_error

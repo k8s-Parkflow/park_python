@@ -37,6 +37,7 @@ class ParkingQueryGrpcProjectionWriter(GrpcClientBase):
             slot_id=history.slot_id,
             zone_id=history.slot.zone_id,
             slot_type=_slot_type_name(slot_type_id=history.slot.slot_type_id),
+            slot_code=history.slot.slot_code,
         )
         request.entry_at.CopyFrom(request.context.requested_at)
         self._invoke(stub_method_name="ApplyEntryProjection", request=request)
@@ -51,6 +52,7 @@ class ParkingQueryGrpcProjectionWriter(GrpcClientBase):
             slot_id=history.slot_id,
             zone_id=history.slot.zone_id,
             slot_type=_slot_type_name(slot_type_id=history.slot.slot_type_id),
+            slot_code=history.slot.slot_code,
         )
         request.exit_at.CopyFrom(request.context.requested_at)
         self._invoke(stub_method_name="ApplyExitProjection", request=request)

@@ -47,5 +47,47 @@ class ProtoContractShapeTests(unittest.TestCase):
         )
         self.assertEqual(
             response_fields,
-            ["history_id", "slot_id", "vehicle_num", "entry_at", "status"],
+            ["history_id", "slot_id", "vehicle_num", "entry_at", "status", "slot_code"],
+        )
+
+    def test_should_match_parking_query_projection_contract__when_generated_module_is_loaded(
+        self,
+    ) -> None:
+        # Given
+        parking_query_pb2 = self.generated.import_module("parking_query.v1.parking_query_pb2")
+
+        # When
+        apply_entry_fields = list(
+            parking_query_pb2.ApplyEntryProjectionRequest.DESCRIPTOR.fields_by_name.keys()
+        )
+        current_parking_fields = list(
+            parking_query_pb2.GetCurrentParkingResponse.DESCRIPTOR.fields_by_name.keys()
+        )
+
+        # Then
+        self.assertEqual(
+            apply_entry_fields,
+            [
+                "context",
+                "operation_id",
+                "history_id",
+                "vehicle_num",
+                "slot_id",
+                "zone_id",
+                "slot_type",
+                "entry_at",
+                "slot_code",
+            ],
+        )
+        self.assertEqual(
+            current_parking_fields,
+            [
+                "vehicle_num",
+                "slot_id",
+                "zone_id",
+                "slot_type",
+                "entry_at",
+                "updated_at",
+                "slot_code",
+            ],
         )

@@ -115,6 +115,7 @@ class OrchestrationParkingQueryGrpcAcceptanceTests(TransactionTestCase):
         self.assertEqual(response.status_code, 201)
         projection = CurrentParkingView.objects.get(vehicle_num="12가3456")
         self.assertEqual(projection.slot_id, 7)
+        self.assertEqual(projection.slot_code, "A001")
         self.assertEqual(projection.zone_id, zone.zone_id)
         self.assertEqual(projection.slot_type, "GENERAL")
 

@@ -23,6 +23,7 @@ message ApplyEntryProjectionRequest {
   int64 zone_id = 6;
   string slot_type = 7;
   google.protobuf.Timestamp entry_at = 8;
+  string slot_code = 9;
 }
 
 message ApplyEntryProjectionResponse {
@@ -39,6 +40,7 @@ message ApplyExitProjectionRequest {
   int64 zone_id = 6;
   string slot_type = 7;
   google.protobuf.Timestamp exit_at = 8;
+  string slot_code = 9;
 }
 
 message ApplyExitProjectionResponse {
@@ -69,6 +71,7 @@ message CompensateExitProjectionRequest {
   int64 zone_id = 6;
   string slot_type = 7;
   google.protobuf.Timestamp entry_at = 8;
+  string slot_code = 9;
 }
 
 message CompensateExitProjectionResponse {
@@ -87,6 +90,7 @@ message GetCurrentParkingResponse {
   string slot_type = 4;
   google.protobuf.Timestamp entry_at = 5;
   google.protobuf.Timestamp updated_at = 6;
+  string slot_code = 7;
 }
 
 message GetZoneAvailabilityRequest {

@@ -62,6 +62,7 @@ def build_current_parking_response(*, payload: dict) -> parking_query_pb2.GetCur
         slot_type=payload["slot_type"],
         entry_at=datetime_to_timestamp(payload["entry_at"]),
         updated_at=datetime_to_timestamp(payload["updated_at"]),
+        slot_code=payload["slot_code"],
     )
 
 

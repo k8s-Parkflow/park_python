@@ -27,6 +27,7 @@ def build_create_entry_response(*, snapshot) -> parking_command_pb2.CreateEntryR
         vehicle_num=snapshot.vehicle_num,
         entry_at=datetime_to_timestamp(snapshot.entry_at),
         status=snapshot.status,
+        slot_code=snapshot.slot_code,
     )
 
 
@@ -50,6 +51,7 @@ def build_validate_active_parking_response(
         status=payload["status"],
         zone_id=payload["zone_id"],
         slot_type=payload["slot_type"],
+        slot_code=payload["slot_code"],
     )
 
 
@@ -60,6 +62,7 @@ def build_exit_parking_response(*, snapshot) -> parking_command_pb2.ExitParkingR
         vehicle_num=snapshot.vehicle_num,
         exit_at=datetime_to_timestamp(snapshot.exit_at),
         status=snapshot.status,
+        slot_code=snapshot.slot_code,
     )
 
 

@@ -18,6 +18,7 @@ class ParkingQueryGrpcProjectionRepositoryTests(TestCase):
                 "history_id": 101,
                 "zone_id": 1,
                 "slot_id": 7,
+                "slot_code": "A001",
                 "slot_type": "GENERAL",
                 "entry_at": timezone.now(),
             }
@@ -27,6 +28,7 @@ class ParkingQueryGrpcProjectionRepositoryTests(TestCase):
         self.assertEqual(projection.history_id, 101)
         self.assertEqual(projection.zone_id, 1)
         self.assertEqual(projection.slot_id, 7)
+        self.assertEqual(projection.slot_code, "A001")
 
     def test_should_delete_projection__when_vehicle_num_is_removed(self) -> None:
         """[RT-PQ-GRPC-02] grpc projection 삭제"""

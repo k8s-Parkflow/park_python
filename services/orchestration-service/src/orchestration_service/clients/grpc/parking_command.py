@@ -27,6 +27,7 @@ def _build_entry_payload(response) -> dict:
         "vehicle_num": response.vehicle_num,
         "entry_at": _timestamp_to_iso_or_none(response.entry_at),
         "status": response.status,
+        "slot_code": response.slot_code,
     }
 
 
@@ -47,6 +48,7 @@ def _build_active_parking_payload(response) -> dict:
         "status": response.status,
         "zone_id": response.zone_id,
         "slot_type": response.slot_type,
+        "slot_code": response.slot_code,
     }
 
 
@@ -57,6 +59,7 @@ def _build_exit_payload(response) -> dict:
         "vehicle_num": response.vehicle_num,
         "exit_at": _timestamp_to_iso_or_none(response.exit_at),
         "status": response.status,
+        "slot_code": response.slot_code,
     }
 
 

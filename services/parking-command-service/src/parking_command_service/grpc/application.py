@@ -86,6 +86,7 @@ class ParkingCommandGrpcApplicationService:
             "status": history.status,
             "zone_id": history.slot.zone_id,
             "slot_type": _slot_type_name(slot_type_id=history.slot.slot_type_id),
+            "slot_code": history.slot.slot_code,
         }
 
     def exit_parking(self, *, vehicle_num: str, requested_at: datetime | None):

@@ -36,6 +36,7 @@ class ParkingCommandParkingQueryGrpcWriterContractTests(SimpleTestCase):
         self.assertEqual(stub.entry_request.history_id, 101)
         self.assertEqual(stub.entry_request.slot_type, "GENERAL")
         self.assertEqual(stub.entry_request.slot_id, 7)
+        self.assertEqual(stub.entry_request.slot_code, "A001")
 
     def test_should_build_apply_exit_projection_request__when_exit_recorded(self) -> None:
         """[CT-PC-PQ-GRPC-02] exit projection 요청 계약"""
@@ -53,6 +54,7 @@ class ParkingCommandParkingQueryGrpcWriterContractTests(SimpleTestCase):
         self.assertEqual(stub.exit_request.history_id, 101)
         self.assertEqual(stub.exit_request.slot_type, "GENERAL")
         self.assertEqual(stub.exit_request.slot_id, 7)
+        self.assertEqual(stub.exit_request.slot_code, "A001")
 
 
 def _history_stub():

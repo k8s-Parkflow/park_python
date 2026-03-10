@@ -26,6 +26,7 @@ message CreateEntryResponse {
   string vehicle_num = 3;
   google.protobuf.Timestamp entry_at = 4;
   string status = 5;
+  string slot_code = 6;
 }
 
 message ValidateActiveParkingRequest {
@@ -41,6 +42,7 @@ message ValidateActiveParkingResponse {
   string status = 5;
   int64 zone_id = 6;
   string slot_type = 7;
+  string slot_code = 8;
 }
 
 message ExitParkingRequest {
@@ -55,6 +57,7 @@ message ExitParkingResponse {
   string vehicle_num = 3;
   google.protobuf.Timestamp exit_at = 4;
   string status = 5;
+  string slot_code = 6;
 }
 
 message CompensateEntryRequest {
