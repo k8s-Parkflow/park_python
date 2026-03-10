@@ -47,6 +47,7 @@ class ParkingRecordProjectionRepositoryTests(TestCase):
         zone_availability = ZoneAvailability.objects.get(zone_id=1, slot_type="GENERAL")
         self.assertEqual(current_view.slot_id, target_slot.slot_id)
         self.assertEqual(current_view.zone_id, 1)
+        self.assertEqual(current_view.slot_code, target_slot.slot_code)
         self.assertEqual(current_view.slot_type, "GENERAL")
         self.assertEqual(zone_availability.total_count, 2)
         self.assertEqual(zone_availability.occupied_count, 1)
@@ -95,6 +96,7 @@ class ParkingRecordProjectionRepositoryTests(TestCase):
             vehicle_num=vehicle.vehicle_num,
             slot_id=newer_slot.slot_id,
             zone_id=newer_slot.zone_id,
+            slot_code=newer_slot.slot_code,
             slot_type="GENERAL",
             entry_at=timezone.now() - timedelta(hours=1),
         )
@@ -107,3 +109,4 @@ class ParkingRecordProjectionRepositoryTests(TestCase):
         # Then
         current_view = CurrentParkingView.objects.get(vehicle_num=vehicle.vehicle_num)
         self.assertEqual(current_view.slot_id, newer_slot.slot_id)
+        self.assertEqual(current_view.slot_code, newer_slot.slot_code)

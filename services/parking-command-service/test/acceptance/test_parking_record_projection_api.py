@@ -49,6 +49,7 @@ class ParkingRecordProjectionAcceptanceTests(TestCase):
         current_view = CurrentParkingView.objects.get(vehicle_num=vehicle.vehicle_num)
         zone_availability = ZoneAvailability.objects.get(zone_id=1, slot_type="GENERAL")
         self.assertEqual(current_view.slot_id, target_slot.slot_id)
+        self.assertEqual(current_view.slot_code, target_slot.slot_code)
         self.assertEqual(zone_availability.total_count, 2)
         self.assertEqual(zone_availability.occupied_count, 1)
         self.assertEqual(zone_availability.available_count, 1)
