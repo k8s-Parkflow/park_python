@@ -221,16 +221,16 @@ def _validate_trusted_slot_snapshot(*, command: EntryCommand) -> None:
 
 def _history_zone_id(history) -> int:
     zone_id = getattr(history, "zone_id", 0) or 0
-    if zone_id:
-        return zone_id
-    return history.slot.zone_id
+    if not zone_id:
+        raise ParkingRecordConflictError("주차 이력의 zone snapshot 정보가 없습니다.")
+    return zone_id
 
 
 def _history_slot_code(history) -> str:
     slot_code = getattr(history, "slot_code", "")
-    if slot_code:
-        return slot_code
-    return history.slot.slot_code
+    if not slot_code:
+        raise ParkingRecordConflictError("주차 이력의 slot_code snapshot 정보가 없습니다.")
+    return slot_code
 
 
 def _resolve_slot_type_id(*, command: EntryCommand, lock_anchor) -> int:

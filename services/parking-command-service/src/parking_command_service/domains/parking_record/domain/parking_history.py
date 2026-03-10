@@ -66,17 +66,24 @@ class ParkingHistory(models.Model):
         # 생성 시점에 차량 번호를 정규화해 활성 세션 유니크 조건과 비교 기준을 맞춘다.
         return cls(
             slot=slot,
-            zone_id=zone_id or slot.zone_id,
-            slot_type_id=slot_type_id or slot.slot_type_id,
-            slot_code=slot_code or slot.slot_code,
+            zone_id=zone_id or 0,
+            slot_type_id=slot_type_id or 0,
+            slot_code=slot_code or "",
             vehicle_num=normalize_vehicle_num(vehicle_num),
             entry_at=entry_at or timezone.now(),
             status=ParkingHistoryStatus.PARKED,
         )
 
     def save(self, *args, **kwargs) -> None:
-        self._sync_slot_snapshot()
+        self.clean()
         super().save(*args, **kwargs)
+
+    def clean(self) -> None:
+        super().clean()
+        if self.slot_id is None or self.slot is None:
+            return
+        if not self.zone_id or not self.slot_type_id or not self.slot_code:
+            raise ValidationError("주차 이력의 슬롯 snapshot 정보가 필요합니다.")
 
     def exit(self, *, exited_at: datetime | None = None) -> None:
         if self.status == ParkingHistoryStatus.EXITED:
@@ -96,13 +103,3 @@ class ParkingHistory(models.Model):
 
         self.status = ParkingHistoryStatus.PARKED
         self.exit_at = None
-
-    def _sync_slot_snapshot(self) -> None:
-        if self.slot_id is None or self.slot is None:
-            return
-        if not self.zone_id:
-            self.zone_id = self.slot.zone_id
-        if not self.slot_type_id:
-            self.slot_type_id = self.slot.slot_type_id
-        if not self.slot_code:
-            self.slot_code = self.slot.slot_code

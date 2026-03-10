@@ -27,6 +27,9 @@ class OrchestrationParkingCommandGrpcExitAcceptanceTests(TransactionTestCase):
         )
         history = ParkingHistory.objects.create(
             slot=slot,
+            zone_id=slot.zone_id,
+            slot_type_id=slot.slot_type_id,
+            slot_code=slot.slot_code,
             vehicle_num="12가3456",
             entry_at=timezone.datetime(2026, 3, 10, 1, 0, tzinfo=timezone.utc),
         )
@@ -82,6 +85,9 @@ class OrchestrationParkingCommandGrpcExitAcceptanceTests(TransactionTestCase):
         )
         history = ParkingHistory.objects.create(
             slot=slot,
+            zone_id=slot.zone_id,
+            slot_type_id=slot.slot_type_id,
+            slot_code=slot.slot_code,
             vehicle_num="12가3456",
             entry_at=timezone.datetime(2026, 3, 10, 1, 0, tzinfo=timezone.utc),
         )

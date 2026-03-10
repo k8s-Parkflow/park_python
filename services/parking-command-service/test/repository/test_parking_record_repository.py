@@ -72,6 +72,9 @@ class ParkingRecordRepositoryTests(TestCase):
         with self.assertRaises(IntegrityError):
             ParkingHistory.objects.create(
                 slot=second_slot,
+                zone_id=second_slot.zone_id,
+                slot_type_id=second_slot.slot_type_id,
+                slot_code=second_slot.slot_code,
                 vehicle_num=vehicle.vehicle_num,
                 status=ParkingHistoryStatus.PARKED,
                 entry_at=entry_at,
@@ -90,6 +93,9 @@ class ParkingRecordRepositoryTests(TestCase):
         with self.assertRaises(IntegrityError):
             ParkingHistory.objects.create(
                 slot=slot,
+                zone_id=slot.zone_id,
+                slot_type_id=slot.slot_type_id,
+                slot_code=slot.slot_code,
                 vehicle_num=second_vehicle.vehicle_num,
                 status=ParkingHistoryStatus.PARKED,
                 entry_at=entry_at,

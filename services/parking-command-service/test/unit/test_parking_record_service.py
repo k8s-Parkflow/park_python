@@ -285,6 +285,9 @@ class ParkingRecordExitServiceUnitTests(ParkingRecordServiceTestSupport):
         history = ParkingHistory(
             history_id=101,
             slot=slot,
+            zone_id=slot.zone_id,
+            slot_type_id=slot.slot_type_id,
+            slot_code=slot.slot_code,
             vehicle_num="69가3455",
             status=ParkingHistoryStatus.PARKED,
             entry_at=entry_at,
@@ -342,6 +345,9 @@ class ParkingRecordExitServiceUnitTests(ParkingRecordServiceTestSupport):
         history = ParkingHistory(
             history_id=101,
             slot=slot,
+            zone_id=slot.zone_id,
+            slot_type_id=slot.slot_type_id,
+            slot_code=slot.slot_code,
             vehicle_num="69가3455",
             status=ParkingHistoryStatus.PARKED,
             entry_at=entry_at,
@@ -383,6 +389,9 @@ class ParkingRecordExitServiceUnitTests(ParkingRecordServiceTestSupport):
         history = ParkingHistory(
             history_id=101,
             slot=slot,
+            zone_id=slot.zone_id,
+            slot_type_id=slot.slot_type_id,
+            slot_code=slot.slot_code,
             vehicle_num="69가3455",
             status=ParkingHistoryStatus.PARKED,
             entry_at=entry_at,
@@ -504,6 +513,9 @@ class ParkingRecordProjectionServiceUnitTests(ParkingRecordServiceTestSupport):
         history = ParkingHistory(
             history_id=101,
             slot=slot,
+            zone_id=slot.zone_id,
+            slot_type_id=slot.slot_type_id,
+            slot_code=slot.slot_code,
             vehicle_num="69가3455",
             status=ParkingHistoryStatus.PARKED,
             entry_at=entry_at,

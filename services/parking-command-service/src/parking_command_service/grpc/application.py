@@ -193,20 +193,20 @@ def _slot_type_name(*, slot_type_id: int) -> str:
 
 def _history_zone_id(history) -> int:
     zone_id = getattr(history, "zone_id", 0) or 0
-    if zone_id:
-        return zone_id
-    return history.slot.zone_id
+    if not zone_id:
+        raise ParkingRecordConflictError("활성 주차 이력의 zone snapshot 정보가 없습니다.")
+    return zone_id
 
 
 def _history_slot_type_id(history) -> int:
     slot_type_id = getattr(history, "slot_type_id", 0) or 0
-    if slot_type_id:
-        return slot_type_id
-    return history.slot.slot_type_id
+    if not slot_type_id:
+        raise ParkingRecordConflictError("활성 주차 이력의 slot_type snapshot 정보가 없습니다.")
+    return slot_type_id
 
 
 def _history_slot_code(history) -> str:
     slot_code = getattr(history, "slot_code", "")
-    if slot_code:
-        return slot_code
-    return history.slot.slot_code
+    if not slot_code:
+        raise ParkingRecordConflictError("활성 주차 이력의 slot_code snapshot 정보가 없습니다.")
+    return slot_code
