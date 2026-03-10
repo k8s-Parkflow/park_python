@@ -35,6 +35,7 @@ class EntrySagaOrchestrationService:
         idempotency_key: str,
     ) -> dict:
         existing_operation = self.operation_repository.find_by_idempotency_key(
+            saga_type="ENTRY",
             idempotency_key=idempotency_key,
         )
         if existing_operation is not None:

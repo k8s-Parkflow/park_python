@@ -5,7 +5,7 @@ class SagaOperation(models.Model):
     operation_id = models.CharField(max_length=64, primary_key=True)
     saga_type = models.CharField(max_length=16)
     status = models.CharField(max_length=32)
-    idempotency_key = models.CharField(max_length=128, unique=True)
+    idempotency_key = models.CharField(max_length=128)
     current_step = models.CharField(max_length=64, null=True, blank=True)
     failed_step = models.CharField(max_length=64, null=True, blank=True)
     history_id = models.BigIntegerField(null=True, blank=True)
@@ -26,3 +26,9 @@ class SagaOperation(models.Model):
 
     class Meta:
         db_table = "SAGA_OPERATION"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["saga_type", "idempotency_key"],
+                name="uniq_saga_operation_type_idempotency_key",
+            ),
+        ]

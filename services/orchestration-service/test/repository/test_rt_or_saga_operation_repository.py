@@ -35,10 +35,10 @@ class OrchestrationSagaOperationRepositoryTests(TestCase):
                 idempotency_key="entry-idempotency-key-002",
             )
 
-    def test_should_preserve_idempotency_key_uniqueness__when_same_key_is_saved_twice(
+    def test_should_preserve_idempotency_key_uniqueness_per_saga_type__when_same_key_is_saved_twice(
         self,
     ) -> None:
-        """[RT-OR-DB-02] idempotency_key 유일성"""
+        """[RT-OR-DB-02] saga_type별 idempotency_key 유일성"""
 
         from orchestration_service.models import SagaOperation
 
@@ -59,8 +59,29 @@ class OrchestrationSagaOperationRepositoryTests(TestCase):
                 idempotency_key="entry-idempotency-key-001",
             )
 
+    def test_should_allow_same_idempotency_key_across_different_saga_types(self) -> None:
+        """[RT-OR-DB-03] saga_type 분리 멱등키 허용"""
+
+        from orchestration_service.models import SagaOperation
+
+        SagaOperation.objects.create(
+            operation_id="entry-op-001",
+            saga_type="ENTRY",
+            status="COMPLETED",
+            idempotency_key="shared-idempotency-key-001",
+        )
+
+        saved = SagaOperation.objects.create(
+            operation_id="exit-op-001",
+            saga_type="EXIT",
+            status="COMPLETED",
+            idempotency_key="shared-idempotency-key-001",
+        )
+
+        self.assertEqual(saved.operation_id, "exit-op-001")
+
     def test_should_persist_recovery_fields__when_saga_state_is_saved(self) -> None:
-        """[RT-OR-DB-03] 상태 복구 필드 저장"""
+        """[RT-OR-DB-04] 상태 복구 필드 저장"""
 
         from orchestration_service.repositories.operation import SagaOperationRepository
 
@@ -91,7 +112,7 @@ class OrchestrationSagaOperationRepositoryTests(TestCase):
         self.assertEqual(saved.last_error_message, "parking-query-service timeout")
 
     def test_should_return_snapshot_payload__when_completed_response_is_replayed(self) -> None:
-        """[RT-OR-DB-04] 응답 snapshot 재사용"""
+        """[RT-OR-DB-05] 응답 snapshot 재사용"""
 
         from orchestration_service.repositories.operation import SagaOperationRepository
 
@@ -135,3 +156,36 @@ class OrchestrationSagaOperationRepositoryTests(TestCase):
                 "entry_at": "2026-03-10T10:00:00+09:00",
             },
         )
+
+    def test_should_find_existing_operation_only_with_same_saga_type(self) -> None:
+        """[RT-OR-DB-06] saga_type 기준 멱등 조회"""
+
+        from orchestration_service.repositories.operation import SagaOperationRepository
+
+        repository = SagaOperationRepository()
+        repository.save(
+            operation_id="entry-op-001",
+            saga_type="ENTRY",
+            status="COMPLETED",
+            idempotency_key="shared-idempotency-key-001",
+        )
+        repository.save(
+            operation_id="exit-op-001",
+            saga_type="EXIT",
+            status="COMPLETED",
+            idempotency_key="shared-idempotency-key-001",
+        )
+
+        entry_operation = repository.find_by_idempotency_key(
+            saga_type="ENTRY",
+            idempotency_key="shared-idempotency-key-001",
+        )
+        exit_operation = repository.find_by_idempotency_key(
+            saga_type="EXIT",
+            idempotency_key="shared-idempotency-key-001",
+        )
+
+        self.assertIsNotNone(entry_operation)
+        self.assertIsNotNone(exit_operation)
+        self.assertEqual(entry_operation.operation_id, "entry-op-001")
+        self.assertEqual(exit_operation.operation_id, "exit-op-001")

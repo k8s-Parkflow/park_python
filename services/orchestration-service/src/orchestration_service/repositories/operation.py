@@ -9,8 +9,11 @@ class SagaOperationRepository:
     def get(self, *, operation_id: str) -> SagaOperation:
         return SagaOperation.objects.get(operation_id=operation_id)
 
-    def find_by_idempotency_key(self, *, idempotency_key: str) -> SagaOperation | None:
-        return SagaOperation.objects.filter(idempotency_key=idempotency_key).first()
+    def find_by_idempotency_key(self, *, saga_type: str, idempotency_key: str) -> SagaOperation | None:
+        return SagaOperation.objects.filter(
+            saga_type=saga_type,
+            idempotency_key=idempotency_key,
+        ).first()
 
     def save(
         self,
