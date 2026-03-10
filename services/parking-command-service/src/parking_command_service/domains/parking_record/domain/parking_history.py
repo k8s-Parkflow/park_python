@@ -72,3 +72,10 @@ class ParkingHistory(models.Model):
 
         self.status = ParkingHistoryStatus.EXITED
         self.exit_at = resolved_exit_at
+
+    def cancel_exit(self) -> None:
+        if self.status != ParkingHistoryStatus.EXITED:
+            raise ValidationError("출차 보상은 종료된 이력에만 적용할 수 있습니다.")
+
+        self.status = ParkingHistoryStatus.PARKED
+        self.exit_at = None

@@ -33,3 +33,29 @@ class ParkingCommandGrpcRepositoryTests(TestCase):
         # Then
         self.assertEqual(loaded.history_id, history.history_id)
         self.assertEqual(loaded.slot.slot_code, "A001")
+
+    def test_should_return_active_history_with_slot__when_vehicle_has_active_session(self) -> None:
+        """[RT-PC-GRPC-02] active-history 조회"""
+
+        # Given
+        slot = ParkingSlot.objects.create(
+            slot_id=8,
+            zone_id=1,
+            slot_type_id=1,
+            slot_code="A002",
+            is_active=True,
+        )
+        ParkingHistory.objects.create(
+            slot=slot,
+            vehicle_num="34나5678",
+            entry_at=timezone.now(),
+        )
+
+        # When
+        loaded = DjangoParkingRecordRepository().get_active_history_for_vehicle(
+            vehicle_num="34나5678"
+        )
+
+        # Then
+        self.assertEqual(loaded.vehicle_num, "34나5678")
+        self.assertEqual(loaded.slot.slot_code, "A002")

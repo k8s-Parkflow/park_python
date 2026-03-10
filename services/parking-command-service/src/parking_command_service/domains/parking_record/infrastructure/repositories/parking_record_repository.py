@@ -39,6 +39,13 @@ class DjangoParkingRecordRepository:
             .first()
         )
 
+    def get_active_history_for_vehicle(self, *, vehicle_num: str) -> ParkingHistory | None:
+        return (
+            ParkingHistory.objects.select_related("slot")
+            .filter(vehicle_num=vehicle_num, exit_at__isnull=True)
+            .first()
+        )
+
     def get_history_for_update(self, *, history_id: int) -> ParkingHistory | None:
         return (
             ParkingHistory.objects.select_for_update()

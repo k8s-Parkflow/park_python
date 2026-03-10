@@ -11,7 +11,10 @@ from parking_command_service.domains.parking_record.application.exceptions impor
 from parking_command_service.grpc.application import ParkingCommandGrpcApplicationService
 from parking_command_service.grpc.mappers import (
     build_compensate_entry_response,
+    build_compensate_exit_response,
     build_create_entry_response,
+    build_exit_parking_response,
+    build_validate_active_parking_response,
     timestamp_to_datetime,
 )
 
@@ -44,14 +47,34 @@ class ParkingCommandGrpcServicer(parking_command_pb2_grpc.ParkingCommandServiceS
 
         return build_compensate_entry_response(payload=payload)
 
-    def ValidateActiveParking(self, request, context):  # noqa: N802, ARG002
-        context.abort(grpc.StatusCode.UNIMPLEMENTED, "validate_active_parking not implemented yet")
+    def ValidateActiveParking(self, request, context):  # noqa: N802
+        try:
+            payload = self.application_service.validate_active_parking(
+                vehicle_num=request.vehicle_num
+            )
+        except ParkingRecordNotFoundError as error:
+            _abort_for_record_error(context=context, error=error)
 
-    def ExitParking(self, request, context):  # noqa: N802, ARG002
-        context.abort(grpc.StatusCode.UNIMPLEMENTED, "exit_parking not implemented yet")
+        return build_validate_active_parking_response(payload=payload)
 
-    def CompensateExit(self, request, context):  # noqa: N802, ARG002
-        context.abort(grpc.StatusCode.UNIMPLEMENTED, "compensate_exit not implemented yet")
+    def ExitParking(self, request, context):  # noqa: N802
+        try:
+            snapshot = self.application_service.exit_parking(
+                vehicle_num=request.vehicle_num,
+                requested_at=timestamp_to_datetime(request.context.requested_at),
+            )
+        except (ParkingRecordNotFoundError, ParkingRecordBadRequestError, ParkingRecordConflictError) as error:
+            _abort_for_record_error(context=context, error=error)
+
+        return build_exit_parking_response(snapshot=snapshot)
+
+    def CompensateExit(self, request, context):  # noqa: N802
+        try:
+            payload = self.application_service.compensate_exit(history_id=request.history_id)
+        except ParkingRecordNotFoundError as error:
+            _abort_for_record_error(context=context, error=error)
+
+        return build_compensate_exit_response(payload=payload)
 
 
 def _abort_for_record_error(*, context, error) -> None:

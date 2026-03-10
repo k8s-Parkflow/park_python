@@ -39,6 +39,8 @@ message ValidateActiveParkingResponse {
   string vehicle_num = 3;
   google.protobuf.Timestamp entry_at = 4;
   string status = 5;
+  int64 zone_id = 6;
+  string slot_type = 7;
 }
 
 message ExitParkingRequest {

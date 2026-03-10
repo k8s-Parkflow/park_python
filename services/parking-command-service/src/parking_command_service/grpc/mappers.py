@@ -36,3 +36,36 @@ def build_compensate_entry_response(*, payload: dict) -> parking_command_pb2.Com
         slot_released=payload["slot_released"],
         compensated_at=datetime_to_timestamp(payload["compensated_at"]),
     )
+
+
+def build_validate_active_parking_response(
+    *,
+    payload: dict,
+) -> parking_command_pb2.ValidateActiveParkingResponse:
+    return parking_command_pb2.ValidateActiveParkingResponse(
+        history_id=payload["history_id"],
+        slot_id=payload["slot_id"],
+        vehicle_num=payload["vehicle_num"],
+        entry_at=datetime_to_timestamp(payload["entry_at"]),
+        status=payload["status"],
+        zone_id=payload["zone_id"],
+        slot_type=payload["slot_type"],
+    )
+
+
+def build_exit_parking_response(*, snapshot) -> parking_command_pb2.ExitParkingResponse:
+    return parking_command_pb2.ExitParkingResponse(
+        history_id=snapshot.history_id,
+        slot_id=snapshot.slot_id,
+        vehicle_num=snapshot.vehicle_num,
+        exit_at=datetime_to_timestamp(snapshot.exit_at),
+        status=snapshot.status,
+    )
+
+
+def build_compensate_exit_response(*, payload: dict) -> parking_command_pb2.CompensateExitResponse:
+    return parking_command_pb2.CompensateExitResponse(
+        history_id=payload["history_id"],
+        slot_occupied=payload["slot_occupied"],
+        compensated_at=datetime_to_timestamp(payload["compensated_at"]),
+    )

@@ -5,8 +5,9 @@ from datetime import datetime
 from django.db import transaction
 from django.utils import timezone
 
-from parking_command_service.domains.parking_record.application.dtos import EntryCommand
+from parking_command_service.domains.parking_record.application.dtos import EntryCommand, ExitCommand
 from parking_command_service.domains.parking_record.application.exceptions import (
+    ParkingRecordConflictError,
     ParkingRecordNotFoundError,
 )
 from parking_command_service.domains.parking_record.application.services import (
@@ -73,8 +74,78 @@ class ParkingCommandGrpcApplicationService:
             "compensated_at": history.exit_at or compensated_at,
         }
 
+    def validate_active_parking(self, *, vehicle_num: str) -> dict:
+        history = self._get_active_history_or_raise(vehicle_num=vehicle_num)
+        return {
+            "history_id": history.history_id,
+            "slot_id": history.slot_id,
+            "vehicle_num": history.vehicle_num,
+            "entry_at": history.entry_at,
+            "status": history.status,
+            "zone_id": history.slot.zone_id,
+            "slot_type": _slot_type_name(slot_type_id=history.slot.slot_type_id),
+        }
+
+    def exit_parking(self, *, vehicle_num: str, requested_at: datetime | None):
+        history = self._get_active_history_or_raise(vehicle_num=vehicle_num)
+        return self.command_service.create_exit(
+            command=ExitCommand(
+                vehicle_num=vehicle_num,
+                zone_id=history.slot.zone_id,
+                slot_code=history.slot.slot_code,
+                slot_id=history.slot_id,
+                exit_at=requested_at,
+            )
+        )
+
+    @transaction.atomic
+    def compensate_exit(self, *, history_id: int) -> dict:
+        history = self.parking_record_repository.get_history_for_update(history_id=history_id)
+        if history is None:
+            raise ParkingRecordNotFoundError("존재하지 않는 주차 이력입니다.")
+
+        occupancy = self.parking_record_repository.get_or_create_occupancy_for_update(slot=history.slot)
+        compensated_at = timezone.now()
+        restored = False
+
+        if history.exit_at is not None:
+            history.cancel_exit()
+            self.parking_record_repository.save_history(history=history)
+        if not occupancy.occupied:
+            occupancy.restore(
+                vehicle_num=history.vehicle_num,
+                history=history,
+                occupied_at=history.entry_at,
+            )
+            self.parking_record_repository.save_occupancy(occupancy=occupancy)
+            restored = True
+
+        return {
+            "history_id": history.history_id,
+            "slot_occupied": occupancy.occupied or restored,
+            "compensated_at": compensated_at,
+        }
+
     def _get_slot_or_raise(self, *, slot_id: int):
         slot = self.parking_record_repository.get_slot(slot_id=slot_id)
         if slot is None:
             raise ParkingRecordNotFoundError("존재하지 않는 슬롯입니다.")
         return slot
+
+    def _get_active_history_or_raise(self, *, vehicle_num: str):
+        history = self.parking_record_repository.get_active_history_for_vehicle(
+            vehicle_num=vehicle_num
+        )
+        if history is None:
+            raise ParkingRecordNotFoundError("활성 주차 이력이 없습니다.")
+        if history.slot is None:
+            raise ParkingRecordConflictError("활성 주차 이력의 슬롯 정보가 없습니다.")
+        return history
+
+
+def _slot_type_name(*, slot_type_id: int) -> str:
+    return {
+        1: "GENERAL",
+        2: "EV",
+        3: "DISABLED",
+    }.get(slot_type_id, str(slot_type_id))

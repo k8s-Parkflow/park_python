@@ -38,6 +38,36 @@ def _build_compensation_payload(response) -> dict:
     }
 
 
+def _build_active_parking_payload(response) -> dict:
+    return {
+        "history_id": response.history_id,
+        "slot_id": response.slot_id,
+        "vehicle_num": response.vehicle_num,
+        "entry_at": _timestamp_to_iso_or_none(response.entry_at),
+        "status": response.status,
+        "zone_id": response.zone_id,
+        "slot_type": response.slot_type,
+    }
+
+
+def _build_exit_payload(response) -> dict:
+    return {
+        "history_id": response.history_id,
+        "slot_id": response.slot_id,
+        "vehicle_num": response.vehicle_num,
+        "exit_at": _timestamp_to_iso_or_none(response.exit_at),
+        "status": response.status,
+    }
+
+
+def _build_exit_compensation_payload(response) -> dict:
+    return {
+        "history_id": response.history_id,
+        "slot_occupied": response.slot_occupied,
+        "compensated_at": _timestamp_to_iso_or_none(response.compensated_at),
+    }
+
+
 class ParkingCommandGrpcClient(GrpcClientBase):
     def __init__(
         self,
@@ -99,11 +129,58 @@ class ParkingCommandGrpcClient(GrpcClientBase):
         )
         return _build_compensation_payload(response)
 
-    def validate_active_parking(self, **_kwargs):
-        raise NotImplementedError
+    def validate_active_parking(self, *, vehicle_num: str) -> dict:
+        stub = self.get_stub(parking_command_pb2_grpc.ParkingCommandServiceStub)
+        request = parking_command_pb2.ValidateActiveParkingRequest(
+            context=build_request_context(),
+            vehicle_num=vehicle_num,
+        )
+        response = self.invoke_unary(
+            dependency="parking-command-service",
+            rpc_call=stub.ValidateActiveParking,
+            request=request,
+        )
+        return _build_active_parking_payload(response)
 
-    def exit_parking(self, **_kwargs):
-        raise NotImplementedError
+    def exit_parking(
+        self,
+        *,
+        operation_id: str,
+        vehicle_num: str,
+        requested_at: str,
+    ) -> dict:
+        stub = self.get_stub(parking_command_pb2_grpc.ParkingCommandServiceStub)
+        request = parking_command_pb2.ExitParkingRequest(
+            context=build_request_context(requested_at=requested_at),
+            operation_id=operation_id,
+            vehicle_num=vehicle_num,
+        )
+        response = self.invoke_unary(
+            dependency="parking-command-service",
+            rpc_call=stub.ExitParking,
+            request=request,
+        )
+        return _build_exit_payload(response)
 
-    def compensate_exit(self, **_kwargs):
-        raise NotImplementedError
+    def compensate_exit(
+        self,
+        *,
+        operation_id: str,
+        history_id: int,
+        slot_id: int,
+        vehicle_num: str,
+    ) -> dict:
+        stub = self.get_stub(parking_command_pb2_grpc.ParkingCommandServiceStub)
+        request = parking_command_pb2.CompensateExitRequest(
+            context=build_request_context(),
+            operation_id=operation_id,
+            history_id=history_id,
+            slot_id=slot_id,
+            vehicle_num=vehicle_num,
+        )
+        response = self.invoke_unary(
+            dependency="parking-command-service",
+            rpc_call=stub.CompensateExit,
+            request=request,
+        )
+        return _build_exit_compensation_payload(response)

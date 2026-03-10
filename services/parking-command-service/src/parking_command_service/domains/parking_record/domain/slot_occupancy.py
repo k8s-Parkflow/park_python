@@ -73,6 +73,18 @@ class SlotOccupancy(models.Model):
         self._mark_released()
         self.clean()
 
+    def restore(
+        self, *, vehicle_num: str, history: "ParkingHistory", occupied_at: datetime | None = None,
+    ) -> None:
+        if self.occupied:
+            raise ValidationError("이미 점유 중인 슬롯입니다.")
+        self._mark_occupied(
+            vehicle_num=normalize_vehicle_num(vehicle_num),
+            history=history,
+            occupied_at=occupied_at,
+        )
+        self.clean()
+
     def clean(self) -> None:
         super().clean()
         if self.occupied and not self.vehicle_num:
