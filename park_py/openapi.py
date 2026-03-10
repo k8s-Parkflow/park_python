@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 
 def openapi_json_view(request: HttpRequest) -> JsonResponse:
@@ -173,6 +174,7 @@ def openapi_json_view(request: HttpRequest) -> JsonResponse:
     )
 
 
+@ensure_csrf_cookie
 def swagger_ui_view(_request: HttpRequest) -> HttpResponse:
     return HttpResponse(
         """
@@ -191,6 +193,14 @@ def swagger_ui_view(_request: HttpRequest) -> HttpResponse:
     <div id="swagger-ui"></div>
     <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
     <script>
+      function getCookie(name) {
+        const cookieValue = document.cookie
+          .split(";")
+          .map((item) => item.trim())
+          .find((item) => item.startsWith(name + "="));
+        return cookieValue ? decodeURIComponent(cookieValue.split("=").slice(1).join("=")) : null;
+      }
+
       window.onload = function () {
         window.ui = SwaggerUIBundle({
           url: "/api/docs/openapi.json",
@@ -198,6 +208,16 @@ def swagger_ui_view(_request: HttpRequest) -> HttpResponse:
           presets: [SwaggerUIBundle.presets.apis],
           layout: "BaseLayout",
           deepLinking: true,
+          requestInterceptor: (request) => {
+            const csrfToken = getCookie("csrftoken");
+            request.credentials = "same-origin";
+
+            if (csrfToken && !["GET", "HEAD", "OPTIONS", "TRACE"].includes((request.method || "GET").toUpperCase())) {
+              request.headers["X-CSRFToken"] = csrfToken;
+            }
+
+            return request;
+          },
         });
       };
     </script>
