@@ -43,7 +43,6 @@ class OrchestrationParkingQueryGrpcAcceptanceTests(TransactionTestCase):
         ParkingSlot.objects.create(
             slot_id=7,
             zone_id=zone.zone_id,
-            slot_type_id=1,
             slot_code="A001",
             is_active=True,
         )
@@ -134,7 +133,6 @@ class OrchestrationParkingQueryGrpcAcceptanceTests(TransactionTestCase):
         slot = ParkingSlot.objects.create(
             slot_id=7,
             zone_id=1,
-            slot_type_id=1,
             slot_code="A001",
             is_active=True,
         )

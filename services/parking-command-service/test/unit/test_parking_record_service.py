@@ -550,7 +550,7 @@ class ParkingRecordResponseUnitTests(ParkingRecordServiceTestSupport):
         # Then
         self.assertSetEqual(
             set(snapshot.to_dict().keys()),
-            {"history_id", "vehicle_num", "zone_id", "slot_code", "slot_id", "status", "entry_at", "exit_at"},
+            {"history_id", "vehicle_num", "zone_id", "slot_name", "slot_id", "status", "entry_at", "exit_at"},
         )
 
 

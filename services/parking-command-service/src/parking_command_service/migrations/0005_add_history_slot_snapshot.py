@@ -7,16 +7,18 @@ def backfill_history_slot_snapshot(apps, schema_editor):
     for history in ParkingHistory.objects.select_related("slot").all():
         if history.slot_id is None or history.slot is None:
             continue
+        slot_code = getattr(history.slot, "slot_code", "") or getattr(history.slot, "slot_name", "")
+        slot_type_id = getattr(history.slot, "slot_type_id", 0)
         ParkingHistory.objects.filter(history_id=history.history_id).update(
             zone_id=history.slot.zone_id,
-            slot_type_id=history.slot.slot_type_id,
-            slot_code=history.slot.slot_code,
+            slot_type_id=slot_type_id,
+            slot_code=slot_code,
         )
 
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("parking_command_service", "0004_merge_proj22_main"),
+        ("parking_command_service", "0001_initial"),
     ]
 
     operations = [

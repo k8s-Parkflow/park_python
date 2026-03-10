@@ -21,14 +21,13 @@ class OrchestrationParkingCommandGrpcExitAcceptanceTests(TransactionTestCase):
         slot = ParkingSlot.objects.create(
             slot_id=7,
             zone_id=1,
-            slot_type_id=1,
             slot_code="A001",
             is_active=True,
         )
         history = ParkingHistory.objects.create(
             slot=slot,
             zone_id=slot.zone_id,
-            slot_type_id=slot.slot_type_id,
+            slot_type_id=1,
             slot_code=slot.slot_code,
             vehicle_num="12가3456",
             entry_at=timezone.datetime(2026, 3, 10, 1, 0, tzinfo=timezone.utc),
@@ -79,14 +78,13 @@ class OrchestrationParkingCommandGrpcExitAcceptanceTests(TransactionTestCase):
         slot = ParkingSlot.objects.create(
             slot_id=7,
             zone_id=1,
-            slot_type_id=1,
             slot_code="A001",
             is_active=True,
         )
         history = ParkingHistory.objects.create(
             slot=slot,
             zone_id=slot.zone_id,
-            slot_type_id=slot.slot_type_id,
+            slot_type_id=1,
             slot_code=slot.slot_code,
             vehicle_num="12가3456",
             entry_at=timezone.datetime(2026, 3, 10, 1, 0, tzinfo=timezone.utc),
@@ -99,9 +97,8 @@ class OrchestrationParkingCommandGrpcExitAcceptanceTests(TransactionTestCase):
             occupied_at=history.entry_at,
         )
         slot.zone_id = 9
-        slot.slot_type_id = 2
         slot.slot_code = "B999"
-        slot.save(update_fields=["zone_id", "slot_type_id", "slot_code"])
+        slot.save(update_fields=["zone_id", "slot_code"])
 
         parking_command_gateway = ParkingCommandGrpcClient(
             stub=build_direct_stub(

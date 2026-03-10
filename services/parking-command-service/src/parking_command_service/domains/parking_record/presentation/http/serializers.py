@@ -19,7 +19,7 @@ def parse_entry_command(*, body: bytes) -> EntryCommand:
     errors: dict[str, list[str]] = {}
 
     vehicle_num = _normalize_vehicle_num(payload=payload, errors=errors)
-    zone_id, slot_code, slot_id = _parse_slot_fields(payload=payload, errors=errors)
+    zone_id, slot_name, slot_id = _parse_slot_fields(payload=payload, errors=errors)
     entry_at = _parse_optional_datetime(payload=payload, field_name="entry_at", errors=errors)
 
     if errors:
@@ -28,7 +28,7 @@ def parse_entry_command(*, body: bytes) -> EntryCommand:
     return EntryCommand(
         vehicle_num=vehicle_num,
         zone_id=zone_id,
-        slot_code=slot_code,
+        slot_code=slot_name,
         slot_id=slot_id,
         entry_at=entry_at,
     )
@@ -39,7 +39,7 @@ def parse_exit_command(*, body: bytes) -> ExitCommand:
     errors: dict[str, list[str]] = {}
 
     vehicle_num = _normalize_vehicle_num(payload=payload, errors=errors)
-    zone_id, slot_code, slot_id = _parse_slot_fields(payload=payload, errors=errors)
+    zone_id, slot_name, slot_id = _parse_slot_fields(payload=payload, errors=errors)
     exit_at = _parse_optional_datetime(payload=payload, field_name="exit_at", errors=errors)
 
     if errors:
@@ -48,7 +48,7 @@ def parse_exit_command(*, body: bytes) -> ExitCommand:
     return ExitCommand(
         vehicle_num=vehicle_num,
         zone_id=zone_id,
-        slot_code=slot_code,
+        slot_code=slot_name,
         slot_id=slot_id,
         exit_at=exit_at,
     )
@@ -61,7 +61,7 @@ def _parse_slot_fields(
 ) -> tuple[int, str, int]:
     return (
         _require_int(payload=payload, field_name="zone_id", errors=errors),
-        _require_slot_code(payload=payload, errors=errors),
+        _require_slot_name(payload=payload, errors=errors),
         _require_int(payload=payload, field_name="slot_id", errors=errors),
     )
 
@@ -114,12 +114,12 @@ def _require_int(
     return value
 
 
-def _require_slot_code(
+def _require_slot_name(
     *,
     payload: dict[str, object],
     errors: dict[str, list[str]],
 ) -> str:
-    field_name = "slot_code"
+    field_name = "slot_name"
     value = payload.get(field_name)
     if value is None:
         errors[field_name] = ["필수 입력값입니다."]

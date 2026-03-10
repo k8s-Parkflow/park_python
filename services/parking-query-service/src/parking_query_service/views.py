@@ -1,5 +1,11 @@
+import json
+from json import JSONDecodeError
+
 from django.core.exceptions import ValidationError
-from django.http import HttpRequest, JsonResponse
+from django.http import HttpRequest
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET, require_POST
 from drf_spectacular.utils import (
     OpenApiParameter,
     OpenApiResponse,
@@ -9,16 +15,40 @@ from drf_spectacular.utils import (
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
+from park_py.error_handling import ApplicationError, ErrorCode
 from parking_query_service.dependencies import build_current_location_service
 from parking_query_service.forms import CurrentLocationQueryForm
+from parking_query_service.models import CurrentParkingView
+from parking_query_service.models import ZoneAvailability
 from parking_query_service.serializers import (
     ErrorResponseSerializer,
     TotalAvailabilitySerializer,
     TypedAvailabilitySerializer,
 )
+from parking_query_service.services import get_current_parking
+from parking_query_service.services import project_entry
+from parking_query_service.services import project_exit
+from parking_query_service.services import restore_exit
+from parking_query_service.services import revert_entry
 from parking_query_service.services.zone_availability_service import (
     ZoneAvailabilityService,
 )
+
+
+def _payload(request) -> dict:
+    try:
+        payload = json.loads(request.body or b"{}")
+    except JSONDecodeError as exc:
+        raise ValidationError({"body": ["JSON 본문 형식이 올바르지 않습니다."]}) from exc
+    if not isinstance(payload, dict):
+        raise ValidationError({"body": ["JSON 객체만 허용됩니다."]})
+    return payload
+
+
+def _require_fields(payload: dict, *required_fields: str) -> None:
+    errors = {field: ["필수 입력값입니다."] for field in required_fields if field not in payload}
+    if errors:
+        raise ValidationError(errors)
 
 
 def get_current_location(_request: HttpRequest, vehicle_num: str) -> JsonResponse:
@@ -32,7 +62,80 @@ def get_current_location(_request: HttpRequest, vehicle_num: str) -> JsonRespons
     return JsonResponse(payload, status=200)
 
 
-# HTTP 요청에서 타입 값을 읽고 JSON HTTP 응답을 반환한다.
+@require_GET
+def get_current_parking_view(_request, vehicle_num: str) -> JsonResponse:
+    try:
+        result = get_current_parking(vehicle_num=vehicle_num)
+    except CurrentParkingView.DoesNotExist as exc:
+        raise ApplicationError(code=ErrorCode.NOT_FOUND, status=404) from exc
+    return JsonResponse(result)
+
+
+@csrf_exempt
+@require_POST
+def project_parking_entry(request) -> JsonResponse:
+    payload = _payload(request)
+    _require_fields(payload, "operation_id", "vehicle_num", "slot_id", "zone_id", "slot_type", "entry_at")
+    try:
+        result = project_entry(
+            operation_id=payload["operation_id"],
+            vehicle_num=payload["vehicle_num"],
+            slot_id=payload["slot_id"],
+            zone_id=payload["zone_id"],
+            slot_type=payload["slot_type"],
+            entry_at=payload["entry_at"],
+        )
+    except ZoneAvailability.DoesNotExist as exc:
+        raise ApplicationError(code=ErrorCode.NOT_FOUND, status=404) from exc
+    return JsonResponse(result, status=200)
+
+
+@csrf_exempt
+@require_POST
+def revert_parking_entry_projection(request) -> JsonResponse:
+    payload = _payload(request)
+    _require_fields(payload, "operation_id", "vehicle_num")
+    result = revert_entry(
+        operation_id=payload["operation_id"],
+        vehicle_num=payload["vehicle_num"],
+    )
+    return JsonResponse(result, status=200)
+
+
+@csrf_exempt
+@require_POST
+def project_parking_exit(request) -> JsonResponse:
+    payload = _payload(request)
+    _require_fields(payload, "operation_id", "vehicle_num")
+    try:
+        result = project_exit(
+            operation_id=payload["operation_id"],
+            vehicle_num=payload["vehicle_num"],
+        )
+    except (CurrentParkingView.DoesNotExist, ZoneAvailability.DoesNotExist) as exc:
+        raise ApplicationError(code=ErrorCode.NOT_FOUND, status=404) from exc
+    return JsonResponse(result, status=200)
+
+
+@csrf_exempt
+@require_POST
+def restore_parking_exit_projection(request) -> JsonResponse:
+    payload = _payload(request)
+    _require_fields(payload, "operation_id", "vehicle_num", "slot_id", "zone_id", "slot_type", "entry_at")
+    try:
+        result = restore_exit(
+            operation_id=payload["operation_id"],
+            vehicle_num=payload["vehicle_num"],
+            slot_id=payload["slot_id"],
+            zone_id=payload["zone_id"],
+            slot_type=payload["slot_type"],
+            entry_at=payload["entry_at"],
+        )
+    except ZoneAvailability.DoesNotExist as exc:
+        raise ApplicationError(code=ErrorCode.NOT_FOUND, status=404) from exc
+    return JsonResponse(result, status=200)
+
+
 @extend_schema(
     summary="전체 Zone 기준 여석 조회",
     description=(

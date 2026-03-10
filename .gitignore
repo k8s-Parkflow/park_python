@@ -17,6 +17,9 @@ __pycache__/
 /reports/
 /scripts/open_project_coverage.sh
 
+# Local docs
+/docs/*
+
 # Ignore markdown files by default
 *.md
 AGENTS.md
@@ -42,3 +45,7 @@ services/*/test/**/*.rst
 
 # Local-only coverage helpers
 /docs/tdd/coverage-local-guide.md
+
+# Track entity schema docs only
+!/docs/entities/
+!/docs/entities/*.md

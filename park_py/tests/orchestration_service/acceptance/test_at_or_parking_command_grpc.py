@@ -40,7 +40,6 @@ class OrchestrationParkingCommandGrpcAcceptanceTests(TransactionTestCase):
         ParkingSlot.objects.create(
             slot_id=7,
             zone_id=zone.zone_id,
-            slot_type_id=1,
             slot_code="A001",
             is_active=True,
         )
@@ -116,7 +115,6 @@ class OrchestrationParkingCommandGrpcAcceptanceTests(TransactionTestCase):
         ParkingSlot.objects.create(
             slot_id=7,
             zone_id=999,
-            slot_type_id=2,
             slot_code="B999",
             is_active=False,
         )
