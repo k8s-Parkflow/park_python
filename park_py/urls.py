@@ -20,8 +20,12 @@ from django.urls import include, path
 
 from park_py.error_handling import handler404 as json_handler404
 from park_py.error_handling import handler500 as json_handler500
+from park_py.swagger_views import openapi_json
+from park_py.swagger_views import swagger_ui
 
 urlpatterns = [
+    path("openapi.json", openapi_json),
+    path("swagger/", swagger_ui),
     path("", include("orchestration_service.urls")),
     path("", include("vehicle_service.urls")),
     path("", include("zone_service.urls")),
