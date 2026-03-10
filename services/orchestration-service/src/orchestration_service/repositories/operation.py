@@ -95,9 +95,27 @@ class SagaOperationRepository:
         operation.last_error_code = error_payload.get("error", {}).get("code")
         operation.last_error_message = error_payload.get("error", {}).get("message")
         operation.next_retry_at = None
+        operation.completed_compensations = []
         operation.save(
-            update_fields=["status", "current_step", "last_error_code", "last_error_message", "next_retry_at", "updated_at"]
+            update_fields=[
+                "status",
+                "current_step",
+                "last_error_code",
+                "last_error_message",
+                "next_retry_at",
+                "completed_compensations",
+                "updated_at",
+            ]
         )
+        return operation
+
+    def mark_compensation_step_completed(self, *, operation_id: str, step_key: str) -> SagaOperation:
+        operation = self.get(operation_id=operation_id)
+        completed_steps = list(operation.completed_compensations)
+        if step_key not in completed_steps:
+            completed_steps.append(step_key)
+            operation.completed_compensations = completed_steps
+            operation.save(update_fields=["completed_compensations", "updated_at"])
         return operation
 
     def mark_compensation_retry(

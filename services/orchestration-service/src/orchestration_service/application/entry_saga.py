@@ -4,6 +4,7 @@ from uuid import uuid4
 
 from park_py.error_handling import ApplicationError, ErrorCode
 
+from orchestration_service.application.compensation import CompensationAction
 from orchestration_service.application.compensation import CompensationRunner
 from orchestration_service.application.errors import raise_application_error_from_downstream
 from orchestration_service.clients.http import DownstreamHttpError
@@ -97,13 +98,19 @@ class EntrySagaOrchestrationService:
                 operation_id=operation_id,
                 failed_step="UPDATE_QUERY_ENTRY",
                 compensations=[
-                    lambda: self.parking_query_client.revert_entry(
-                        operation_id=operation_id,
-                        vehicle_num=vehicle_num,
+                    CompensationAction(
+                        step_key="REVERT_QUERY_ENTRY",
+                        run=lambda: self.parking_query_client.revert_entry(
+                            operation_id=operation_id,
+                            vehicle_num=vehicle_num,
+                        ),
                     ),
-                    lambda: self.parking_command_client.cancel_entry(
-                        operation_id=operation_id,
-                        history_id=command_result["history_id"],
+                    CompensationAction(
+                        step_key="CANCEL_PARKING_ENTRY",
+                        run=lambda: self.parking_command_client.cancel_entry(
+                            operation_id=operation_id,
+                            history_id=command_result["history_id"],
+                        ),
                     ),
                 ],
             )

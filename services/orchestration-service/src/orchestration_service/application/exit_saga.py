@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from uuid import uuid4
 
+from orchestration_service.application.compensation import CompensationAction
 from orchestration_service.application.compensation import CompensationRunner
 from orchestration_service.application.errors import raise_application_error_from_downstream
 from orchestration_service.clients.http import DownstreamHttpError
@@ -72,17 +73,23 @@ class ExitSagaOrchestrationService:
                 operation_id=operation_id,
                 failed_step="UPDATE_QUERY_EXIT",
                 compensations=[
-                    lambda: self.parking_query_client.restore_exit(
-                        operation_id=operation_id,
-                        vehicle_num=projection["vehicle_num"],
-                        slot_id=projection["slot_id"],
-                        zone_id=projection["zone_id"],
-                        slot_type=projection["slot_type"],
-                        entry_at=projection["entry_at"],
+                    CompensationAction(
+                        step_key="RESTORE_QUERY_EXIT",
+                        run=lambda: self.parking_query_client.restore_exit(
+                            operation_id=operation_id,
+                            vehicle_num=projection["vehicle_num"],
+                            slot_id=projection["slot_id"],
+                            zone_id=projection["zone_id"],
+                            slot_type=projection["slot_type"],
+                            entry_at=projection["entry_at"],
+                        ),
                     ),
-                    lambda: self.parking_command_client.restore_exit(
-                        operation_id=operation_id,
-                        history_id=command_result["history_id"],
+                    CompensationAction(
+                        step_key="RESTORE_PARKING_EXIT",
+                        run=lambda: self.parking_command_client.restore_exit(
+                            operation_id=operation_id,
+                            history_id=command_result["history_id"],
+                        ),
                     ),
                 ],
             )

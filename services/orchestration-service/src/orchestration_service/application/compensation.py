@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from dataclasses import dataclass
 from time import sleep as default_sleep
 from typing import Callable
 
@@ -10,6 +11,12 @@ from park_py.error_handling import ApplicationError
 from park_py.error_handling.error_codes import serialize_error_code
 from orchestration_service.clients.http import DownstreamHttpError
 from orchestration_service.repositories.operation import SagaOperationRepository
+
+
+@dataclass(frozen=True)
+class CompensationAction:
+    step_key: str
+    run: Callable[[], dict]
 
 
 class CompensationRunner:
@@ -33,16 +40,25 @@ class CompensationRunner:
         *,
         operation_id: str,
         failed_step: str,
-        compensations: list[Callable[[], dict]],
+        compensations: list[CompensationAction],
     ) -> dict:
         deadline = self.clock() + timedelta(seconds=self.ttl_seconds)
         attempt = 0
         last_error_payload = {"error": {}}
+        completed_steps = set(self.repository.get(operation_id=operation_id).completed_compensations)
 
         while True:
             try:
                 for compensation in compensations:
-                    compensation()
+                    if compensation.step_key in completed_steps:
+                        continue
+
+                    compensation.run()
+                    self.repository.mark_compensation_step_completed(
+                        operation_id=operation_id,
+                        step_key=compensation.step_key,
+                    )
+                    completed_steps.add(compensation.step_key)
 
                 self.repository.mark_compensated(
                     operation_id=operation_id,
