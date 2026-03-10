@@ -62,6 +62,10 @@ class DjangoParkingProjectionWriter:
         self._sync_zone_availability(slot=history.slot, slot_type_name=slot_type_name)
 
     def _sync_zone_availability(self, *, slot: ParkingSlot, slot_type_name: str) -> None:
+
+        # TODO: 같은 zone/type 동시 입출차 시 stale aggregate overwrite가 발생 이슈 존재
+        # TODO: 집계 단위 락 또는 증분 갱신 방식으로 직렬화 전략 도입 필요
+
         total_count = ParkingSlot.objects.filter(
             zone_id=slot.zone_id,
             slot_type_id=slot.slot_type_id,
