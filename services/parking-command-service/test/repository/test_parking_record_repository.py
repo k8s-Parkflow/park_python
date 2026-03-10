@@ -186,6 +186,38 @@ class ParkingRecordRepositoryTests(TestCase):
         self.assertEqual(ParkingHistory.objects.get().slot_id, slot.slot_id)
         self.assertTrue(SlotOccupancy.objects.get(slot=slot).occupied)
 
+    # trusted gRPC 입차는 로컬 slot metadata와 무관하게 command snapshot을 저장
+    def test_should_persist_trusted_snapshot__when_local_slot_metadata_differs(self) -> None:
+        # Given
+        slot = create_slot(zone_id=9, slot_type_id=2, slot_code="B999", is_active=False)
+        create_empty_occupancy(slot=slot)
+        create_vehicle(vehicle_num="69가3455")
+        service = ParkingRecordCommandService(
+            parking_record_repository=DjangoParkingRecordRepository(),
+            vehicle_repository=Mock(exists=Mock(return_value=True)),
+        )
+
+        # When
+        snapshot = service.create_entry(
+            command=EntryCommand(
+                vehicle_num="69가3455",
+                zone_id=1,
+                slot_code="A001",
+                slot_id=slot.slot_id,
+                slot_type="GENERAL",
+                trusted_slot_metadata=True,
+                entry_at=timezone.now(),
+            )
+        )
+
+        # Then
+        history = ParkingHistory.objects.get(history_id=snapshot.history_id)
+        self.assertEqual(history.slot_id, slot.slot_id)
+        self.assertEqual(history.zone_id, 1)
+        self.assertEqual(history.slot_type_id, 1)
+        self.assertEqual(history.slot_code, "A001")
+        self.assertTrue(SlotOccupancy.objects.get(slot=slot).occupied)
+
 
 # 저장소 동시성 테스트 클래스
 class ParkingRecordRepositoryConcurrencyTests(TransactionTestCase):
