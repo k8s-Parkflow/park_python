@@ -1,51 +1,65 @@
-# parking-query-service 엔터티 설명
+# parking-query-service 스키마
 
-## 목적
+## 생성 대상 테이블
 
-- `parking-query-service`의 조회 모델 엔터티 구조를 명확히 정의한다.
-- 엔터티별 역할과 컬럼 의미를 한 번에 확인할 수 있도록 정리한다.
+- `CURRENT_PARKING_VIEW`
+- `ZONE_AVAILABILITY`
+- `PARKING_QUERY_OPERATION`
 
-## 엔터티 개요
+## 공통 원칙
 
-- `CURRENT_PARKING_VIEW`: 현재 주차 중인 차량의 최신 상태를 조회하기 위한 뷰 모델이다.
-- `ZONE_AVAILABILITY`: 존/슬롯타입별 총 슬롯, 점유, 가용 수량을 집계한 뷰 모델이다.
+- 이 서비스는 projection 저장소라 로컬 FK를 만들지 않는다.
+- `vehicle_num`, `history_id`, `zone_id`, `slot_id`는 모두 논리 참조 값이다.
+- 슬롯 식별 문자열은 `slot_name` 하나만 사용한다.
 
 ## CURRENT_PARKING_VIEW
 
-현재 주차 중 차량의 상태를 차량 번호 기준으로 1행에 유지한다.
-
-| 컬럼명 | 타입 | 필수 | 설명 |
-| --- | --- | --- | --- |
-| `vehicle_num` | `varchar(20)` | Y | 차량 번호 PK |
-| `zone_name` | `varchar(100)` | Y | 현재 위치한 존 이름 |
-| `slot_name` | `varchar(50)` | Y | 현재 위치한 슬롯 이름 |
-| `slot_type` | `varchar(50)` | Y | 슬롯 타입명 |
-| `entry_at` | `timestamp` | Y | 입차 시각 |
-| `updated_at` | `timestamp` | Y | 최종 갱신 시각 |
-
-제약/인덱스:
-- PK: `vehicle_num`
+| 컬럼명 | 타입 | NULL | 기본값 | 키/제약 |
+| --- | --- | --- | --- | --- |
+| `vehicle_num` | varchar(20) | N |  | PK |
+| `history_id` | bigint | Y |  |  |
+| `zone_id` | bigint | Y |  |  |
+| `slot_id` | bigint | Y |  |  |
+| `zone_name` | varchar(100) | Y |  |  |
+| `slot_name` | varchar(50) | Y |  |  |
+| `slot_type` | varchar(50) | N |  |  |
+| `entry_at` | timestamp | N |  |  |
+| `updated_at` | timestamp | N | auto now |  |
 
 ## ZONE_AVAILABILITY
 
-존/슬롯타입 조합 단위로 가용성 지표를 유지한다.
+| 컬럼명 | 타입 | NULL | 기본값 | 키/제약 |
+| --- | --- | --- | --- | --- |
+| `id` | bigint | N | auto increment | PK |
+| `zone_id` | bigint | N |  | UK 일부, IDX |
+| `slot_type` | varchar(50) | N |  | UK 일부, IDX |
+| `total_count` | int | N |  |  |
+| `occupied_count` | int | N |  |  |
+| `available_count` | int | N |  | check |
+| `updated_at` | timestamp | N | auto now |  |
 
-| 컬럼명 | 타입 | 필수 | 설명 |
-| --- | --- | --- | --- |
-| `zone_id` | `bigint` | Y | 존 ID |
-| `slot_type` | `varchar(50)` | Y | 슬롯 타입명 |
-| `total_count` | `int` | Y | 전체 슬롯 수 |
-| `occupied_count` | `int` | Y | 점유 슬롯 수 |
-| `available_count` | `int` | Y | 가용 슬롯 수 (`total_count - occupied_count`) |
-| `updated_at` | `timestamp` | Y | 최종 갱신 시각 |
+인덱스:
+- `(zone_id, slot_type)` (`idx_zone_type`)
 
-제약/인덱스:
-- 유니크 제약: `(zone_id, slot_type)` (`uniq_zone_availability_zone_slot_type`)
-- 인덱스: `(zone_id, slot_type)` (`idx_zone_type`)
-- 체크 제약: `available_count = total_count - occupied_count` 및 `available_count >= 0` (`chk_zone_availability_available_count`)
+추가 제약:
+- Unique `(zone_id, slot_type)` (`uniq_zone_availability_zone_slot_type`)
+- Check `available_count = total_count - occupied_count AND available_count >= 0` (`chk_zone_availability_available_count`)
 
-## 엔터티 관계
+## PARKING_QUERY_OPERATION
 
-- `CURRENT_PARKING_VIEW.zone_name`은 `zone-service`의 존 마스터 이름을 사용자 조회용으로 투영한 값이다.
-- `CURRENT_PARKING_VIEW.slot_name`은 `parking-command-service`의 슬롯 마스터 이름을 사용자 조회용으로 투영한 값이다.
-- `ZONE_AVAILABILITY.zone_id`는 `zone-service`의 존 식별자와 논리적으로 연결된다.
+| 컬럼명 | 타입 | NULL | 기본값 | 키/제약 |
+| --- | --- | --- | --- | --- |
+| `id` | bigint | N | auto increment | PK |
+| `operation_id` | varchar(64) | N |  | UK 일부 |
+| `action` | varchar(64) | N |  | UK 일부 |
+| `response_payload` | json | Y |  |  |
+| `created_at` | timestamp | N | auto now add |  |
+| `updated_at` | timestamp | N | auto now |  |
+
+추가 제약:
+- Unique `(operation_id, action)` (`uniq_parking_query_operation_action`)
+
+## 최종 관계 요약
+
+- 로컬 FK 없음
+- `zone_id`, `slot_type` 조합으로 집계 projection 관리

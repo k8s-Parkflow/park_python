@@ -16,40 +16,32 @@ Including another URLconf
 """
 from django.conf import settings
 from django.contrib import admin
+from django.apps import apps
 from django.urls import include, path
-from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 from park_py.error_handling import handler404 as json_handler404
 from park_py.error_handling import handler500 as json_handler500
-from park_py.openapi import openapi_json_view, swagger_ui_view
+from park_py.openapi import openapi_json_view
+from park_py.openapi import swagger_ui_view
+from park_py.swagger_views import openapi_json
+from park_py.swagger_views import swagger_ui
 from parking_query_service.views import availability
 
-urlpatterns = []
-
-if "django.contrib.admin" in settings.INSTALLED_APPS:
-    urlpatterns.append(path("admin/", admin.site.urls))
-
-urlpatterns.append(
-    path("api/zones/availabilities", availability),
-)
-urlpatterns.append(
-    path("", include("parking_query_service.urls")),
-)
-urlpatterns.append(
-    path("", include("parking_command_service.urls")),
-)
-urlpatterns.append(
-    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
-)
-urlpatterns.append(
-    path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
-)
-urlpatterns.append(
+urlpatterns = [
+    path("openapi.json", openapi_json),
+    path("swagger/", swagger_ui),
     path("api/docs/openapi.json", openapi_json_view, name="openapi-json"),
-)
-urlpatterns.append(
-    path("api/docs/swagger", swagger_ui_view, name="command-swagger-ui"),
-)
+    path("api/docs/swagger", swagger_ui_view, name="swagger-ui"),
+    path("api/zones/availabilities", availability),
+    path("", include("orchestration_service.urls")),
+    path("", include("vehicle_service.urls")),
+    path("", include("zone_service.urls")),
+    path("", include("parking_command_service.urls")),
+    path("", include("parking_query_service.urls")),
+]
+
+if apps.is_installed("django.contrib.admin"):
+    urlpatterns.insert(0, path("admin/", admin.site.urls))
 
 handler404 = json_handler404
 handler500 = json_handler500

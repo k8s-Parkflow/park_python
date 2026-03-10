@@ -16,27 +16,15 @@ __pycache__/
 /reports/
 /scripts/open_project_coverage.sh
 
+# Local docs
+/docs/*
+
 # Ignore markdown files by default
 *.md
-AGENTS.md
-
-# Keep README files anywhere
-!README.md
-!**/README.md
-
-# Keep docs markdown files
-!docs/**/*.md
-/docs/architecture/parking-command-service-implementation.md
-
-# Ignore test documents except README files
-services/*/test/*.md
-services/*/test/*.txt
-services/*/test/*.rst
-services/*/test/**/*.md
-services/*/test/**/*.txt
-services/*/test/**/*.rst
-!services/*/test/README.md
-!services/*/test/**/README.md
 
 # Local-only coverage helpers
 /docs/tdd/coverage-local-guide.md
+
+# Track entity schema docs only
+!/docs/entities/
+!/docs/entities/*.md

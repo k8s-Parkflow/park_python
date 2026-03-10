@@ -1,3 +1,4 @@
+from parking_command_service.models.operation_record import ParkingCommandOperation
 from parking_command_service.domains.parking_record.domain import (
     ParkingHistory,
     ParkingHistoryStatus,
@@ -6,6 +7,7 @@ from parking_command_service.domains.parking_record.domain import (
 )
 
 __all__ = [
+    "ParkingCommandOperation",
     "ParkingHistory",
     "ParkingHistoryStatus",
     "ParkingSlot",

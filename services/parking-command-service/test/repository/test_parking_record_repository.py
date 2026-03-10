@@ -40,19 +40,19 @@ from support.factories import (  # noqa: E402
 # 저장소 및 제약 테스트 클래스
 class ParkingRecordRepositoryTests(TestCase):
     # zone 내부 슬롯 코드 유니크 제약 검증
-    def test_should_reject_duplicate_slot_code__when_zone_reuses_code(self) -> None:
+    def test_should_reject_duplicate_slot_name__when_zone_reuses_code(self) -> None:
         # Given
-        create_slot(zone_id=1, slot_code="A001")
+        create_slot(zone_id=1, slot_name="A001")
 
         # When / Then
         with self.assertRaises(IntegrityError):
-            create_slot(zone_id=1, slot_code="A001")
+            create_slot(zone_id=1, slot_name="A001")
 
     # zone 간 동일 슬롯 코드 허용 검증
-    def test_should_allow_same_slot_code__when_zone_differs(self) -> None:
+    def test_should_allow_same_slot_name__when_zone_differs(self) -> None:
         # Given / When
-        first_slot = create_slot(zone_id=1, slot_code="A001")
-        second_slot = create_slot(zone_id=2, slot_code="A001")
+        first_slot = create_slot(zone_id=1, slot_name="A001")
+        second_slot = create_slot(zone_id=2, slot_name="A001")
 
         # Then
         self.assertNotEqual(first_slot.slot_id, second_slot.slot_id)
@@ -61,8 +61,8 @@ class ParkingRecordRepositoryTests(TestCase):
     def test_should_reject_second_active_history__when_vehicle_opened(self) -> None:
         # Given
         vehicle = create_vehicle()
-        first_slot = create_slot(slot_code="A001")
-        second_slot = create_slot(slot_code="A002")
+        first_slot = create_slot(slot_name="A001")
+        second_slot = create_slot(slot_name="A002")
         entry_at = timezone.now()
         create_active_history(slot=first_slot, vehicle_num=vehicle.vehicle_num, entry_at=entry_at)
 
@@ -116,8 +116,8 @@ class ParkingRecordRepositoryTests(TestCase):
     def test_should_reject_reused_history__when_occupancy_created(self) -> None:
         # Given
         vehicle = create_vehicle()
-        first_slot = create_slot(slot_code="A001")
-        second_slot = create_slot(slot_code="A002")
+        first_slot = create_slot(slot_name="A001")
+        second_slot = create_slot(slot_name="A002")
         entry_at = timezone.now()
         history = create_active_history(slot=first_slot, vehicle_num=vehicle.vehicle_num, entry_at=entry_at)
         SlotOccupancy.objects.create(
@@ -141,14 +141,14 @@ class ParkingRecordRepositoryTests(TestCase):
     # 슬롯 식별 조회 일관성 검증
     def test_should_load_same_slot__when_slot_id_and_identity_match(self) -> None:
         # Given
-        slot = create_slot(zone_id=1, slot_code="A001")
+        slot = create_slot(zone_id=1, slot_name="A001")
         repository = DjangoParkingRecordRepository()
 
         # When
         slot_by_id = repository.get_slot_for_update(slot_id=slot.slot_id)
         slot_by_identity = repository.get_slot_by_identity_for_update(
             zone_id=slot.zone_id,
-            slot_code=slot.slot_code,
+            slot_name=slot.slot_name,
         )
 
         # Then
@@ -182,7 +182,7 @@ class ParkingRecordRepositoryConcurrencyTests(TransactionTestCase):
                     command=EntryCommand(
                         vehicle_num=vehicle_num,
                         zone_id=slot.zone_id,
-                        slot_code=slot.slot_code,
+                        slot_name=slot.slot_name,
                         slot_id=slot.slot_id,
                         entry_at=timezone.now(),
                     )

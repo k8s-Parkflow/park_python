@@ -27,7 +27,7 @@ from parking_command_service.global_shared.utils.vehicle_nums import normalize_v
 
 class ParkingRecordRepository(Protocol):
     def get_slot_for_update(self, *, slot_id: int): ...
-    def get_slot_by_identity_for_update(self, *, zone_id: int, slot_code: str): ...
+    def get_slot_by_identity_for_update(self, *, zone_id: int, slot_name: str): ...
     def get_or_create_occupancy_for_update(self, *, slot): ...
     def has_active_history_for_vehicle(self, *, vehicle_num: str) -> bool: ...
     def get_active_history_for_vehicle_for_update(self, *, vehicle_num: str): ...
@@ -136,7 +136,7 @@ class ParkingRecordCommandService:
         slot_by_id = self.parking_record_repository.get_slot_for_update(slot_id=command.slot_id)
         slot_by_identity = self.parking_record_repository.get_slot_by_identity_for_update(
             zone_id=command.zone_id,
-            slot_code=command.slot_code,
+            slot_name=command.slot_name,
         )
         if slot_by_id is None or slot_by_identity is None:
             raise ParkingRecordNotFoundError("존재하지 않는 슬롯입니다.")
@@ -154,7 +154,7 @@ def _build_snapshot(*, history: ParkingHistory) -> ParkingRecordSnapshot:
         history_id=history.history_id,
         vehicle_num=history.vehicle_num,
         zone_id=history.slot.zone_id,
-        slot_code=history.slot.slot_code,
+        slot_name=history.slot.slot_name,
         slot_id=history.slot_id,
         status=history.status,
         entry_at=history.entry_at,

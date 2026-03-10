@@ -36,7 +36,7 @@ class ParkingRecordSuccessContractTests(TestCase):
             self.client,
             vehicle_num="69가-3455",
             zone_id=slot.zone_id,
-            slot_code=slot.slot_code,
+            slot_name=slot.slot_name,
             slot_id=slot.slot_id,
         )
 
@@ -46,12 +46,12 @@ class ParkingRecordSuccessContractTests(TestCase):
         self.assertEqual(response["Content-Type"], "application/json")
         self.assertSetEqual(
             set(body.keys()),
-            {"history_id", "vehicle_num", "zone_id", "slot_code", "slot_id", "status", "entry_at", "exit_at"},
+            {"history_id", "vehicle_num", "zone_id", "slot_name", "slot_id", "status", "entry_at", "exit_at"},
         )
         self.assertIsInstance(body["history_id"], int)
         self.assertEqual(body["vehicle_num"], vehicle.vehicle_num)
         self.assertEqual(body["zone_id"], slot.zone_id)
-        self.assertEqual(body["slot_code"], slot.slot_code)
+        self.assertEqual(body["slot_name"], slot.slot_name)
         self.assertEqual(body["slot_id"], slot.slot_id)
         self.assertEqual(body["status"], "PARKED")
         self.assertIsInstance(body["entry_at"], str)
@@ -74,7 +74,7 @@ class ParkingRecordSuccessContractTests(TestCase):
             self.client,
             vehicle_num=vehicle.vehicle_num,
             zone_id=slot.zone_id,
-            slot_code=slot.slot_code,
+            slot_name=slot.slot_name,
             slot_id=slot.slot_id,
         )
 
@@ -84,12 +84,12 @@ class ParkingRecordSuccessContractTests(TestCase):
         self.assertEqual(response["Content-Type"], "application/json")
         self.assertSetEqual(
             set(body.keys()),
-            {"history_id", "vehicle_num", "zone_id", "slot_code", "slot_id", "status", "entry_at", "exit_at"},
+            {"history_id", "vehicle_num", "zone_id", "slot_name", "slot_id", "status", "entry_at", "exit_at"},
         )
         self.assertEqual(body["history_id"], history.history_id)
         self.assertEqual(body["vehicle_num"], vehicle.vehicle_num)
         self.assertEqual(body["zone_id"], slot.zone_id)
-        self.assertEqual(body["slot_code"], slot.slot_code)
+        self.assertEqual(body["slot_name"], slot.slot_name)
         self.assertEqual(body["slot_id"], slot.slot_id)
         self.assertEqual(body["status"], "EXITED")
         self.assertIsInstance(body["entry_at"], str)
@@ -107,7 +107,7 @@ class ParkingRecordSuccessContractTests(TestCase):
             self.client,
             vehicle_num="69가-3455",
             zone_id=slot.zone_id,
-            slot_code=slot.slot_code,
+            slot_name=slot.slot_name,
             slot_id=slot.slot_id,
         )
 
@@ -176,7 +176,7 @@ class ParkingRecordErrorContractTests(TestCase):
             self.client,
             vehicle_num="69가3455",
             zone_id=1,
-            slot_code="A001",
+            slot_name="A001",
             slot_id="1",  # type: ignore[arg-type]
         )
 
@@ -193,8 +193,8 @@ class ParkingRecordErrorContractTests(TestCase):
             },
         )
 
-    # slot_code 형식 오류 응답 계약 검증
-    def test_should_preserve_bad_request__when_slot_code_invalid(self) -> None:
+    # slot_name 형식 오류 응답 계약 검증
+    def test_should_preserve_bad_request__when_slot_name_invalid(self) -> None:
         # Given
         create_vehicle()
 
@@ -203,7 +203,7 @@ class ParkingRecordErrorContractTests(TestCase):
             self.client,
             vehicle_num="69가3455",
             zone_id=1,
-            slot_code="a001",
+            slot_name="a001",
             slot_id=1,
         )
 
@@ -215,7 +215,7 @@ class ParkingRecordErrorContractTests(TestCase):
                 "error": {
                     "code": "bad_request",
                     "message": "잘못된 요청입니다.",
-                    "details": {"slot_code": ["대문자 형식이어야 합니다."]},
+                    "details": {"slot_name": ["대문자 형식이어야 합니다."]},
                 }
             },
         )
@@ -239,7 +239,7 @@ class ParkingRecordErrorContractTests(TestCase):
                     "details": {
                         "vehicle_num": ["지원하지 않는 차량 번호 형식입니다."],
                         "zone_id": ["필수 입력값입니다."],
-                        "slot_code": ["필수 입력값입니다."],
+                        "slot_name": ["필수 입력값입니다."],
                         "slot_id": ["필수 입력값입니다."],
                     },
                 }
@@ -256,7 +256,7 @@ class ParkingRecordErrorContractTests(TestCase):
             self.client,
             vehicle_num="69가3455",
             zone_id=1,
-            slot_code="A001",
+            slot_name="A001",
             slot_id=9999,
         )
 
@@ -284,7 +284,7 @@ class ParkingRecordErrorContractTests(TestCase):
             self.client,
             vehicle_num=vehicle.vehicle_num,
             zone_id=slot.zone_id,
-            slot_code=slot.slot_code,
+            slot_name=slot.slot_name,
             slot_id=slot.slot_id,
         )
 
@@ -313,7 +313,7 @@ class ParkingRecordErrorContractTests(TestCase):
             self.client,
             vehicle_num=vehicle.vehicle_num,
             zone_id=slot.zone_id,
-            slot_code=slot.slot_code,
+            slot_name=slot.slot_name,
             slot_id=slot.slot_id,
             exit_at=entry_at - timedelta(minutes=1),
         )
@@ -334,9 +334,9 @@ class ParkingRecordErrorContractTests(TestCase):
     def test_should_preserve_bad_request__when_slot_identifiers_mismatch(self) -> None:
         # Given
         vehicle = create_vehicle()
-        slot = create_slot(zone_id=1, slot_code="A001")
+        slot = create_slot(zone_id=1, slot_name="A001")
         create_empty_occupancy(slot=slot)
-        another_slot = create_slot(zone_id=2, slot_code="B001")
+        another_slot = create_slot(zone_id=2, slot_name="B001")
         create_empty_occupancy(slot=another_slot)
 
         # When
@@ -344,7 +344,7 @@ class ParkingRecordErrorContractTests(TestCase):
             self.client,
             vehicle_num=vehicle.vehicle_num,
             zone_id=slot.zone_id,
-            slot_code=slot.slot_code,
+            slot_name=slot.slot_name,
             slot_id=another_slot.slot_id,
         )
 
@@ -364,8 +364,8 @@ class ParkingRecordErrorContractTests(TestCase):
     def test_should_preserve_conflict__when_exit_location_conflicts(self) -> None:
         # Given
         vehicle = create_vehicle()
-        slot = create_slot(zone_id=1, slot_code="A001")
-        other_slot = create_slot(zone_id=1, slot_code="A002")
+        slot = create_slot(zone_id=1, slot_name="A001")
+        other_slot = create_slot(zone_id=1, slot_name="A002")
         create_occupied_session(
             slot=slot,
             vehicle_num=vehicle.vehicle_num,
@@ -377,7 +377,7 @@ class ParkingRecordErrorContractTests(TestCase):
             self.client,
             vehicle_num=vehicle.vehicle_num,
             zone_id=other_slot.zone_id,
-            slot_code=other_slot.slot_code,
+            slot_name=other_slot.slot_name,
             slot_id=other_slot.slot_id,
         )
 

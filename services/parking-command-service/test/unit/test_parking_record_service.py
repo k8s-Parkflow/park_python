@@ -34,7 +34,7 @@ if str(TEST_ROOT) not in sys.path:
 class ParkingRecordServiceTestSupport(TestCase):
     # 입차 서비스 의존성 조립 유틸리티
     def make_entry_deps(self) -> tuple[ParkingSlot, SlotOccupancy, Mock, Mock]:
-        slot = ParkingSlot(slot_id=1, zone_id=1, slot_type_id=1, slot_code="A001", is_active=True)
+        slot = ParkingSlot(slot_id=1, zone_id=1, slot_type_id=1, slot_name="A001", is_active=True)
         occupancy = SlotOccupancy(slot=slot)
         parking_record_repository = Mock()
         vehicle_repository = Mock()
@@ -82,7 +82,7 @@ class ParkingRecordEntryServiceUnitTests(ParkingRecordServiceTestSupport):
             command=EntryCommand(
                 vehicle_num="69가3455",
                 zone_id=slot.zone_id,
-                slot_code=slot.slot_code,
+                slot_name=slot.slot_name,
                 slot_id=slot.slot_id,
                 entry_at=entry_at,
             )
@@ -92,7 +92,7 @@ class ParkingRecordEntryServiceUnitTests(ParkingRecordServiceTestSupport):
         self.assertEqual(snapshot.history_id, 101)
         self.assertEqual(snapshot.vehicle_num, "69가3455")
         self.assertEqual(snapshot.zone_id, slot.zone_id)
-        self.assertEqual(snapshot.slot_code, slot.slot_code)
+        self.assertEqual(snapshot.slot_name, slot.slot_name)
         self.assertEqual(snapshot.slot_id, slot.slot_id)
         self.assertEqual(snapshot.status, ParkingHistoryStatus.PARKED)
         self.assertEqual(snapshot.entry_at, entry_at)
@@ -100,7 +100,7 @@ class ParkingRecordEntryServiceUnitTests(ParkingRecordServiceTestSupport):
         self.assertTrue(occupancy.occupied)
         parking_record_repository.get_slot_by_identity_for_update.assert_called_once_with(
             zone_id=slot.zone_id,
-            slot_code=slot.slot_code,
+            slot_name=slot.slot_name,
         )
         parking_record_repository.save_history.assert_called_once()
         parking_record_repository.save_occupancy.assert_called_once()
@@ -113,7 +113,7 @@ class ParkingRecordEntryServiceUnitTests(ParkingRecordServiceTestSupport):
             slot_id=2,
             zone_id=2,
             slot_type_id=1,
-            slot_code="B001",
+            slot_name="B001",
             is_active=True,
         )
         service = self.make_service(
@@ -127,7 +127,7 @@ class ParkingRecordEntryServiceUnitTests(ParkingRecordServiceTestSupport):
                 command=EntryCommand(
                     vehicle_num="69가3455",
                     zone_id=slot.zone_id,
-                    slot_code=slot.slot_code,
+                    slot_name=slot.slot_name,
                     slot_id=slot.slot_id,
                     entry_at=timezone.now(),
                 )
@@ -153,7 +153,7 @@ class ParkingRecordEntryServiceUnitTests(ParkingRecordServiceTestSupport):
             command=EntryCommand(
                 vehicle_num="69가-3455",
                 zone_id=slot.zone_id,
-                slot_code=slot.slot_code,
+                slot_name=slot.slot_name,
                 slot_id=slot.slot_id,
                 entry_at=timezone.now(),
             )
@@ -173,7 +173,7 @@ class ParkingRecordExitServiceUnitTests(ParkingRecordServiceTestSupport):
         # Given
         entry_at = timezone.now()
         exit_at = timezone.now()
-        slot = ParkingSlot(slot_id=1, zone_id=1, slot_type_id=1, slot_code="A001", is_active=True)
+        slot = ParkingSlot(slot_id=1, zone_id=1, slot_type_id=1, slot_name="A001", is_active=True)
         history = ParkingHistory(
             history_id=101,
             slot=slot,
@@ -206,7 +206,7 @@ class ParkingRecordExitServiceUnitTests(ParkingRecordServiceTestSupport):
             command=ExitCommand(
                 vehicle_num="69가3455",
                 zone_id=slot.zone_id,
-                slot_code=slot.slot_code,
+                slot_name=slot.slot_name,
                 slot_id=slot.slot_id,
                 exit_at=exit_at,
             )
@@ -215,7 +215,7 @@ class ParkingRecordExitServiceUnitTests(ParkingRecordServiceTestSupport):
         # Then
         self.assertEqual(snapshot.history_id, 101)
         self.assertEqual(snapshot.zone_id, slot.zone_id)
-        self.assertEqual(snapshot.slot_code, slot.slot_code)
+        self.assertEqual(snapshot.slot_name, slot.slot_name)
         self.assertEqual(snapshot.status, ParkingHistoryStatus.EXITED)
         self.assertEqual(snapshot.exit_at, exit_at)
         self.assertFalse(occupancy.occupied)
@@ -227,7 +227,7 @@ class ParkingRecordExitServiceUnitTests(ParkingRecordServiceTestSupport):
     def test_should_raise_conflict__when_exit_location_differs(self) -> None:
         # Given
         entry_at = timezone.now()
-        slot = ParkingSlot(slot_id=1, zone_id=1, slot_type_id=1, slot_code="A001", is_active=True)
+        slot = ParkingSlot(slot_id=1, zone_id=1, slot_type_id=1, slot_name="A001", is_active=True)
         history = ParkingHistory(
             history_id=101,
             slot=slot,
@@ -242,7 +242,7 @@ class ParkingRecordExitServiceUnitTests(ParkingRecordServiceTestSupport):
             slot_id=2,
             zone_id=1,
             slot_type_id=1,
-            slot_code="A002",
+            slot_name="A002",
             is_active=True,
         )
         parking_record_repository.get_slot_by_identity_for_update.return_value = parking_record_repository.get_slot_for_update.return_value
@@ -257,7 +257,7 @@ class ParkingRecordExitServiceUnitTests(ParkingRecordServiceTestSupport):
                 command=ExitCommand(
                     vehicle_num="69가3455",
                     zone_id=1,
-                    slot_code="A002",
+                    slot_name="A002",
                     slot_id=2,
                     exit_at=timezone.now(),
                 )
@@ -268,7 +268,7 @@ class ParkingRecordExitServiceUnitTests(ParkingRecordServiceTestSupport):
         # Given
         entry_at = timezone.now()
         exit_at = timezone.now()
-        slot = ParkingSlot(slot_id=1, zone_id=1, slot_type_id=1, slot_code="A001", is_active=True)
+        slot = ParkingSlot(slot_id=1, zone_id=1, slot_type_id=1, slot_name="A001", is_active=True)
         history = ParkingHistory(
             history_id=101,
             slot=slot,
@@ -301,7 +301,7 @@ class ParkingRecordExitServiceUnitTests(ParkingRecordServiceTestSupport):
             command=ExitCommand(
                 vehicle_num="69가-3455",
                 zone_id=slot.zone_id,
-                slot_code=slot.slot_code,
+                slot_name=slot.slot_name,
                 slot_id=slot.slot_id,
                 exit_at=exit_at,
             )
@@ -336,7 +336,7 @@ class ParkingRecordResponseUnitTests(ParkingRecordServiceTestSupport):
             command=EntryCommand(
                 vehicle_num="69가3455",
                 zone_id=slot.zone_id,
-                slot_code=slot.slot_code,
+                slot_name=slot.slot_name,
                 slot_id=slot.slot_id,
                 entry_at=entry_at,
             )
@@ -345,7 +345,7 @@ class ParkingRecordResponseUnitTests(ParkingRecordServiceTestSupport):
         # Then
         self.assertSetEqual(
             set(snapshot.to_dict().keys()),
-            {"history_id", "vehicle_num", "zone_id", "slot_code", "slot_id", "status", "entry_at", "exit_at"},
+            {"history_id", "vehicle_num", "zone_id", "slot_name", "slot_id", "status", "entry_at", "exit_at"},
         )
 
 
@@ -374,7 +374,7 @@ class ParkingRecordProjectionServiceUnitTests(ParkingRecordServiceTestSupport):
             command=EntryCommand(
                 vehicle_num="69가3455",
                 zone_id=slot.zone_id,
-                slot_code=slot.slot_code,
+                slot_name=slot.slot_name,
                 slot_id=slot.slot_id,
                 entry_at=entry_at,
             )
@@ -389,7 +389,7 @@ class ParkingRecordProjectionServiceUnitTests(ParkingRecordServiceTestSupport):
         # Given
         entry_at = timezone.now()
         exit_at = timezone.now()
-        slot = ParkingSlot(slot_id=1, zone_id=1, slot_type_id=1, slot_code="A001", is_active=True)
+        slot = ParkingSlot(slot_id=1, zone_id=1, slot_type_id=1, slot_name="A001", is_active=True)
         history = ParkingHistory(
             history_id=101,
             slot=slot,
@@ -424,7 +424,7 @@ class ParkingRecordProjectionServiceUnitTests(ParkingRecordServiceTestSupport):
             command=ExitCommand(
                 vehicle_num="69가3455",
                 zone_id=slot.zone_id,
-                slot_code=slot.slot_code,
+                slot_name=slot.slot_name,
                 slot_id=slot.slot_id,
                 exit_at=exit_at,
             )
