@@ -39,6 +39,9 @@ urlpatterns.append(
     path("", include("parking_command_service.urls")),
 )
 urlpatterns.append(
+    path("", include("orchestration_service.urls")),
+)
+urlpatterns.append(
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
 )
 urlpatterns.append(
