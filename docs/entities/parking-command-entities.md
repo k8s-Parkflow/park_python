@@ -2,44 +2,53 @@
 
 ## 목적
 
-- `parking-command-service`의 핵심 쓰기 모델 엔터티 구조를 명확히 정의한다.
-- 엔터티별 역할과 컬럼 의미를 한 번에 확인할 수 있도록 정리한다.
+- `parking-command-service`의 쓰기 모델과 command-side 현재 상태 모델을 정의한다.
+- `zone-service`와의 책임 분리 이후, 어떤 데이터가 원본이고 어떤 데이터가 로컬 실행용인지 명확히 정리한다.
 
 ## 엔터티 개요
 
-- `PARKING_SLOT`: 주차 슬롯 마스터 정보(슬롯 식별, 존/타입, 활성 상태)를 관리한다.
-- `PARKING_HISTORY`: 차량 입차/출차 이력을 관리한다.
-- `SLOT_OCCUPANCY`: 슬롯의 현재 점유 상태(실시간 상태)를 관리한다.
+- `PARKING_SLOT`: command-side lock anchor. 점유 전이와 동시성 제어를 위한 최소 슬롯 행이다.
+- `PARKING_HISTORY`: 입차부터 출차까지의 주차 세션 이력이다.
+- `SLOT_OCCUPANCY`: 슬롯 현재 점유 상태를 나타내는 현재 상태 테이블이다.
 
 ## PARKING_SLOT
 
-슬롯 자체의 정보를 가진다.
+`parking-command-service`의 `PARKING_SLOT`은 슬롯 메타데이터 마스터가 아니다.  
+실제 슬롯 메타데이터 원본은 `zone-service.ZONE_PARKING_SLOT`이며, 이 테이블은 `slot_id` 단위 잠금과 점유 상태 전이를 위해 유지된다.
 
 | 컬럼명 | 타입 | 필수 | 설명 |
 | --- | --- | --- | --- |
-| `slot_id` | `bigint` | Y | 슬롯 PK (자동 증가) |
-| `zone_id` | `bigint` | Y | 존 식별자 (`zone_service.ZONE.zone_id` 논리 참조) |
-| `slot_type_id` | `bigint` | Y | 슬롯 타입 식별자 (`zone_service.SLOT_TYPE.slot_type_id` 논리 참조) |
-| `slot_name` | `varchar(50)` | Y | 존 내 슬롯 이름 |
-| `is_active` | `boolean` | Y | 슬롯 활성 여부 (기본값 `true`) |
+| `slot_id` | `bigint` | Y | lock anchor PK |
+| `zone_id` | `bigint` | Y | `zone-service` 기준 zone 식별자의 로컬 mirror |
+| `slot_name` (`slot_code`) | `varchar(50)` | Y | 사용자 식별용 슬롯 코드의 로컬 mirror |
+| `is_active` | `boolean` | Y | 운영 동기화용 활성 상태 mirror |
 | `created_at` | `timestamp` | Y | 생성 시각 |
 | `updated_at` | `timestamp` | Y | 최종 수정 시각 |
 
 제약/인덱스:
 - 유니크 제약: `(zone_id, slot_name)` (`uniq_slot_zone_slot_name`)
 
+운영 규칙:
+- 이 테이블은 `zone-service` 원본 슬롯을 `sync_slot_lock_anchors`로 동기화해 유지한다.
+- strict/trusted 입차 모두 슬롯 메타데이터 판정은 `zone-service` 응답을 기준으로 한다.
+- 이 테이블의 주 용도는 `slot_id` 기반 row lock과 `SLOT_OCCUPANCY` 연결이다.
+
 ## PARKING_HISTORY
 
-차량 단위의 주차 세션(입차 시작부터 출차 종료까지)을 나타낸다.
+차량 단위 주차 세션 이력이다.  
+입차 시점의 슬롯 snapshot을 함께 보존하므로, 이후 `zone-service` 슬롯 마스터가 바뀌어도 history와 projection은 입차 당시 정보를 유지한다.
 
 | 컬럼명 | 타입 | 필수 | 설명 |
 | --- | --- | --- | --- |
-| `history_id` | `bigint` | Y | 주차 이력 PK (자동 증가) |
-| `slot_id` | `bigint` | Y | 주차 슬롯 FK (`PARKING_SLOT.slot_id`) |
-| `vehicle_num` | `varchar(20)` | Y | 차량 번호 (`vehicle_service.VEHICLE.vehicle_num` 논리 참조) |
-| `status` | `varchar(16)` | Y | 이력 상태 (`PARKED` 또는 `EXITED`) |
+| `history_id` | `bigint` | Y | 주차 이력 PK |
+| `slot_id` | `bigint` | Y | `PARKING_SLOT.slot_id` FK |
+| `zone_id` | `bigint` | Y | 입차 당시 zone snapshot |
+| `slot_type_id` | `bigint` | Y | 입차 당시 slot type snapshot |
+| `slot_name` (`slot_code`) | `varchar(50)` | Y | 입차 당시 slot code snapshot |
+| `vehicle_num` | `varchar(20)` | Y | 정규화된 차량 번호 |
+| `status` | `varchar(16)` | Y | `PARKED` 또는 `EXITED` |
 | `entry_at` | `timestamp` | Y | 입차 시각 |
-| `exit_at` | `timestamp` | N | 출차 시각 (`NULL`이면 활성 세션) |
+| `exit_at` | `timestamp` | N | 출차 시각 |
 | `created_at` | `timestamp` | Y | 생성 시각 |
 | `updated_at` | `timestamp` | Y | 최종 수정 시각 |
 
@@ -47,27 +56,50 @@
 - 인덱스: `(slot_id, entry_at)` (`idx_history_slot_entry`)
 - 인덱스: `(vehicle_num, exit_at)` (`idx_history_vehicle_exit`)
 - 조건부 유니크: `unique(vehicle_num) where exit_at is null` (`uniq_active_history_per_vehicle`)
+- 조건부 유니크: `unique(slot_id) where exit_at is null` (`uniq_active_history_per_slot`)
+
+도메인 규칙:
+- `zone_id`, `slot_type_id`, `slot_code` snapshot이 없으면 저장할 수 없다.
+- `vehicle_num`은 저장 전에 정규화된다.
+- 출차 시각은 입차 시각보다 이를 수 없다.
 
 ## SLOT_OCCUPANCY
 
-슬롯의 현재 점유 상태를 1행으로 유지하는 상태 테이블이다.
+슬롯 현재 점유 상태를 1행으로 유지하는 현재 상태 테이블이다.  
+단순 검증용 테이블이 아니라, 점유 상태 전이와 동시성 제어의 기준 상태다.
 
 | 컬럼명 | 타입 | 필수 | 설명 |
 | --- | --- | --- | --- |
-| `slot_id` | `bigint` | Y | 슬롯 PK/FK (`PARKING_SLOT.slot_id`, 1 슬롯 = 1 점유 행) |
-| `occupied` | `boolean` | Y | 점유 여부 (기본값 `false`) |
+| `slot_id` | `bigint` | Y | PK/FK, `PARKING_SLOT.slot_id` |
+| `occupied` | `boolean` | Y | 점유 여부 |
 | `vehicle_num` | `varchar(20)` | N | 현재 점유 차량 번호 |
-| `history_id` | `bigint` | N | 현재 점유를 나타내는 이력 FK (`PARKING_HISTORY.history_id`) |
-| `occupied_at` | `timestamp` | N | 점유 시작 시각 |
+| `history_id` | `bigint` | N | 현재 점유를 대표하는 `PARKING_HISTORY.history_id` |
+| `occupied_at` | `timestamp` | N | 현재 점유 시작 시각 |
 | `updated_at` | `timestamp` | Y | 최종 수정 시각 |
 
 제약/인덱스:
 - 체크 제약 (`slot_occupancy_consistency`)
-- `occupied = true`이면 `vehicle_num`, `history_id`, `occupied_at`는 모두 필수
-- `occupied = false`이면 `vehicle_num`, `history_id`, `occupied_at`는 모두 `NULL`
+  - `occupied = true`이면 `vehicle_num`, `history_id`, `occupied_at`는 모두 필수
+  - `occupied = false`이면 `vehicle_num`, `history_id`, `occupied_at`는 모두 `NULL`
+- `history_id`는 `OneToOne`로 유지된다.
+
+도메인 규칙:
+- 점유 상태는 `occupy`, `release`, `restore`로만 전이한다.
+- `history.slot_id`와 `occupancy.slot_id`가 다르면 저장할 수 없다.
+- trusted 내부 경로에서는 `slot.is_active` 재검증을 우회할 수 있지만, 점유 row lock은 항상 이 엔터티를 통해 잡는다.
 
 ## 엔터티 관계
 
 - `PARKING_HISTORY.slot_id` -> `PARKING_SLOT.slot_id` (N:1)
 - `SLOT_OCCUPANCY.slot_id` -> `PARKING_SLOT.slot_id` (1:1)
-- `SLOT_OCCUPANCY.history_id` -> `PARKING_HISTORY.history_id` (N:1, 점유 상태의 현재 이력 참조)
+- `SLOT_OCCUPANCY.history_id` -> `PARKING_HISTORY.history_id` (1:1)
+
+## 서비스 경계 메모
+
+- 슬롯 메타데이터 원본:
+  - `zone-service.ZONE_PARKING_SLOT`
+- 주차 기록 원본:
+  - `parking-command-service.PARKING_HISTORY`
+- 현재 점유 원본:
+  - `parking-command-service.SLOT_OCCUPANCY`
+
