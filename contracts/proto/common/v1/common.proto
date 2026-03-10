@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package common.v1;
+
+import "google/protobuf/timestamp.proto";
+
+message RequestContext {
+  string trace_id = 1;
+  string idempotency_key = 2;
+  google.protobuf.Timestamp requested_at = 3;
+}
+
+message ResourceRef {
+  string resource_type = 1;
+  string resource_id = 2;
+}

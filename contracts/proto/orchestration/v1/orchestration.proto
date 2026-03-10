@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package orchestration.v1;
+
+import "common/v1/common.proto";
+import "google/protobuf/timestamp.proto";
+
+service OrchestrationService {
+  rpc CreateEntrySaga(CreateEntrySagaRequest) returns (CreateEntrySagaResponse);
+  rpc CreateExitSaga(CreateExitSagaRequest) returns (CreateExitSagaResponse);
+  rpc GetSagaOperation(GetSagaOperationRequest) returns (GetSagaOperationResponse);
+}
+
+message CreateEntrySagaRequest {
+  common.v1.RequestContext context = 1;
+  string vehicle_num = 2;
+  int64 slot_id = 3;
+}
+
+message CreateEntrySagaResponse {
+  string operation_id = 1;
+  string status = 2;
+  int64 history_id = 3;
+  string vehicle_num = 4;
+  int64 slot_id = 5;
+  google.protobuf.Timestamp entry_at = 6;
+}
+
+message CreateExitSagaRequest {
+  common.v1.RequestContext context = 1;
+  string vehicle_num = 2;
+}
+
+message CreateExitSagaResponse {
+  string operation_id = 1;
+  string status = 2;
+  int64 history_id = 3;
+  string vehicle_num = 4;
+  int64 slot_id = 5;
+  google.protobuf.Timestamp exit_at = 6;
+}
+
+message GetSagaOperationRequest {
+  string operation_id = 1;
+}
+
+message GetSagaOperationResponse {
+  string operation_id = 1;
+  string saga_type = 2;
+  string status = 3;
+  string current_step = 4;
+  int64 history_id = 5;
+  string vehicle_num = 6;
+  int64 slot_id = 7;
+  string last_error_code = 8;
+  string last_error_message = 9;
+}

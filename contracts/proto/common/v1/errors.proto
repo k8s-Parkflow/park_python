@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package common.v1;
+
+enum ErrorCode {
+  ERROR_CODE_UNSPECIFIED = 0;
+  VALIDATION_ERROR = 1;
+  NOT_FOUND = 2;
+  CONFLICT = 3;
+  DEPENDENCY_UNAVAILABLE = 4;
+  CIRCUIT_OPEN = 5;
+  TIMEOUT = 6;
+  INTERNAL_ERROR = 7;
+}
+
+message ErrorDetail {
+  ErrorCode code = 1;
+  string message = 2;
+  map<string, string> metadata = 3;
+}
