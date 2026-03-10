@@ -20,21 +20,38 @@ if str(TEST_ROOT) not in sys.path:
 # 요청 파서 단위 테스트 클래스
 class ParkingRecordSerializerUnitTests(SimpleTestCase):
     # 입차 요청 차량 번호 정규화 검증
-    def test_should_normalize_vehicle_num__when_entry_payload_formatted(self) -> None:
+    def test_should_normalize_vehicle_num__when_entry_parsed(self) -> None:
         # Given
-        body = json.dumps({"vehicle_num": " 69가-3455 ", "slot_id": 1}).encode()
+        body = json.dumps(
+            {
+                "vehicle_num": " 69가-3455 ",
+                "zone_id": 1,
+                "slot_code": "A001",
+                "slot_id": 1,
+            }
+        ).encode()
 
         # When
         command = parse_entry_command(body=body)
 
         # Then
         self.assertEqual(command.vehicle_num, "69가3455")
+        self.assertEqual(command.zone_id, 1)
+        self.assertEqual(command.slot_code, "A001")
         self.assertEqual(command.slot_id, 1)
 
     # naive datetime 거부 검증
-    def test_should_reject_naive_datetime__when_command_time_given(self) -> None:
+    def test_should_reject_naive_datetime__when_exit_parsed(self) -> None:
         # Given
-        body = json.dumps({"vehicle_num": "69가3455", "exit_at": "2026-03-09T12:10:00"}).encode()
+        body = json.dumps(
+            {
+                "vehicle_num": "69가3455",
+                "zone_id": 1,
+                "slot_code": "A001",
+                "slot_id": 1,
+                "exit_at": "2026-03-09T12:10:00",
+            }
+        ).encode()
 
         # When / Then
         with self.assertRaises(ValidationError) as captured:
@@ -44,3 +61,21 @@ class ParkingRecordSerializerUnitTests(SimpleTestCase):
             captured.exception.message_dict,
             {"exit_at": ["timezone-aware datetime이어야 합니다."]},
         )
+
+    # slot_code 원형 유지 검증
+    def test_should_keep_slot_code__when_entry_parsed(self) -> None:
+        # Given
+        body = json.dumps(
+            {
+                "vehicle_num": "69가3455",
+                "zone_id": 1,
+                "slot_code": "A001",
+                "slot_id": 1,
+            }
+        ).encode()
+
+        # When
+        command = parse_entry_command(body=body)
+
+        # Then
+        self.assertEqual(command.slot_code, "A001")
