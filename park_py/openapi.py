@@ -25,9 +25,11 @@ def openapi_json_view(request: HttpRequest) -> JsonResponse:
                                 "application/json": {
                                     "schema": {
                                         "type": "object",
-                                        "required": ["vehicle_num", "slot_id"],
+                                        "required": ["vehicle_num", "zone_id", "slot_code", "slot_id"],
                                         "properties": {
                                             "vehicle_num": {"type": "string", "example": "69가-3455"},
+                                            "zone_id": {"type": "integer", "example": 1},
+                                            "slot_code": {"type": "string", "example": "A001"},
                                             "slot_id": {"type": "integer", "example": 33},
                                             "entry_at": {
                                                 "type": "string",
@@ -64,9 +66,12 @@ def openapi_json_view(request: HttpRequest) -> JsonResponse:
                                 "application/json": {
                                     "schema": {
                                         "type": "object",
-                                        "required": ["vehicle_num"],
+                                        "required": ["vehicle_num", "zone_id", "slot_code", "slot_id"],
                                         "properties": {
                                             "vehicle_num": {"type": "string", "example": "69가-3455"},
+                                            "zone_id": {"type": "integer", "example": 1},
+                                            "slot_code": {"type": "string", "example": "A001"},
+                                            "slot_id": {"type": "integer", "example": 33},
                                             "exit_at": {
                                                 "type": "string",
                                                 "format": "date-time",
@@ -100,6 +105,8 @@ def openapi_json_view(request: HttpRequest) -> JsonResponse:
                         "properties": {
                             "history_id": {"type": "integer", "example": 101},
                             "vehicle_num": {"type": "string", "example": "69가3455"},
+                            "zone_id": {"type": "integer", "example": 1},
+                            "slot_code": {"type": "string", "example": "A001"},
                             "slot_id": {"type": "integer", "example": 33},
                             "status": {"type": "string", "example": "PARKED"},
                             "entry_at": {
