@@ -1,7 +1,6 @@
 from django.test import TestCase, override_settings
 
 from parking_query_service.models import ZoneAvailability
-from zone_service.models import Zone
 
 
 @override_settings(ROOT_URLCONF="park_py.urls")
@@ -9,11 +8,6 @@ class TypedAvailabilityCT(TestCase):
 
     @classmethod
     def setUpTestData(cls) -> None:
-        # 등록된 Zone은 모두 전체 타입 여석 합산 대상이다.
-        Zone.objects.create(zone_id=1, zone_name="A")
-        Zone.objects.create(zone_id=2, zone_name="B")
-        Zone.objects.create(zone_id=3, zone_name="C")
-
         ZoneAvailability.objects.create(
             zone_id=1,
             slot_type="GENERAL",

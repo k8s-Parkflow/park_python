@@ -1,7 +1,6 @@
 from django.test import TestCase, override_settings
 
 from parking_query_service.models import ZoneAvailability
-from zone_service.models import Zone
 
 
 @override_settings(ROOT_URLCONF="park_py.urls")
@@ -9,12 +8,7 @@ class TypedAvailabilityAT(TestCase):
 
     @classmethod
     def setUpTestData(cls) -> None:
-        # 등록된 Zone은 모두 전체 여석 합산 대상이다.
-        Zone.objects.create(zone_id=1, zone_name="A")
-        Zone.objects.create(zone_id=2, zone_name="B")
-        Zone.objects.create(zone_id=3, zone_name="C")
-
-        # Zone A/B/C의 일반 타입 잔여석은 각각 3대, 4대, 5대다.
+        # projection에 반영된 일반 타입 잔여석은 각각 3대, 4대, 5대다.
         ZoneAvailability.objects.create(
             zone_id=1,
             slot_type="GENERAL",
@@ -37,7 +31,7 @@ class TypedAvailabilityAT(TestCase):
             available_count=5,
         )
 
-        # Zone A/B/C의 전기차 타입 잔여석은 각각 1대, 2대, 2대다.
+        # projection에 반영된 전기차 타입 잔여석은 각각 1대, 2대, 2대다.
         ZoneAvailability.objects.create(
             zone_id=1,
             slot_type="EV",
@@ -60,7 +54,7 @@ class TypedAvailabilityAT(TestCase):
             available_count=2,
         )
 
-        # Zone A/B/C의 장애인 타입 잔여석은 각각 1대, 2대, 3대다.
+        # projection에 반영된 장애인 타입 잔여석은 각각 1대, 2대, 3대다.
         ZoneAvailability.objects.create(
             zone_id=1,
             slot_type="DISABLED",

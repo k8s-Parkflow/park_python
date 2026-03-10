@@ -6,7 +6,6 @@ from unit.support import (
     EmptyAvailabilityRepoStub,
     EvAvailabilityRepoStub,
     GeneralAvailabilityRepoStub,
-    ZoneRepoStub,
 )
 
 
@@ -18,7 +17,6 @@ class TypedAvailabilityUT(SimpleTestCase):
         )
 
         service = ZoneAvailabilityService(
-            zone_repository=ZoneRepoStub(),
             zone_availability_repository=GeneralAvailabilityRepoStub(),
         )
 
@@ -38,7 +36,6 @@ class TypedAvailabilityUT(SimpleTestCase):
         )
 
         service = ZoneAvailabilityService(
-            zone_repository=ZoneRepoStub(),
             zone_availability_repository=EvAvailabilityRepoStub(),
         )
 
@@ -58,7 +55,6 @@ class TypedAvailabilityUT(SimpleTestCase):
         )
 
         service = ZoneAvailabilityService(
-            zone_repository=ZoneRepoStub(),
             zone_availability_repository=DisabledAvailabilityRepoStub(),
         )
 
@@ -78,7 +74,6 @@ class TypedAvailabilityUT(SimpleTestCase):
         )
 
         service = ZoneAvailabilityService(
-            zone_repository=ZoneRepoStub(),
             zone_availability_repository=EmptyAvailabilityRepoStub(),
         )
 

@@ -1,7 +1,6 @@
 from django.test import TestCase, override_settings
 
 from parking_query_service.models import ZoneAvailability
-from zone_service.models import Zone
 
 
 @override_settings(ROOT_URLCONF="park_py.urls")
@@ -10,10 +9,6 @@ class SlotTypeNormalizationCT(TestCase):
     @classmethod
     def setUpTestData(cls) -> None:
         # 혼합 대소문자 입력도 표준 응답 계약을 유지해야 한다.
-        Zone.objects.create(zone_id=1, zone_name="A")
-        Zone.objects.create(zone_id=2, zone_name="B")
-        Zone.objects.create(zone_id=3, zone_name="C")
-
         ZoneAvailability.objects.create(
             zone_id=1,
             slot_type="DISABLED",

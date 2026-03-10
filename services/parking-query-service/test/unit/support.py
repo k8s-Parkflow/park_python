@@ -2,26 +2,9 @@ from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
-class ZoneStub:
-    zone_id: int
-    zone_name: str
-
-
-@dataclass(frozen=True)
 class AvailabilityStub:
     zone_id: int
     available_count: int
-
-
-class ZoneRepoStub:
-
-    def list_zones(self) -> list[ZoneStub]:
-        return [
-            ZoneStub(zone_id=1, zone_name="A"),
-            ZoneStub(zone_id=2, zone_name="B"),
-            ZoneStub(zone_id=3, zone_name="C"),
-        ]
-
 
 class GeneralAvailabilityRepoStub:
 

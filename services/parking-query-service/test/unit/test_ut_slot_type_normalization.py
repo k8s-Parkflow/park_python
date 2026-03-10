@@ -1,6 +1,6 @@
 from django.test import SimpleTestCase
 
-from unit.support import EvAvailabilityRepoStub, ZoneRepoStub
+from unit.support import EvAvailabilityRepoStub
 
 
 class SlotTypeNormalizationUT(SimpleTestCase):
@@ -11,7 +11,6 @@ class SlotTypeNormalizationUT(SimpleTestCase):
         )
 
         service = ZoneAvailabilityService(
-            zone_repository=ZoneRepoStub(),
             zone_availability_repository=EvAvailabilityRepoStub(),
         )
 
