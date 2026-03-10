@@ -202,6 +202,89 @@ class OrchestrationGatewayAcceptanceTests(TestCase):
             idempotency_key="exit-idempotency-key-001",
         )
 
+    @patch("orchestration_service.views.EntrySagaOrchestrationService")
+    def test_should_return_bad_request__when_entry_idempotency_key_is_missing(
+        self,
+        entry_saga_service_class,
+    ) -> None:
+        """[AT-OR-ENTRY-06] 입차 헤더 누락 검증"""
+
+        response = self.client.post(
+            "/api/v1/parking/entries",
+            data={
+                "vehicle_num": "12가3456",
+                "slot_id": 7,
+                "requested_at": "2026-03-10T10:00:00+09:00",
+            },
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "error": {
+                    "code": "bad_request",
+                    "message": "잘못된 요청입니다.",
+                    "details": {"missing_header": "Idempotency-Key"},
+                }
+            },
+        )
+        entry_saga_service_class.return_value.execute.assert_not_called()
+
+    @patch("orchestration_service.views.ExitSagaOrchestrationService")
+    def test_should_return_bad_request__when_exit_payload_is_incomplete(
+        self,
+        exit_saga_service_class,
+    ) -> None:
+        """[AT-OR-EXIT-02] 출차 필수 필드 누락"""
+
+        response = self.client.post(
+            "/api/v1/parking/exits",
+            data={"vehicle_num": "12가3456"},
+            content_type="application/json",
+            HTTP_IDEMPOTENCY_KEY="exit-idempotency-key-002",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "error": {
+                    "code": "bad_request",
+                    "message": "잘못된 요청입니다.",
+                    "details": {"missing_fields": ["requested_at"]},
+                }
+            },
+        )
+        exit_saga_service_class.return_value.execute.assert_not_called()
+
+    @patch("orchestration_service.views.EntrySagaOrchestrationService")
+    def test_should_return_bad_request__when_entry_body_is_not_valid_json(
+        self,
+        entry_saga_service_class,
+    ) -> None:
+        """[AT-OR-ENTRY-07] 입차 malformed JSON"""
+
+        response = self.client.post(
+            "/api/v1/parking/entries",
+            data='{"vehicle_num": "12가3456"',
+            content_type="application/json",
+            HTTP_IDEMPOTENCY_KEY="entry-idempotency-key-004",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "error": {
+                    "code": "bad_request",
+                    "message": "JSON 형식이 올바르지 않습니다.",
+                }
+            },
+        )
+        entry_saga_service_class.return_value.execute.assert_not_called()
+
     @patch("orchestration_service.views.OperationStatusQueryService")
     def test_should_return_saga_status__when_operation_status_is_requested(
         self,

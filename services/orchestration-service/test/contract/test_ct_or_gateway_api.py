@@ -142,3 +142,28 @@ class OrchestrationGatewayContractTests(SimpleTestCase):
                 "last_error_message": "parking-query-service timeout",
             },
         )
+
+    def test_should_return_bad_request_schema__when_entry_idempotency_header_is_missing(self) -> None:
+        """[CT-OR-API-04] 입차 bad request 계약"""
+
+        response = self.client.post(
+            "/api/v1/parking/entries",
+            data={
+                "vehicle_num": "12가3456",
+                "slot_id": 7,
+                "requested_at": "2026-03-10T10:00:00+09:00",
+            },
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.json(),
+            {
+                "error": {
+                    "code": "bad_request",
+                    "message": "잘못된 요청입니다.",
+                    "details": {"missing_header": "Idempotency-Key"},
+                }
+            },
+        )

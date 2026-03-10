@@ -4,7 +4,7 @@ from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 
 
-def build_openapi_schema(*, base_url: str) -> dict:
+def build_openapi_schema(*, server_url: str = "/") -> dict:
     return {
         "openapi": "3.0.3",
         "info": {
@@ -12,7 +12,7 @@ def build_openapi_schema(*, base_url: str) -> dict:
             "version": "1.0.0",
             "description": "parking-command public API and orchestration gateway/internal APIs",
         },
-        "servers": [{"url": base_url}],
+        "servers": [{"url": server_url}],
         "paths": {
             "/api/parking/entry": {
                 "post": {
@@ -173,8 +173,7 @@ def build_openapi_schema(*, base_url: str) -> dict:
 
 
 def openapi_json_view(request: HttpRequest) -> JsonResponse:
-    base_url = request.build_absolute_uri("/").rstrip("/")
-    return JsonResponse(build_openapi_schema(base_url=base_url))
+    return JsonResponse(build_openapi_schema())
 
 
 @ensure_csrf_cookie

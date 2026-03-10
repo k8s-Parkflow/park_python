@@ -1,4 +1,6 @@
 import json
+from json import JSONDecodeError
+from http import HTTPStatus
 
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest
@@ -35,7 +37,24 @@ from parking_query_service.services.zone_availability_service import (
 
 
 def _payload(request) -> dict:
-    return json.loads(request.body.decode("utf-8"))
+    try:
+        return json.loads(request.body.decode("utf-8"))
+    except JSONDecodeError as exc:
+        raise ApplicationError(
+            code=ErrorCode.BAD_REQUEST,
+            status=HTTPStatus.BAD_REQUEST,
+            message="JSON 형식이 올바르지 않습니다.",
+        ) from exc
+
+
+def _require_fields(payload: dict, *required_fields: str) -> None:
+    missing_fields = [field for field in required_fields if field not in payload]
+    if missing_fields:
+        raise ApplicationError(
+            code=ErrorCode.BAD_REQUEST,
+            status=HTTPStatus.BAD_REQUEST,
+            details={"missing_fields": missing_fields},
+        )
 
 
 def get_current_location(_request: HttpRequest, vehicle_num: str) -> JsonResponse:
@@ -62,6 +81,7 @@ def get_current_parking_view(_request, vehicle_num: str) -> JsonResponse:
 @require_POST
 def project_parking_entry(request) -> JsonResponse:
     payload = _payload(request)
+    _require_fields(payload, "operation_id", "vehicle_num", "slot_id", "zone_id", "slot_type", "entry_at")
     try:
         result = project_entry(
             operation_id=payload["operation_id"],
@@ -80,6 +100,7 @@ def project_parking_entry(request) -> JsonResponse:
 @require_POST
 def revert_parking_entry_projection(request) -> JsonResponse:
     payload = _payload(request)
+    _require_fields(payload, "operation_id", "vehicle_num")
     result = revert_entry(
         operation_id=payload["operation_id"],
         vehicle_num=payload["vehicle_num"],
@@ -91,6 +112,7 @@ def revert_parking_entry_projection(request) -> JsonResponse:
 @require_POST
 def project_parking_exit(request) -> JsonResponse:
     payload = _payload(request)
+    _require_fields(payload, "operation_id", "vehicle_num")
     try:
         result = project_exit(
             operation_id=payload["operation_id"],
@@ -105,6 +127,7 @@ def project_parking_exit(request) -> JsonResponse:
 @require_POST
 def restore_parking_exit_projection(request) -> JsonResponse:
     payload = _payload(request)
+    _require_fields(payload, "operation_id", "vehicle_num", "slot_id", "zone_id", "slot_type", "entry_at")
     try:
         result = restore_exit(
             operation_id=payload["operation_id"],
@@ -117,6 +140,8 @@ def restore_parking_exit_projection(request) -> JsonResponse:
     except ZoneAvailability.DoesNotExist as exc:
         raise ApplicationError(code=ErrorCode.NOT_FOUND, status=404) from exc
     return JsonResponse(result, status=200)
+
+
 @extend_schema(
     summary="전체 Zone 기준 여석 조회",
     description=(

@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import io
 import socket
 import sys
 from pathlib import Path
+from urllib.error import HTTPError
 from unittest.mock import Mock
 
 from django.test import SimpleTestCase
@@ -71,3 +73,55 @@ class OrchestrationHttpResilienceTests(SimpleTestCase):
 
         self.assertEqual(context.exception.status, 503)
         self.assertEqual(sleep_recorder.call_count, 1)
+
+    def test_should_reject_non_http_scheme__when_dependency_url_is_invalid(self) -> None:
+        """[UT-OR-HTTP-03] 허용되지 않은 URL scheme"""
+
+        from park_py.error_handling import ApplicationError
+        from orchestration_service.clients.http import JsonHttpClient
+
+        client = JsonHttpClient(sender=Mock())
+
+        with self.assertRaises(ApplicationError) as context:
+            client.get(dependency="vehicle-service", url="file:///tmp/vehicle.json")
+
+        self.assertEqual(context.exception.status, 400)
+        self.assertEqual(
+            context.exception.details,
+            {
+                "error_code": "invalid_dependency_url_scheme",
+                "scheme": "file",
+            },
+        )
+
+    def test_should_wrap_non_json_http_error_body__when_downstream_returns_html(self) -> None:
+        """[UT-OR-HTTP-04] 비 JSON HTTP 오류 본문 fallback"""
+
+        from orchestration_service.clients.http import DownstreamHttpError
+        from orchestration_service.clients.http import JsonHttpClient
+
+        def sender(*, request, timeout):
+            raise HTTPError(
+                url=request.full_url,
+                code=502,
+                msg="Bad Gateway",
+                hdrs=None,
+                fp=io.BytesIO(b"<html>bad gateway</html>"),
+            )
+
+        client = JsonHttpClient(sender=sender)
+
+        with self.assertRaises(DownstreamHttpError) as context:
+            client.get(dependency="parking-query-service", url="http://service/internal/parking-query")
+
+        self.assertEqual(context.exception.status_code, 502)
+        self.assertEqual(
+            context.exception.payload,
+            {
+                "error": {
+                    "code": "invalid_downstream_error_response",
+                    "message": "다운스트림 서비스가 JSON 오류 응답을 반환하지 않았습니다.",
+                    "details": {"body": "<html>bad gateway</html>"},
+                }
+            },
+        )

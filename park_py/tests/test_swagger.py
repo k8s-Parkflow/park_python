@@ -10,11 +10,13 @@ class SwaggerDocsTests(SimpleTestCase):
         payload = response.json()
         self.assertEqual(payload["openapi"], "3.0.3")
         self.assertIn("/api/v1/parking/entries", payload["paths"])
-        self.assertIn("/swagger/", "/swagger/")
+        self.assertEqual(payload["servers"], [{"url": "/"}])
 
     def test_swagger_ui_returns_html_document(self) -> None:
         response = self.client.get("/swagger/")
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "SwaggerUIBundle")
-        self.assertContains(response, "/openapi.json")
+        self.assertContains(response, 'url: "/openapi.json"')
+        self.assertNotContains(response, 'url: "http://')
+        self.assertNotContains(response, 'url: "https://')

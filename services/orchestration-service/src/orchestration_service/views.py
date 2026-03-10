@@ -1,4 +1,5 @@
 import json
+from json import JSONDecodeError
 from http import HTTPStatus
 from typing import Any
 
@@ -8,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_POST
 
-from park_py.error_handling import ErrorCode
+from park_py.error_handling import ApplicationError, ErrorCode
 from park_py.error_handling.responses import build_error_response
 
 from orchestration_service.services import EntrySagaOrchestrationService
@@ -19,7 +20,36 @@ from orchestration_service.services import OperationStatusQueryService
 def _decode_json_body(request: HttpRequest) -> dict[str, Any]:
     if not request.body:
         return {}
-    return json.loads(request.body.decode("utf-8"))
+    try:
+        return json.loads(request.body.decode("utf-8"))
+    except JSONDecodeError as exc:
+        raise ApplicationError(
+            code=ErrorCode.BAD_REQUEST,
+            status=HTTPStatus.BAD_REQUEST,
+            message="JSON 형식이 올바르지 않습니다.",
+        ) from exc
+
+
+def _require_fields(payload: dict[str, Any], *required_fields: str) -> None:
+    missing_fields = [field for field in required_fields if field not in payload]
+    if missing_fields:
+        raise ApplicationError(
+            code=ErrorCode.BAD_REQUEST,
+            status=HTTPStatus.BAD_REQUEST,
+            details={"missing_fields": missing_fields},
+        )
+
+
+def _require_header(request: HttpRequest, header_name: str) -> str:
+    header_value = request.headers.get(header_name)
+    if header_value:
+        return header_value
+
+    raise ApplicationError(
+        code=ErrorCode.BAD_REQUEST,
+        status=HTTPStatus.BAD_REQUEST,
+        details={"missing_header": header_name},
+    )
 
 
 def _build_compensated_response(*, message: str, result: dict[str, Any]) -> JsonResponse:
@@ -56,11 +86,12 @@ def _resolve_base_url(request: HttpRequest) -> str:
 @require_POST
 def create_parking_entry(request: HttpRequest) -> JsonResponse:
     payload = _decode_json_body(request)
+    _require_fields(payload, "vehicle_num", "slot_id", "requested_at")
     result = EntrySagaOrchestrationService(base_url=_resolve_base_url(request)).execute(
         vehicle_num=payload["vehicle_num"],
         slot_id=payload["slot_id"],
         requested_at=payload["requested_at"],
-        idempotency_key=request.headers["Idempotency-Key"],
+        idempotency_key=_require_header(request, "Idempotency-Key"),
     )
 
     if result["status"] == "COMPENSATED":
@@ -78,10 +109,11 @@ def create_parking_entry(request: HttpRequest) -> JsonResponse:
 @require_POST
 def create_parking_exit(request: HttpRequest) -> JsonResponse:
     payload = _decode_json_body(request)
+    _require_fields(payload, "vehicle_num", "requested_at")
     result = ExitSagaOrchestrationService(base_url=_resolve_base_url(request)).execute(
         vehicle_num=payload["vehicle_num"],
         requested_at=payload["requested_at"],
-        idempotency_key=request.headers["Idempotency-Key"],
+        idempotency_key=_require_header(request, "Idempotency-Key"),
     )
 
     if result["status"] == "COMPENSATED":

@@ -30,13 +30,11 @@ SWAGGER_UI_HTML = """<!DOCTYPE html>
 
 
 @require_GET
-def openapi_json(request: HttpRequest) -> JsonResponse:
-    base_url = f"{request.scheme}://{request.get_host()}"
-    return JsonResponse(build_openapi_schema(base_url=base_url))
+def openapi_json(_request: HttpRequest) -> JsonResponse:
+    return JsonResponse(build_openapi_schema())
 
 
 @require_GET
-def swagger_ui(request: HttpRequest) -> HttpResponse:
-    base_url = f"{request.scheme}://{request.get_host()}"
-    html = SWAGGER_UI_HTML % {"schema_url": f"{base_url}/openapi.json"}
+def swagger_ui(_request: HttpRequest) -> HttpResponse:
+    html = SWAGGER_UI_HTML % {"schema_url": "/openapi.json"}
     return HttpResponse(html)
