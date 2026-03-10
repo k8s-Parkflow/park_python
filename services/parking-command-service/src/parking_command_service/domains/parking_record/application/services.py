@@ -57,9 +57,23 @@ class ParkingRecordCommandService:
         self.projection_writer = projection_writer
 
     def create_entry(self, *, command: EntryCommand) -> ParkingRecordSnapshot:
+        return self._run_entry(command=command, trust_zone_metadata=False)
+
+    def create_trusted_entry(self, *, command: EntryCommand) -> ParkingRecordSnapshot:
+        return self._run_entry(command=command, trust_zone_metadata=True)
+
+    def _run_entry(
+        self,
+        *,
+        command: EntryCommand,
+        trust_zone_metadata: bool,
+    ) -> ParkingRecordSnapshot:
         for attempt in range(3):
             try:
-                return self._create_entry_once(command=command)
+                return self._create_entry_once(
+                    command=command,
+                    trust_zone_metadata=trust_zone_metadata,
+                )
             except DatabaseError as exc:
                 if not _is_locked_error(exc) or attempt == 2:
                     raise ParkingRecordConflictError("입차 처리 중 충돌이 발생했습니다.") from exc
@@ -68,16 +82,24 @@ class ParkingRecordCommandService:
         raise ParkingRecordConflictError("입차 처리 중 충돌이 발생했습니다.")
 
     @transaction.atomic
-    def _create_entry_once(self, *, command: EntryCommand) -> ParkingRecordSnapshot:
+    def _create_entry_once(
+        self,
+        *,
+        command: EntryCommand,
+        trust_zone_metadata: bool,
+    ) -> ParkingRecordSnapshot:
         vehicle_num = _normalize_lookup_vehicle_num(command.vehicle_num)
         if not self.vehicle_repository.exists(vehicle_num=vehicle_num):
             raise ParkingRecordNotFoundError("존재하지 않는 차량입니다.")
 
         # 슬롯과 점유 행을 같은 트랜잭션 안에서 잠가 이중 입차를 줄이는 흐름
-        slot = self._get_command_slot(command=command)
+        slot = self._get_command_slot(
+            command=command,
+            trust_zone_metadata=trust_zone_metadata,
+        )
 
         occupancy = self.parking_record_repository.get_or_create_occupancy_for_update(slot=slot)
-        if not command.trusted_slot_metadata and not slot.is_active:
+        if not trust_zone_metadata and not slot.is_active:
             raise ParkingRecordConflictError("비활성화된 슬롯입니다.")
         if occupancy.occupied:
             raise ParkingRecordConflictError("이미 점유 중인 슬롯입니다.")
@@ -100,7 +122,7 @@ class ParkingRecordCommandService:
                 vehicle_num=vehicle_num,
                 history=history,
                 occupied_at=command.entry_at or history.entry_at,
-                enforce_slot_active=not command.trusted_slot_metadata,
+                enforce_slot_active=not trust_zone_metadata,
             )
             self.parking_record_repository.save_occupancy(occupancy=occupancy)
             if self.projection_writer is not None:
@@ -135,11 +157,16 @@ class ParkingRecordCommandService:
 
         return _build_snapshot(history=history)
 
-    def _get_command_slot(self, *, command: SlotCommand):
+    def _get_command_slot(
+        self,
+        *,
+        command: SlotCommand,
+        trust_zone_metadata: bool,
+    ):
         slot_by_id = self.parking_record_repository.get_slot_for_update(slot_id=command.slot_id)
         if slot_by_id is None:
             raise ParkingRecordNotFoundError("존재하지 않는 슬롯입니다.")
-        if command.trusted_slot_metadata:
+        if trust_zone_metadata:
             return slot_by_id
         slot_by_identity = self.parking_record_repository.get_slot_by_identity_for_update(
             zone_id=command.zone_id,

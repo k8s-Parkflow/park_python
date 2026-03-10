@@ -151,14 +151,13 @@ class ParkingRecordEntryServiceUnitTests(ParkingRecordServiceTestSupport):
         )
 
         # When
-        snapshot = service.create_entry(
+        snapshot = service.create_trusted_entry(
             command=EntryCommand(
                 vehicle_num="69가3455",
                 zone_id=1,
                 slot_code="A001",
                 slot_id=1,
                 slot_type="GENERAL",
-                trusted_slot_metadata=True,
                 entry_at=entry_at,
             )
         )
@@ -189,14 +188,13 @@ class ParkingRecordEntryServiceUnitTests(ParkingRecordServiceTestSupport):
         )
 
         # When
-        snapshot = service.create_entry(
+        snapshot = service.create_trusted_entry(
             command=EntryCommand(
                 vehicle_num="69가3455",
                 zone_id=1,
                 slot_code="A001",
                 slot_id=1,
                 slot_type="GENERAL",
-                trusted_slot_metadata=True,
                 entry_at=entry_at,
             )
         )

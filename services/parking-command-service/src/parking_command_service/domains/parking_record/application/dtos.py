@@ -11,7 +11,6 @@ class SlotCommand:
     slot_code: str
     slot_id: int
     slot_type: str | None = None
-    trusted_slot_metadata: bool = False
 
 
 @dataclass(frozen=True)

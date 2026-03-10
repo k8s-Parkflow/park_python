@@ -46,7 +46,7 @@ class ParkingCommandGrpcApplicationService:
         slot_type: str,
         requested_at: datetime | None,
     ):
-        return self.command_service.create_entry(
+        return self.command_service.create_trusted_entry(
             command=self._build_entry_command(
                 vehicle_num=vehicle_num,
                 zone_id=zone_id,
@@ -158,7 +158,6 @@ class ParkingCommandGrpcApplicationService:
             slot_code=slot_code,
             slot_id=slot_id,
             slot_type=slot_type,
-            trusted_slot_metadata=True,
             entry_at=requested_at,
         )
 

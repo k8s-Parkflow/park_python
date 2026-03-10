@@ -16,7 +16,7 @@ class ParkingCommandGrpcApplicationUnitTests(TestCase):
         # Given
         repository = Mock()
         command_service = Mock()
-        command_service.create_entry.return_value = ParkingRecordSnapshot(
+        command_service.create_trusted_entry.return_value = ParkingRecordSnapshot(
             history_id=101,
             vehicle_num="12가3456",
             zone_id=1,
@@ -43,11 +43,11 @@ class ParkingCommandGrpcApplicationUnitTests(TestCase):
 
         # Then
         self.assertEqual(snapshot.history_id, 101)
-        command = command_service.create_entry.call_args.kwargs["command"]
+        command = command_service.create_trusted_entry.call_args.kwargs["command"]
         self.assertEqual(command.zone_id, 1)
         self.assertEqual(command.slot_code, "A001")
         self.assertEqual(command.slot_type, "GENERAL")
-        self.assertTrue(command.trusted_slot_metadata)
+        command_service.create_entry.assert_not_called()
         repository.get_slot.assert_not_called()
 
     def test_should_return_existing_compensation_result__when_entry_is_already_released(self) -> None:
