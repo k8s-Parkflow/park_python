@@ -259,7 +259,9 @@ class ParkingRecordRepositoryConcurrencyTests(TransactionTestCase):
 
         def run_entry(vehicle_num: str, *, mark_started: bool = False) -> None:
             close_old_connections()
-            service = ParkingRecordCommandService()
+            service = ParkingRecordCommandService(
+                vehicle_repository=Mock(exists=Mock(return_value=True))
+            )
             try:
                 if mark_started:
                     first_request_started.set()
