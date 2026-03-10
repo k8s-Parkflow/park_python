@@ -19,6 +19,7 @@ PARKING_COMMAND_SERVICE_SRC = BASE_DIR / "services" / "parking-command-service" 
 PARKING_QUERY_SERVICE_SRC = BASE_DIR / "services" / "parking-query-service" / "src"
 ZONE_SERVICE_SRC = BASE_DIR / "services" / "zone-service" / "src"
 VEHICLE_SERVICE_SRC = BASE_DIR / "services" / "vehicle-service" / "src"
+ORCHESTRATION_SERVICE_SRC = BASE_DIR / "services" / "orchestration-service" / "src"
 if str(PARKING_COMMAND_SERVICE_SRC) not in sys.path:
     sys.path.insert(0, str(PARKING_COMMAND_SERVICE_SRC))
 if str(PARKING_QUERY_SERVICE_SRC) not in sys.path:
@@ -27,6 +28,8 @@ if str(ZONE_SERVICE_SRC) not in sys.path:
     sys.path.insert(0, str(ZONE_SERVICE_SRC))
 if str(VEHICLE_SERVICE_SRC) not in sys.path:
     sys.path.insert(0, str(VEHICLE_SERVICE_SRC))
+if str(ORCHESTRATION_SERVICE_SRC) not in sys.path:
+    sys.path.insert(0, str(ORCHESTRATION_SERVICE_SRC))
 
 
 # Quick-start development settings - unsuitable for production
@@ -54,6 +57,7 @@ INSTALLED_APPS = [
     'parking_query_service.apps.ParkingQueryServiceConfig',
     'zone_service.apps.ZoneServiceConfig',
     'vehicle_service.apps.VehicleServiceConfig',
+    'orchestration_service.apps.OrchestrationServiceConfig',
 ]
 
 MIDDLEWARE = [
