@@ -4,6 +4,7 @@ from typing import Any
 
 from django.http import HttpRequest
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_POST
 
@@ -34,10 +35,15 @@ def _build_compensated_response(*, message: str, result: dict[str, Any]) -> Json
     )
 
 
+def _resolve_base_url(request: HttpRequest) -> str:
+    return f"{request.scheme}://{request.get_host()}"
+
+
+@csrf_exempt
 @require_POST
 def create_parking_entry(request: HttpRequest) -> JsonResponse:
     payload = _decode_json_body(request)
-    result = EntrySagaOrchestrationService().execute(
+    result = EntrySagaOrchestrationService(base_url=_resolve_base_url(request)).execute(
         vehicle_num=payload["vehicle_num"],
         slot_id=payload["slot_id"],
         requested_at=payload["requested_at"],
@@ -53,10 +59,11 @@ def create_parking_entry(request: HttpRequest) -> JsonResponse:
     return JsonResponse(result, status=HTTPStatus.CREATED)
 
 
+@csrf_exempt
 @require_POST
 def create_parking_exit(request: HttpRequest) -> JsonResponse:
     payload = _decode_json_body(request)
-    result = ExitSagaOrchestrationService().execute(
+    result = ExitSagaOrchestrationService(base_url=_resolve_base_url(request)).execute(
         vehicle_num=payload["vehicle_num"],
         requested_at=payload["requested_at"],
         idempotency_key=request.headers["Idempotency-Key"],

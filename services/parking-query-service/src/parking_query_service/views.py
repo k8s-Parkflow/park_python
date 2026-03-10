@@ -1,6 +1,7 @@
 import json
 
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 
 from park_py.error_handling import ApplicationError, ErrorCode
@@ -26,6 +27,7 @@ def get_current_parking_view(_request, vehicle_num: str) -> JsonResponse:
     return JsonResponse(result)
 
 
+@csrf_exempt
 @require_POST
 def project_parking_entry(request) -> JsonResponse:
     payload = _payload(request)
@@ -42,6 +44,7 @@ def project_parking_entry(request) -> JsonResponse:
     return JsonResponse(result, status=200)
 
 
+@csrf_exempt
 @require_POST
 def revert_parking_entry_projection(request) -> JsonResponse:
     payload = _payload(request)
@@ -49,6 +52,7 @@ def revert_parking_entry_projection(request) -> JsonResponse:
     return JsonResponse(result, status=200)
 
 
+@csrf_exempt
 @require_POST
 def project_parking_exit(request) -> JsonResponse:
     payload = _payload(request)
@@ -59,6 +63,7 @@ def project_parking_exit(request) -> JsonResponse:
     return JsonResponse(result, status=200)
 
 
+@csrf_exempt
 @require_POST
 def restore_parking_exit_projection(request) -> JsonResponse:
     payload = _payload(request)

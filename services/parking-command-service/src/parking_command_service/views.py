@@ -1,6 +1,7 @@
 import json
 
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from park_py.error_handling import ApplicationError, ErrorCode
@@ -16,6 +17,7 @@ def _payload(request) -> dict:
     return json.loads(request.body.decode("utf-8"))
 
 
+@csrf_exempt
 @require_POST
 def create_parking_entry(request) -> JsonResponse:
     payload = _payload(request)
@@ -31,6 +33,7 @@ def create_parking_entry(request) -> JsonResponse:
     return JsonResponse(result, status=201)
 
 
+@csrf_exempt
 @require_POST
 def cancel_parking_entry(request) -> JsonResponse:
     payload = _payload(request)
@@ -38,6 +41,7 @@ def cancel_parking_entry(request) -> JsonResponse:
     return JsonResponse(result, status=200)
 
 
+@csrf_exempt
 @require_POST
 def create_parking_exit(request) -> JsonResponse:
     payload = _payload(request)
@@ -52,6 +56,7 @@ def create_parking_exit(request) -> JsonResponse:
     return JsonResponse(result, status=200)
 
 
+@csrf_exempt
 @require_POST
 def restore_parking_exit(request) -> JsonResponse:
     payload = _payload(request)
@@ -61,4 +66,3 @@ def restore_parking_exit(request) -> JsonResponse:
         raise ApplicationError(code=ErrorCode.NOT_FOUND, status=404) from exc
 
     return JsonResponse(result, status=200)
-
