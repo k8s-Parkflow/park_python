@@ -22,6 +22,7 @@ from parking_command_service.domains.parking_record.infrastructure.repositories 
     DjangoParkingRecordRepository,
     DjangoVehicleRepository,
 )
+from parking_command_service.global_shared.utils.vehicle_nums import normalize_vehicle_num
 
 
 class ParkingRecordRepository(Protocol):
@@ -68,7 +69,8 @@ class ParkingRecordCommandService:
 
     @transaction.atomic
     def _create_entry_once(self, *, command: EntryCommand) -> ParkingRecordSnapshot:
-        if not self.vehicle_repository.exists(vehicle_num=command.vehicle_num):
+        vehicle_num = _normalize_lookup_vehicle_num(command.vehicle_num)
+        if not self.vehicle_repository.exists(vehicle_num=vehicle_num):
             raise ParkingRecordNotFoundError("존재하지 않는 차량입니다.")
 
         # 슬롯과 점유 행을 같은 트랜잭션 안에서 잠가 이중 입차를 줄이는 흐름
@@ -79,12 +81,12 @@ class ParkingRecordCommandService:
             raise ParkingRecordConflictError("비활성화된 슬롯입니다.")
         if occupancy.occupied:
             raise ParkingRecordConflictError("이미 점유 중인 슬롯입니다.")
-        if self.parking_record_repository.has_active_history_for_vehicle(vehicle_num=command.vehicle_num):
+        if self.parking_record_repository.has_active_history_for_vehicle(vehicle_num=vehicle_num):
             raise ParkingRecordConflictError("이미 활성 주차 세션이 존재합니다.")
 
         history = ParkingHistory.start(
             slot=slot,
-            vehicle_num=command.vehicle_num,
+            vehicle_num=vehicle_num,
             entry_at=command.entry_at or timezone.now(),
         )
 
@@ -92,7 +94,7 @@ class ParkingRecordCommandService:
             # 이력 저장 후 점유를 연결해야 현재 활성 세션 참조가 일관된다.
             self.parking_record_repository.save_history(history=history)
             occupancy.occupy(
-                vehicle_num=command.vehicle_num,
+                vehicle_num=vehicle_num,
                 history=history,
                 occupied_at=command.entry_at or history.entry_at,
             )
@@ -107,8 +109,9 @@ class ParkingRecordCommandService:
 
     @transaction.atomic
     def create_exit(self, *, command: ExitCommand) -> ParkingRecordSnapshot:
+        vehicle_num = _normalize_lookup_vehicle_num(command.vehicle_num)
         history = self.parking_record_repository.get_active_history_for_vehicle_for_update(
-            vehicle_num=command.vehicle_num
+            vehicle_num=vehicle_num
         )
         if history is None:
             raise ParkingRecordNotFoundError("활성 주차 이력이 없습니다.")
@@ -161,3 +164,7 @@ def _build_snapshot(*, history: ParkingHistory) -> ParkingRecordSnapshot:
 
 def _is_locked_error(exc: DatabaseError) -> bool:
     return "locked" in str(exc).lower()
+
+
+def _normalize_lookup_vehicle_num(vehicle_num: str) -> str:
+    return normalize_vehicle_num(vehicle_num)

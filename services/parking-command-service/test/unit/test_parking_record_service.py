@@ -133,6 +133,38 @@ class ParkingRecordEntryServiceUnitTests(ParkingRecordServiceTestSupport):
                 )
             )
 
+    # 조회 차량 번호 정규화 검증
+    def test_should_normalize_vehicle_num__when_entry_queries_active_history(self) -> None:
+        # Given
+        slot, _occupancy, parking_record_repository, vehicle_repository = self.make_entry_deps()
+
+        def save_history(*, history: ParkingHistory) -> ParkingHistory:
+            history.history_id = 101
+            return history
+
+        parking_record_repository.save_history.side_effect = save_history
+        service = self.make_service(
+            parking_record_repository=parking_record_repository,
+            vehicle_repository=vehicle_repository,
+        )
+
+        # When
+        service.create_entry(
+            command=EntryCommand(
+                vehicle_num="69가-3455",
+                zone_id=slot.zone_id,
+                slot_code=slot.slot_code,
+                slot_id=slot.slot_id,
+                entry_at=timezone.now(),
+            )
+        )
+
+        # Then
+        vehicle_repository.exists.assert_called_once_with(vehicle_num="69가3455")
+        parking_record_repository.has_active_history_for_vehicle.assert_called_once_with(
+            vehicle_num="69가3455"
+        )
+
 
 # 출차 서비스 단위 테스트 클래스
 class ParkingRecordExitServiceUnitTests(ParkingRecordServiceTestSupport):
@@ -230,6 +262,55 @@ class ParkingRecordExitServiceUnitTests(ParkingRecordServiceTestSupport):
                     exit_at=timezone.now(),
                 )
             )
+
+    # 출차 조회 차량 번호 정규화 검증
+    def test_should_normalize_vehicle_num__when_exit_queries_active_history(self) -> None:
+        # Given
+        entry_at = timezone.now()
+        exit_at = timezone.now()
+        slot = ParkingSlot(slot_id=1, zone_id=1, slot_type_id=1, slot_code="A001", is_active=True)
+        history = ParkingHistory(
+            history_id=101,
+            slot=slot,
+            vehicle_num="69가3455",
+            status=ParkingHistoryStatus.PARKED,
+            entry_at=entry_at,
+        )
+        occupancy = SlotOccupancy(
+            slot=slot,
+            occupied=True,
+            vehicle_num="69가3455",
+            history=history,
+            occupied_at=entry_at,
+        )
+        parking_record_repository = Mock()
+        vehicle_repository = Mock()
+        parking_record_repository.get_active_history_for_vehicle_for_update.return_value = history
+        parking_record_repository.get_slot_for_update.return_value = slot
+        parking_record_repository.get_slot_by_identity_for_update.return_value = slot
+        parking_record_repository.get_or_create_occupancy_for_update.return_value = occupancy
+        parking_record_repository.save_history.side_effect = lambda *, history: history
+        parking_record_repository.save_occupancy.side_effect = lambda *, occupancy: occupancy
+        service = self.make_service(
+            parking_record_repository=parking_record_repository,
+            vehicle_repository=vehicle_repository,
+        )
+
+        # When
+        service.create_exit(
+            command=ExitCommand(
+                vehicle_num="69가-3455",
+                zone_id=slot.zone_id,
+                slot_code=slot.slot_code,
+                slot_id=slot.slot_id,
+                exit_at=exit_at,
+            )
+        )
+
+        # Then
+        parking_record_repository.get_active_history_for_vehicle_for_update.assert_called_once_with(
+            vehicle_num="69가3455"
+        )
 
 
 # 응답 조합 단위 테스트 클래스
