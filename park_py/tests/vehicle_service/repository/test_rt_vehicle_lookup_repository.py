@@ -20,3 +20,12 @@ class VehicleLookupRepositoryTests(TestCase):
         # Then
         self.assertEqual(vehicle.vehicle_num, "12가3456")
         self.assertEqual(vehicle.vehicle_type, "GENERAL")
+
+    def test_should_return_vehicle__when_vehicle_num_is_normalized(self) -> None:
+        """[RT-VEHICLE-GRPC-02] 차량번호 정규화 조회"""
+
+        Vehicle.objects.create(vehicle_num="12가-3456", vehicle_type=VehicleType.General)
+
+        vehicle = VehicleRepository().get(vehicle_num="12가3456")
+
+        self.assertEqual(vehicle.vehicle_num, "12가-3456")

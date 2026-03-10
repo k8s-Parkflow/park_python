@@ -3,7 +3,7 @@ from django.test import SimpleTestCase
 from park_py.tests.support.current_location import (
     CurrentLocationModuleLoaderMixin,
     StubCurrentLocationRepository,
-    StubVehicleRepository,
+    StubVehicleLookup,
 )
 
 
@@ -19,7 +19,7 @@ class CurrentLocationServiceUnitTests(CurrentLocationModuleLoaderMixin, SimpleTe
                     "slot_name": "A033",
                 }
             ),
-            vehicle_repository=StubVehicleRepository(exists=True),
+            vehicle_lookup=StubVehicleLookup(exists=True),
         )
 
         # When
@@ -40,7 +40,7 @@ class CurrentLocationServiceUnitTests(CurrentLocationModuleLoaderMixin, SimpleTe
         module = self.load_query_service_module()
         service = module.CurrentLocationService(
             current_location_repository=StubCurrentLocationRepository(projection=None),
-            vehicle_repository=StubVehicleRepository(exists=True),
+            vehicle_lookup=StubVehicleLookup(exists=True),
         )
 
         # When / Then
@@ -52,7 +52,7 @@ class CurrentLocationServiceUnitTests(CurrentLocationModuleLoaderMixin, SimpleTe
         module = self.load_query_service_module()
         service = module.CurrentLocationService(
             current_location_repository=StubCurrentLocationRepository(projection=None),
-            vehicle_repository=StubVehicleRepository(exists=False),
+            vehicle_lookup=StubVehicleLookup(exists=False),
         )
 
         # When / Then

@@ -37,7 +37,7 @@ class CurrentLocationRepositoryProtocol(Protocol):
         ...
 
 
-class VehicleRepositoryProtocol(Protocol):
+class VehicleLookupPort(Protocol):
     def exists_by_vehicle_num(self, vehicle_num: str) -> bool:
         ...
 
@@ -48,15 +48,18 @@ class CurrentLocationPayload(TypedDict):
     slot_name: str
 
 
+CurrentLocationSource = Union[CurrentLocationProjection, Mapping[str, str]]
+
+
 class CurrentLocationService:
     def __init__(
         self,
         *,
         current_location_repository: CurrentLocationRepositoryProtocol,
-        vehicle_repository: VehicleRepositoryProtocol,
+        vehicle_lookup: VehicleLookupPort,
     ) -> None:
         self._current_location_repository = current_location_repository
-        self._vehicle_repository = vehicle_repository
+        self._vehicle_lookup = vehicle_lookup
 
     def get_current_location(self, vehicle_num: str) -> CurrentLocationPayload:
         normalized_vehicle_num = normalize_vehicle_num(vehicle_num)
@@ -65,19 +68,19 @@ class CurrentLocationService:
 
     def _get_current_location_or_raise(
         self, normalized_vehicle_num: str
-    ) -> Union[CurrentLocationProjection, Mapping[str, str]]:
+    ) -> CurrentLocationSource:
         current_location = self._current_location_repository.get_by_vehicle_num(
             normalized_vehicle_num
         )
         if current_location is not None:
             return current_location
 
-        if not self._vehicle_repository.exists_by_vehicle_num(normalized_vehicle_num):
+        if not self._vehicle_lookup.exists_by_vehicle_num(normalized_vehicle_num):
             raise VehicleNotFoundError()
         raise CurrentVehicleNotParkedError()
 
     def _build_location_payload(
-        self, current_location: Union[CurrentLocationProjection, Mapping[str, str]]
+        self, current_location: CurrentLocationSource
     ) -> CurrentLocationPayload:
         return {
             "vehicle_num": self._value_of(current_location, "vehicle_num"),
@@ -87,7 +90,7 @@ class CurrentLocationService:
 
     @staticmethod
     def _value_of(
-        source: Union[CurrentLocationProjection, Mapping[str, str]], field_name: str
+        source: CurrentLocationSource, field_name: str
     ) -> str:
         if isinstance(source, Mapping):
             return source[field_name]
