@@ -8,6 +8,7 @@ from django.test import SimpleTestCase
 from parking_command_service.clients.grpc.parking_query import (
     ParkingQueryGrpcProjectionWriter,
 )
+from parking_command_service.clients.grpc.zone import ZoneGrpcClient
 from parking_command_service.clients.grpc.vehicle import VehicleGrpcClient
 from parking_command_service.domains.parking_record.application.services import (
     ParkingRecordCommandService,
@@ -36,3 +37,4 @@ class ParkingRecordDependenciesUnitTests(SimpleTestCase):
         self.assertIsInstance(service.parking_record_repository, DjangoParkingRecordRepository)
         self.assertIsInstance(service.projection_writer, ParkingQueryGrpcProjectionWriter)
         self.assertIsInstance(service.vehicle_repository, VehicleGrpcClient)
+        self.assertIsInstance(service.projection_writer.zone_lookup, ZoneGrpcClient)

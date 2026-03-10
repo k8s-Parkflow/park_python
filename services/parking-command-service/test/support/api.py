@@ -10,6 +10,7 @@ from django.http import HttpResponse
 from parking_command_service.clients.grpc.parking_query import (
     ParkingQueryGrpcProjectionWriter,
 )
+from parking_command_service.clients.grpc.zone import ZoneGrpcClient
 from parking_command_service.clients.grpc.vehicle import VehicleGrpcClient
 from parking_command_service.domains.parking_record.application.services import (
     ParkingRecordCommandService,
@@ -20,6 +21,7 @@ from parking_command_service.domains.parking_record.infrastructure.repositories.
 from parking_query_service.grpc.servicers import ParkingQueryGrpcServicer
 from park_py.tests.grpc_support import build_direct_stub
 from vehicle_service.grpc.servicers import VehicleGrpcServicer
+from zone_service.grpc.servicers import ZoneGrpcServicer
 
 
 # 입차 API 호출 유틸리티
@@ -100,5 +102,11 @@ def build_test_projection_writer() -> ParkingQueryGrpcProjectionWriter:
         stub=build_direct_stub(
             servicer=ParkingQueryGrpcServicer(),
             method_names=["ApplyEntryProjection", "ApplyExitProjection"],
-        )
+        ),
+        zone_lookup=ZoneGrpcClient(
+            stub=build_direct_stub(
+                servicer=ZoneGrpcServicer(),
+                method_names=["GetZone"],
+            )
+        ),
     )

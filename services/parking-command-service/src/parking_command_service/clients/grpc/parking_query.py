@@ -10,6 +10,7 @@ from parking_command_service.clients.grpc.base import (
     GrpcClientBase,
     build_request_context,
 )
+from parking_command_service.clients.grpc.zone import ZoneGrpcClient
 
 
 class ParkingQueryGrpcProjectionWriter(GrpcClientBase):
@@ -20,6 +21,7 @@ class ParkingQueryGrpcProjectionWriter(GrpcClientBase):
         timeout: float = 5.0,
         channel: grpc.Channel | None = None,
         stub=None,
+        zone_lookup=None,
     ) -> None:
         super().__init__(
             target=target or os.getenv("PARKING_QUERY_SERVICE_GRPC_TARGET", "127.0.0.1:50054"),
@@ -27,8 +29,10 @@ class ParkingQueryGrpcProjectionWriter(GrpcClientBase):
             channel=channel,
             stub=stub,
         )
+        self.zone_lookup = zone_lookup or ZoneGrpcClient()
 
     def record_entry(self, *, history) -> None:
+        zone_payload = self.zone_lookup.get_zone(zone_id=_history_zone_id(history))
         request = parking_query_pb2.ApplyEntryProjectionRequest(
             context=build_request_context(requested_at=history.entry_at.isoformat()),
             operation_id=f"http-entry-{history.history_id}",
@@ -36,6 +40,7 @@ class ParkingQueryGrpcProjectionWriter(GrpcClientBase):
             vehicle_num=history.vehicle_num,
             slot_id=history.slot_id,
             zone_id=_history_zone_id(history),
+            zone_name=zone_payload["zone_name"],
             slot_type=_slot_type_name(slot_type_id=_history_slot_type_id(history)),
             slot_code=_history_slot_code(history),
         )

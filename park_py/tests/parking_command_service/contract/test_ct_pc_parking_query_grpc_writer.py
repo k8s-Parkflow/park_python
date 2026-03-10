@@ -29,7 +29,10 @@ class ParkingCommandParkingQueryGrpcWriterContractTests(SimpleTestCase):
 
         history = _history_stub()
         stub = _FakeParkingQueryStub()
-        writer = ParkingQueryGrpcProjectionWriter(stub=stub)
+        writer = ParkingQueryGrpcProjectionWriter(
+            stub=stub,
+            zone_lookup=_FakeZoneLookup(),
+        )
 
         writer.record_entry(history=history)
 
@@ -37,6 +40,7 @@ class ParkingCommandParkingQueryGrpcWriterContractTests(SimpleTestCase):
         self.assertEqual(stub.entry_request.slot_type, "GENERAL")
         self.assertEqual(stub.entry_request.slot_id, 7)
         self.assertEqual(stub.entry_request.slot_code, "A001")
+        self.assertEqual(stub.entry_request.zone_name, "A존")
 
     def test_should_build_apply_exit_projection_request__when_exit_recorded(self) -> None:
         """[CT-PC-PQ-GRPC-02] exit projection 요청 계약"""
@@ -77,3 +81,12 @@ class _AwareDateTime:
 
     def isoformat(self) -> str:
         return self._isoformat_value
+
+
+class _FakeZoneLookup:
+    def get_zone(self, *, zone_id: int) -> dict:
+        return {
+            "zone_id": zone_id,
+            "zone_name": "A존",
+            "is_active": True,
+        }

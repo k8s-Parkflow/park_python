@@ -19,6 +19,7 @@ from support.factories import (  # noqa: E402
     create_empty_occupancy,
     create_occupied_session,
     create_slot,
+    create_zone,
     create_vehicle,
 )
 
@@ -29,6 +30,7 @@ class ParkingRecordProjectionAcceptanceTests(TestCase):
     def test_should_create_projection__when_entry_succeeds(self) -> None:
         # Given
         vehicle = create_vehicle()
+        create_zone(zone_id=1, zone_name="A존")
         target_slot = create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_code="A001")
         create_empty_occupancy(slot=target_slot)
         create_slot(zone_id=1, slot_type_id=1, slot_type_name="GENERAL", slot_code="A002")
@@ -46,6 +48,7 @@ class ParkingRecordProjectionAcceptanceTests(TestCase):
         self.assertEqual(response.status_code, 201)
         current_view = CurrentParkingView.objects.get(vehicle_num=vehicle.vehicle_num)
         self.assertEqual(current_view.slot_id, target_slot.slot_id)
+        self.assertEqual(current_view.zone_name, "A존")
 
     # 출차 후 현재 위치 projection 제거 검증
     def test_should_remove_projection__when_exit_succeeds(self) -> None:

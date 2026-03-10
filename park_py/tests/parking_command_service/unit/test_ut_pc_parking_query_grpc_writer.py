@@ -14,6 +14,11 @@ class _UnavailableParkingQueryStub:
         )
 
 
+class _AvailableParkingQueryStub:
+    def ApplyEntryProjection(self, request, timeout=None):  # noqa: N802, ARG002
+        return object()
+
+
 class _FakeRpcError(grpc.RpcError):
     def __init__(self, *, code: grpc.StatusCode, details: str) -> None:
         super().__init__()
@@ -42,6 +47,23 @@ class ParkingCommandParkingQueryGrpcWriterUnitTests(SimpleTestCase):
 
         self.assertEqual(context.exception.status, 503)
 
+    def test_should_raise_application_error__when_zone_service_unavailable(self) -> None:
+        """[UT-PC-PQ-GRPC-02] zone lookup 장애 전파"""
+
+        from parking_command_service.clients.grpc.parking_query import (
+            ParkingQueryGrpcProjectionWriter,
+        )
+
+        writer = ParkingQueryGrpcProjectionWriter(
+            stub=_AvailableParkingQueryStub(),
+            zone_lookup=_UnavailableZoneLookup(),
+        )
+
+        with self.assertRaises(ApplicationError) as context:
+            writer.record_entry(history=_history_stub())
+
+        self.assertEqual(context.exception.status, 503)
+
 
 def _history_stub():
     class _History:
@@ -63,3 +85,8 @@ class _AwareDateTime:
 
     def isoformat(self) -> str:
         return self._isoformat_value
+
+
+class _UnavailableZoneLookup:
+    def get_zone(self, *, zone_id: int) -> dict:
+        raise ApplicationError("zone unavailable", status=503)
