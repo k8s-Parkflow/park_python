@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from typing import Callable, TypeVar
 
 import grpc
+from contracts.gen.python.common.v1 import common_pb2
 
 from park_py.error_handling.error_codes import ErrorCode
 from park_py.error_handling.exceptions import ApplicationError
@@ -46,3 +48,12 @@ class DownstreamDependencyError(ApplicationError):
             status=503,
         )
 
+
+def build_request_context(*, requested_at: str | None = None) -> common_pb2.RequestContext:
+    context = common_pb2.RequestContext()
+    if requested_at:
+        requested_datetime = datetime.fromisoformat(requested_at)
+        if requested_datetime.tzinfo is None:
+            requested_datetime = requested_datetime.replace(tzinfo=timezone.utc)
+        context.requested_at.FromDatetime(requested_datetime.astimezone(timezone.utc))
+    return context

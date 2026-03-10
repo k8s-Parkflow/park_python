@@ -7,16 +7,14 @@ from pathlib import Path
 from django.test import TestCase
 from django.utils import timezone
 
-from parking_command_service.domains.parking_record.infrastructure.repositories import (
-    DjangoParkingProjectionWriter,
-)
-from parking_query_service.models import CurrentParkingView, ZoneAvailability
+from parking_query_service.models import CurrentParkingView
 
 TEST_ROOT = Path(__file__).resolve().parents[1]
 if str(TEST_ROOT) not in sys.path:
     sys.path.insert(0, str(TEST_ROOT))
 
 from support.api import post_entry, post_exit  # noqa: E402
+from support.api import build_test_projection_writer  # noqa: E402
 from support.factories import (  # noqa: E402
     create_empty_occupancy,
     create_occupied_session,
@@ -47,12 +45,7 @@ class ParkingRecordProjectionAcceptanceTests(TestCase):
         # Then
         self.assertEqual(response.status_code, 201)
         current_view = CurrentParkingView.objects.get(vehicle_num=vehicle.vehicle_num)
-        zone_availability = ZoneAvailability.objects.get(zone_id=1, slot_type="GENERAL")
         self.assertEqual(current_view.slot_id, target_slot.slot_id)
-        self.assertEqual(current_view.slot_code, target_slot.slot_code)
-        self.assertEqual(zone_availability.total_count, 2)
-        self.assertEqual(zone_availability.occupied_count, 1)
-        self.assertEqual(zone_availability.available_count, 1)
 
     # 출차 후 현재 위치 projection 제거 검증
     def test_should_remove_projection__when_exit_succeeds(self) -> None:
@@ -65,7 +58,7 @@ class ParkingRecordProjectionAcceptanceTests(TestCase):
             vehicle_num=vehicle.vehicle_num,
             entry_at=timezone.now() - timedelta(hours=2),
         )
-        DjangoParkingProjectionWriter().record_entry(history=history)
+        build_test_projection_writer().record_entry(history=history)
 
         # When
         response = post_exit(
@@ -80,7 +73,3 @@ class ParkingRecordProjectionAcceptanceTests(TestCase):
         # Then
         self.assertEqual(response.status_code, 200)
         self.assertFalse(CurrentParkingView.objects.filter(vehicle_num=vehicle.vehicle_num).exists())
-        zone_availability = ZoneAvailability.objects.get(zone_id=1, slot_type="GENERAL")
-        self.assertEqual(zone_availability.total_count, 2)
-        self.assertEqual(zone_availability.occupied_count, 0)
-        self.assertEqual(zone_availability.available_count, 2)

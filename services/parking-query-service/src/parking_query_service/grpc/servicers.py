@@ -38,7 +38,10 @@ class ParkingQueryGrpcServicer(parking_query_pb2_grpc.ParkingQueryServiceService
         return build_apply_entry_response(payload=payload)
 
     def ApplyExitProjection(self, request, context):  # noqa: N802, ARG002
-        payload = self.application_service.apply_exit_projection(vehicle_num=request.vehicle_num)
+        payload = self.application_service.apply_exit_projection(
+            history_id=request.history_id,
+            vehicle_num=request.vehicle_num,
+        )
         return build_apply_exit_response(payload=payload)
 
     def CompensateEntryProjection(self, request, context):  # noqa: N802, ARG002

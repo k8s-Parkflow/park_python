@@ -13,6 +13,7 @@ class ParkingQueryGrpcApplicationUnitTests(SimpleTestCase):
         """[UT-PQ-GRPC-01] apply-entry projection 저장 위임"""
 
         repository = Mock()
+        repository.get_by_vehicle_num.return_value = None
         service = ParkingQueryGrpcApplicationService(current_location_repository=repository)
 
         payload = service.apply_entry_projection(
@@ -31,6 +32,7 @@ class ParkingQueryGrpcApplicationUnitTests(SimpleTestCase):
         """[UT-PQ-GRPC-02] compensate-exit projection 복원"""
 
         repository = Mock()
+        repository.get_by_vehicle_num.return_value = None
         service = ParkingQueryGrpcApplicationService(current_location_repository=repository)
 
         payload = service.compensate_exit_projection(

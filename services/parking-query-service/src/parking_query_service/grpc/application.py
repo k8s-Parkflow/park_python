@@ -48,8 +48,10 @@ class ParkingQueryGrpcApplicationService:
             "updated_at": projection.updated_at,
         }
 
-    def apply_exit_projection(self, *, vehicle_num: str) -> dict:
-        self.current_location_repository.delete_projection(vehicle_num=vehicle_num)
+    def apply_exit_projection(self, *, history_id: int, vehicle_num: str) -> dict:
+        projection = self.current_location_repository.get_by_vehicle_num(vehicle_num)
+        if projection is not None and projection.history_id == history_id:
+            self.current_location_repository.delete_projection(vehicle_num=vehicle_num)
         return {
             "projected": True,
             "updated_at": timezone.now(),
@@ -116,6 +118,16 @@ class ParkingQueryGrpcApplicationService:
         slot_type: str,
         entry_at: datetime | None,
     ):
+        incoming_entry_at = entry_at or timezone.now()
+        current_projection = self.current_location_repository.get_by_vehicle_num(vehicle_num)
+        if current_projection is not None and self._is_newer_projection(
+            current_entry_at=current_projection.entry_at,
+            current_history_id=current_projection.history_id,
+            incoming_entry_at=incoming_entry_at,
+            incoming_history_id=history_id,
+        ):
+            return current_projection
+
         return self.current_location_repository.save_projection(
             {
                 "vehicle_num": vehicle_num,
@@ -123,6 +135,18 @@ class ParkingQueryGrpcApplicationService:
                 "zone_id": zone_id,
                 "slot_id": slot_id,
                 "slot_type": slot_type,
-                "entry_at": entry_at or timezone.now(),
+                "entry_at": incoming_entry_at,
             }
         )
+
+    @staticmethod
+    def _is_newer_projection(
+        *,
+        current_entry_at,
+        current_history_id: int | None,
+        incoming_entry_at,
+        incoming_history_id: int,
+    ) -> bool:
+        current_key = (current_entry_at, current_history_id or 0)
+        incoming_key = (incoming_entry_at, incoming_history_id)
+        return current_key > incoming_key

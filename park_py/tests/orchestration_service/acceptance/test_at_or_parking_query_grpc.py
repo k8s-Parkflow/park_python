@@ -9,6 +9,8 @@ from orchestration_service.clients.grpc.parking_command import ParkingCommandGrp
 from orchestration_service.clients.grpc.parking_query import ParkingQueryGrpcClient
 from orchestration_service.clients.grpc.vehicle import VehicleGrpcClient
 from orchestration_service.clients.grpc.zone import ZoneGrpcClient
+from parking_command_service.clients.grpc.vehicle import VehicleGrpcClient as ParkingCommandVehicleGrpcClient
+from parking_command_service.grpc.application import ParkingCommandGrpcApplicationService
 from parking_command_service.grpc.servicers import ParkingCommandGrpcServicer
 from parking_command_service.models import ParkingSlot, SlotOccupancy
 from parking_query_service.grpc.servicers import ParkingQueryGrpcServicer
@@ -51,7 +53,16 @@ class OrchestrationParkingQueryGrpcAcceptanceTests(TransactionTestCase):
         )
         parking_command_gateway = ParkingCommandGrpcClient(
             stub=build_direct_stub(
-                servicer=ParkingCommandGrpcServicer(),
+                servicer=ParkingCommandGrpcServicer(
+                    application_service=ParkingCommandGrpcApplicationService(
+                        vehicle_repository=ParkingCommandVehicleGrpcClient(
+                            stub=build_direct_stub(
+                                servicer=VehicleGrpcServicer(),
+                                method_names=["GetVehicle"],
+                            )
+                        ),
+                    )
+                ),
                 method_names=[
                     "CreateEntry",
                     "ValidateActiveParking",
@@ -111,14 +122,6 @@ class OrchestrationParkingQueryGrpcAcceptanceTests(TransactionTestCase):
         """[AT-OR-GRPC-PQ-02] 출차 SAGA가 parking-query gRPC projection 삭제까지 완료한다"""
 
         # Given
-        CurrentParkingView.objects.create(
-            vehicle_num="12가3456",
-            history_id=101,
-            zone_id=1,
-            slot_id=7,
-            slot_type="GENERAL",
-            entry_at=timezone.datetime(2026, 3, 10, 1, 0, tzinfo=timezone.utc),
-        )
         slot = ParkingSlot.objects.create(
             slot_id=7,
             zone_id=1,
@@ -129,6 +132,14 @@ class OrchestrationParkingQueryGrpcAcceptanceTests(TransactionTestCase):
         history = slot.parking_histories.create(
             vehicle_num="12가3456",
             entry_at=timezone.datetime(2026, 3, 10, 1, 0, tzinfo=timezone.utc),
+        )
+        CurrentParkingView.objects.create(
+            vehicle_num="12가3456",
+            history_id=history.history_id,
+            zone_id=1,
+            slot_id=7,
+            slot_type="GENERAL",
+            entry_at=history.entry_at,
         )
 
         SlotOccupancy.objects.create(
@@ -141,7 +152,16 @@ class OrchestrationParkingQueryGrpcAcceptanceTests(TransactionTestCase):
 
         parking_command_gateway = ParkingCommandGrpcClient(
             stub=build_direct_stub(
-                servicer=ParkingCommandGrpcServicer(),
+                servicer=ParkingCommandGrpcServicer(
+                    application_service=ParkingCommandGrpcApplicationService(
+                        vehicle_repository=ParkingCommandVehicleGrpcClient(
+                            stub=build_direct_stub(
+                                servicer=VehicleGrpcServicer(),
+                                method_names=["GetVehicle"],
+                            )
+                        ),
+                    )
+                ),
                 method_names=["ValidateActiveParking", "ExitParking", "CompensateExit"],
             )
         )
