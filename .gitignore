@@ -17,10 +17,14 @@ __pycache__/
 /scripts/open_project_coverage.sh
 
 # Local docs
-/docs/
+/docs/*
 
 # Ignore markdown files by default
 *.md
 
 # Local-only coverage helpers
 /docs/tdd/coverage-local-guide.md
+
+# Track entity schema docs only
+!/docs/entities/
+!/docs/entities/*.md
