@@ -7,7 +7,7 @@ from parking_command_service.domains.parking_record.presentation.http.serializer
     parse_entry_command,
     parse_exit_command,
 )
-from parking_command_service.global_shared.application.dependencies import (
+from parking_command_service.parking_record.bootstrap import (
     get_parking_record_command_service,
 )
 
