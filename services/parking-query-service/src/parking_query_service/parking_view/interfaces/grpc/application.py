@@ -1,4 +1,4 @@
-from parking_query_service.parking_view.interfaces.grpc.application import (
+from parking_query_service.parking_view.application.services.projection_application_service import (
     ParkingQueryGrpcApplicationService,
     ParkingQueryProjectionNotFoundError,
 )
