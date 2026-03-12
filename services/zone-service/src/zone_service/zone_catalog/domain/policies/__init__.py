@@ -1,4 +1,4 @@
-from zone_service.zone_catalog.application.use_cases.validate_entry_policy import (
+from zone_service.zone_catalog.domain.policies.entry_policy import (
     ZonePolicyService,
     build_validate_entry_policy_payload,
     is_vehicle_entry_allowed,
