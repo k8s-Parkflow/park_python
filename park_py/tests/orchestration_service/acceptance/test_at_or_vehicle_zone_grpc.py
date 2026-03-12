@@ -11,10 +11,10 @@ from park_py.tests.orchestration_service.support import (
 )
 from orchestration_service.clients.grpc.zone import ZoneGrpcClient
 from orchestration_service.clients.grpc.vehicle import VehicleGrpcClient
-from vehicle_service.grpc.servicers import VehicleGrpcServicer
+from vehicle_service.vehicle.interfaces.grpc.servicers import VehicleGrpcServicer
 from vehicle_service.models import Vehicle
 from vehicle_service.models.enums import VehicleType
-from zone_service.grpc.servicers import ZoneGrpcServicer
+from zone_service.zone_catalog.interfaces.grpc.servicers import ZoneGrpcServicer
 from zone_service.models import ParkingSlot, SlotType, Zone
 
 

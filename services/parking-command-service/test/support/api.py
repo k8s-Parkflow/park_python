@@ -20,8 +20,8 @@ from parking_command_service.domains.parking_record.infrastructure.repositories.
 )
 from parking_query_service.grpc.servicers import ParkingQueryGrpcServicer
 from park_py.tests.grpc_support import build_direct_stub
-from vehicle_service.grpc.servicers import VehicleGrpcServicer
-from zone_service.grpc.servicers import ZoneGrpcServicer
+from vehicle_service.vehicle.interfaces.grpc.servicers import VehicleGrpcServicer
+from zone_service.zone_catalog.interfaces.grpc.servicers import ZoneGrpcServicer
 
 
 # 입차 API 호출 유틸리티

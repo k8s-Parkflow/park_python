@@ -3,7 +3,7 @@ from __future__ import annotations
 import grpc
 
 from contracts.gen.python.zone.v1 import zone_pb2_grpc
-from zone_service.grpc.mappers import (
+from zone_service.zone_catalog.interfaces.grpc.mappers import (
     build_get_zone_response,
     build_validate_entry_policy_response,
 )

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from contracts.gen.python.zone.v1 import zone_pb2
-from zone_service.models import Zone
+from zone_service.zone_catalog.domain.entities import Zone
 
 
 def build_validate_entry_policy_response(*, payload: dict) -> zone_pb2.ValidateEntryPolicyResponse:

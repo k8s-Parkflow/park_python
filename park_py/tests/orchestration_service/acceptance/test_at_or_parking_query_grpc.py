@@ -16,10 +16,10 @@ from parking_command_service.models import ParkingSlot, SlotOccupancy
 from parking_query_service.grpc.servicers import ParkingQueryGrpcServicer
 from parking_query_service.models import CurrentParkingView
 from park_py.tests.grpc_support import build_direct_stub
-from vehicle_service.grpc.servicers import VehicleGrpcServicer
+from vehicle_service.vehicle.interfaces.grpc.servicers import VehicleGrpcServicer
 from vehicle_service.models import Vehicle
 from vehicle_service.models.enums import VehicleType
-from zone_service.grpc.servicers import ZoneGrpcServicer
+from zone_service.zone_catalog.interfaces.grpc.servicers import ZoneGrpcServicer
 from zone_service.models import ParkingSlot as ZoneParkingSlot
 from zone_service.models import SlotType, Zone
 
