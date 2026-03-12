@@ -10,8 +10,10 @@ from django.utils import timezone
 from park_py.error_handling import ApplicationError
 from parking_command_service.models import ParkingHistory
 from parking_command_service.models import ParkingHistoryStatus
-from parking_command_service.services import cancel_entry
-from parking_command_service.services import _claim_operation_record
+from parking_command_service.parking_record.application.use_cases.internal_commands import (
+    _claim_operation_record,
+    cancel_entry,
+)
 
 TEST_ROOT = Path(__file__).resolve().parents[1]
 if str(TEST_ROOT) not in sys.path:
@@ -27,7 +29,9 @@ class InternalParkingCommandServiceUnitTests(TestCase):
 
         existing_record = Mock(response_payload={"history_id": 101})
 
-        with patch("parking_command_service.services.ParkingCommandOperation.objects") as manager:
+        with patch(
+            "parking_command_service.parking_record.application.use_cases.internal_commands.ParkingCommandOperation.objects"
+        ) as manager:
             manager.create.side_effect = IntegrityError()
             manager.select_for_update.return_value.get.return_value = existing_record
 
@@ -44,7 +48,9 @@ class InternalParkingCommandServiceUnitTests(TestCase):
 
         existing_record = Mock(response_payload=None)
 
-        with patch("parking_command_service.services.ParkingCommandOperation.objects") as manager:
+        with patch(
+            "parking_command_service.parking_record.application.use_cases.internal_commands.ParkingCommandOperation.objects"
+        ) as manager:
             manager.create.side_effect = IntegrityError()
             manager.select_for_update.return_value.get.return_value = existing_record
 

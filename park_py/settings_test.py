@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from .settings import *  # noqa: F403
 
 if str(BASE_DIR / "services" / "parking-query-service" / "test") not in sys.path:  # type: ignore[name-defined]
@@ -6,10 +8,18 @@ if str(BASE_DIR / "services" / "parking-query-service" / "test") not in sys.path
 # coverage 기반 테스트 실행 시 django admin autodiscover 충돌을 피하기 위한 설정
 INSTALLED_APPS = [app for app in INSTALLED_APPS if app != "django.contrib.admin"]  # type: ignore[name-defined]
 ROOT_URLCONF = "park_py.urls_test"
+
+TEST_DB_ROOT = Path("/tmp/autoE-test-dbs")
+TEST_DB_ROOT.mkdir(exist_ok=True)
+
 DATABASES = {  # type: ignore[name-defined]
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "test.sqlite3",  # type: ignore[name-defined]
+    alias: {
+        **config,
+        "TEST": {
+            "NAME": str(TEST_DB_ROOT / f"test_{Path(config['NAME']).name}"),
+        },
     }
+    for alias, config in DATABASES.items()  # type: ignore[name-defined]
 }
-DATABASE_ROUTERS = []
+
+DATABASE_ROUTERS = ["park_py.database_router.ServiceDatabaseRouter"]

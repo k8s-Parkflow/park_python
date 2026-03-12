@@ -8,6 +8,8 @@ from parking_query_service.repositories.current_location_repository import Curre
 
 
 class ParkingQueryGrpcProjectionRepositoryTests(TestCase):
+    databases = "__all__"
+
     def test_should_upsert_grpc_projection_fields__when_projection_is_saved(self) -> None:
         """[RT-PQ-GRPC-01] grpc projection 저장"""
 

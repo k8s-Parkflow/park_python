@@ -1,2 +1,5 @@
-from parking_query_service.clients.grpc.vehicle import VehicleGrpcClient
+from parking_query_service.parking_view.infrastructure.clients.grpc import (
+    VehicleGrpcClient,
+)
 
+__all__ = ["VehicleGrpcClient"]

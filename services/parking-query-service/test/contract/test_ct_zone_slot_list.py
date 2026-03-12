@@ -5,6 +5,8 @@ from park_py.tests.support.zone_slot_list import ZoneSlotListFixtureMixin
 
 @override_settings(ROOT_URLCONF="park_py.urls_test")
 class ZoneSlotListContractTests(ZoneSlotListFixtureMixin, TestCase):
+    databases = "__all__"
+
     def test_should_match_zone_slot_schema__when_success(self) -> None:
         # Given
         zone = self.create_zone(zone_name="A존")

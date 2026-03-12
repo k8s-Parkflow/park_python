@@ -10,7 +10,7 @@ mkdir -p "$ARTIFACT_DIR/htmlcov"
 
 PYTHON_BIN="./.venv-cpython39/bin/python"
 RCFILE="reports/coverage/.coveragerc.project"
-INCLUDE_FILES="services/parking-query-service/src/parking_query_service/views.py,services/parking-query-service/src/parking_query_service/dependencies.py,services/parking-query-service/src/parking_query_service/services/zone_slot_query_service.py,services/parking-query-service/src/parking_query_service/repositories/zone_slot_repository.py,park_py/openapi.py"
+INCLUDE_FILES="services/parking-query-service/src/parking_query_service/parking_view/interfaces/http/views.py,services/parking-query-service/src/parking_query_service/parking_view/bootstrap.py,services/parking-query-service/src/parking_query_service/services/zone_slot_query_service.py,services/parking-query-service/src/parking_query_service/repositories/zone_slot_repository.py,park_py/openapi.py"
 
 "$PYTHON_BIN" -m coverage erase --rcfile="$RCFILE"
 "$PYTHON_BIN" -m coverage run --rcfile="$RCFILE" manage.py test acceptance contract unit repository park_py.tests.test_swagger park_py.test_openapi --settings=park_py.settings_test

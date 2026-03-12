@@ -14,6 +14,8 @@ class ZoneSlotRepositoryTests(
     ZoneSlotListModuleLoaderMixin,
     TestCase,
 ):
+    databases = "__all__"
+
     def test_should_load_slot_rows__when_zone_requested(self) -> None:
         # Given
         repository_module = self.load_repository_module()

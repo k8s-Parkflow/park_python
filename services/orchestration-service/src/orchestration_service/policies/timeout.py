@@ -1,7 +1,3 @@
-class TimeoutPolicy:
-    def __init__(self, *, timeout_seconds: float) -> None:
-        self.timeout_seconds = timeout_seconds
+from orchestration_service.saga.domain.policies.timeout import TimeoutPolicy
 
-    def is_timed_out(self, *, elapsed_seconds: float) -> bool:
-        return elapsed_seconds > self.timeout_seconds
-
+__all__ = ["TimeoutPolicy"]

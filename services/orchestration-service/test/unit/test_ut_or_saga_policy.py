@@ -81,7 +81,7 @@ class OrchestrationSagaPolicyTests(SimpleTestCase):
     def test_should_reuse_existing_operation__when_same_idempotency_key_reenters(self) -> None:
         """[UT-OR-SAGA-04] 멱등 재진입 정책"""
 
-        from orchestration_service.policies.idempotency import IdempotencyPolicy
+        from orchestration_service.saga.domain.policies import IdempotencyPolicy
 
         # Given
         policy = IdempotencyPolicy()
@@ -127,7 +127,7 @@ class OrchestrationSagaPolicyTests(SimpleTestCase):
     def test_should_retry_only_retryable_errors__when_retry_policy_is_evaluated(self) -> None:
         """[UT-OR-POLICY-01] 재시도 정책"""
 
-        from orchestration_service.policies.retry import RetryPolicy
+        from orchestration_service.saga.domain.policies import RetryPolicy
 
         # Given
         retry_policy = RetryPolicy(max_attempts=3)
@@ -145,7 +145,7 @@ class OrchestrationSagaPolicyTests(SimpleTestCase):
     ) -> None:
         """[UT-OR-POLICY-02] 타임아웃 정책"""
 
-        from orchestration_service.policies.timeout import TimeoutPolicy
+        from orchestration_service.saga.domain.policies import TimeoutPolicy
 
         # Given
         timeout_policy = TimeoutPolicy(timeout_seconds=3)
@@ -161,7 +161,7 @@ class OrchestrationSagaPolicyTests(SimpleTestCase):
     ) -> None:
         """[UT-OR-POLICY-03] 오류 매핑 정책"""
 
-        from orchestration_service.policies.errors import GatewayErrorMapper
+        from orchestration_service.saga.domain.policies import GatewayErrorMapper
 
         # Given
         error_mapper = GatewayErrorMapper()

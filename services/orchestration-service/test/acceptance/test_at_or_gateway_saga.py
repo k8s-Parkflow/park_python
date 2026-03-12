@@ -12,14 +12,14 @@ if str(ORCHESTRATION_SERVICE_SRC) not in sys.path:
 
 @override_settings(ROOT_URLCONF="orchestration_service.urls")
 class OrchestrationGatewayAcceptanceTests(TestCase):
-    @patch("orchestration_service.views.EntrySagaOrchestrationService")
+    @patch("orchestration_service.saga.interfaces.http.views.build_entry_saga_service")
     def test_should_complete_entry_saga_via_gateway__when_dependencies_succeed(
         self,
-        entry_saga_service_class,
+        build_entry_saga_service,
     ) -> None:
         """[AT-OR-ENTRY-01] 입차 성공"""
 
-        entry_saga_service_class.return_value.execute.return_value = {
+        build_entry_saga_service.return_value.execute.return_value = {
             "operation_id": "entry-op-001",
             "status": "COMPLETED",
             "history_id": 101,
@@ -56,21 +56,21 @@ class OrchestrationGatewayAcceptanceTests(TestCase):
                 "entry_at": "2026-03-10T10:00:00+09:00",
             },
         )
-        entry_saga_service_class.return_value.execute.assert_called_once_with(
+        build_entry_saga_service.return_value.execute.assert_called_once_with(
             vehicle_num="12가3456",
             slot_id=7,
             requested_at="2026-03-10T10:00:00+09:00",
             idempotency_key="entry-idempotency-key-001",
         )
 
-    @patch("orchestration_service.views.EntrySagaOrchestrationService")
+    @patch("orchestration_service.saga.interfaces.http.views.build_entry_saga_service")
     def test_should_return_failed_saga_payload__when_entry_projection_update_fails(
         self,
-        entry_saga_service_class,
+        build_entry_saga_service,
     ) -> None:
         """[AT-OR-ENTRY-02] 입차 중 projection 실패 시 보상"""
 
-        entry_saga_service_class.return_value.execute.return_value = {
+        build_entry_saga_service.return_value.execute.return_value = {
             "operation_id": "entry-op-002",
             "status": "COMPENSATED",
             "failed_step": "UPDATE_QUERY_ENTRY",
@@ -108,14 +108,14 @@ class OrchestrationGatewayAcceptanceTests(TestCase):
             },
         )
 
-    @patch("orchestration_service.views.EntrySagaOrchestrationService")
+    @patch("orchestration_service.saga.interfaces.http.views.build_entry_saga_service")
     def test_should_return_internal_error_payload__when_entry_compensation_is_cancelled(
         self,
-        entry_saga_service_class,
+        build_entry_saga_service,
     ) -> None:
         """[AT-OR-ENTRY-05] 입차 보상 취소 응답"""
 
-        entry_saga_service_class.return_value.execute.return_value = {
+        build_entry_saga_service.return_value.execute.return_value = {
             "operation_id": "entry-op-003",
             "status": "CANCELLED",
             "failed_step": "UPDATE_QUERY_ENTRY",
@@ -153,14 +153,14 @@ class OrchestrationGatewayAcceptanceTests(TestCase):
             },
         )
 
-    @patch("orchestration_service.views.ExitSagaOrchestrationService")
+    @patch("orchestration_service.saga.interfaces.http.views.build_exit_saga_service")
     def test_should_complete_exit_saga_via_gateway__when_dependencies_succeed(
         self,
-        exit_saga_service_class,
+        build_exit_saga_service,
     ) -> None:
         """[AT-OR-EXIT-01] 출차 성공"""
 
-        exit_saga_service_class.return_value.execute.return_value = {
+        build_exit_saga_service.return_value.execute.return_value = {
             "operation_id": "exit-op-001",
             "status": "COMPLETED",
             "history_id": 101,
@@ -196,16 +196,16 @@ class OrchestrationGatewayAcceptanceTests(TestCase):
                 "exit_at": "2026-03-10T12:00:00+09:00",
             },
         )
-        exit_saga_service_class.return_value.execute.assert_called_once_with(
+        build_exit_saga_service.return_value.execute.assert_called_once_with(
             vehicle_num="12가3456",
             requested_at="2026-03-10T12:00:00+09:00",
             idempotency_key="exit-idempotency-key-001",
         )
 
-    @patch("orchestration_service.views.EntrySagaOrchestrationService")
+    @patch("orchestration_service.saga.interfaces.http.views.build_entry_saga_service")
     def test_should_return_bad_request__when_entry_idempotency_key_is_missing(
         self,
-        entry_saga_service_class,
+        build_entry_saga_service,
     ) -> None:
         """[AT-OR-ENTRY-06] 입차 헤더 누락 검증"""
 
@@ -230,12 +230,12 @@ class OrchestrationGatewayAcceptanceTests(TestCase):
                 }
             },
         )
-        entry_saga_service_class.return_value.execute.assert_not_called()
+        build_entry_saga_service.return_value.execute.assert_not_called()
 
-    @patch("orchestration_service.views.ExitSagaOrchestrationService")
+    @patch("orchestration_service.saga.interfaces.http.views.build_exit_saga_service")
     def test_should_return_bad_request__when_exit_payload_is_incomplete(
         self,
-        exit_saga_service_class,
+        build_exit_saga_service,
     ) -> None:
         """[AT-OR-EXIT-02] 출차 필수 필드 누락"""
 
@@ -257,12 +257,12 @@ class OrchestrationGatewayAcceptanceTests(TestCase):
                 }
             },
         )
-        exit_saga_service_class.return_value.execute.assert_not_called()
+        build_exit_saga_service.return_value.execute.assert_not_called()
 
-    @patch("orchestration_service.views.EntrySagaOrchestrationService")
+    @patch("orchestration_service.saga.interfaces.http.views.build_entry_saga_service")
     def test_should_return_bad_request__when_entry_body_is_not_valid_json(
         self,
-        entry_saga_service_class,
+        build_entry_saga_service,
     ) -> None:
         """[AT-OR-ENTRY-07] 입차 malformed JSON"""
 
@@ -283,16 +283,16 @@ class OrchestrationGatewayAcceptanceTests(TestCase):
                 }
             },
         )
-        entry_saga_service_class.return_value.execute.assert_not_called()
+        build_entry_saga_service.return_value.execute.assert_not_called()
 
-    @patch("orchestration_service.views.OperationStatusQueryService")
+    @patch("orchestration_service.saga.interfaces.http.views.build_operation_status_query_service")
     def test_should_return_saga_status__when_operation_status_is_requested(
         self,
-        operation_status_query_service_class,
+        build_operation_status_query_service,
     ) -> None:
         """[AT-OR-CORE-01] 사가 상태 조회"""
 
-        operation_status_query_service_class.return_value.get.return_value = {
+        build_operation_status_query_service.return_value.get.return_value = {
             "operation_id": "entry-op-001",
             "saga_type": "ENTRY",
             "status": "COMPENSATED",
@@ -326,6 +326,6 @@ class OrchestrationGatewayAcceptanceTests(TestCase):
                 "last_error_message": "parking-query-service timeout",
             },
         )
-        operation_status_query_service_class.return_value.get.assert_called_once_with(
+        build_operation_status_query_service.return_value.get.assert_called_once_with(
             operation_id="entry-op-001",
         )

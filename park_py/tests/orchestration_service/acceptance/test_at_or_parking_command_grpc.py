@@ -13,16 +13,18 @@ from parking_command_service.models import ParkingHistory, ParkingSlot, SlotOccu
 from parking_command_service.grpc.servicers import ParkingCommandGrpcServicer
 from park_py.tests.grpc_support import build_direct_stub
 from park_py.tests.orchestration_service.support import FakeParkingQueryGateway
-from vehicle_service.grpc.servicers import VehicleGrpcServicer
+from vehicle_service.vehicle.interfaces.grpc.servicers import VehicleGrpcServicer
 from vehicle_service.models import Vehicle
 from vehicle_service.models.enums import VehicleType
-from zone_service.grpc.servicers import ZoneGrpcServicer
+from zone_service.zone_catalog.interfaces.grpc.servicers import ZoneGrpcServicer
 from zone_service.models import ParkingSlot as ZoneParkingSlot
 from zone_service.models import SlotType, Zone
 
 
 @override_settings(ROOT_URLCONF="orchestration_service.urls")
 class OrchestrationParkingCommandGrpcAcceptanceTests(TransactionTestCase):
+    databases = "__all__"
+
     def test_should_complete_entry_saga_via_parking_command_grpc__when_servicer_is_available(self) -> None:
         """[AT-OR-GRPC-PC-01] 입차 SAGA가 parking-command gRPC를 통해 완료된다"""
 
@@ -69,16 +71,16 @@ class OrchestrationParkingCommandGrpcAcceptanceTests(TransactionTestCase):
         parking_query_gateway = FakeParkingQueryGateway(call_log=[])
 
         with patch(
-            "orchestration_service.dependencies.build_vehicle_gateway",
+            "orchestration_service.saga.bootstrap.build_vehicle_gateway",
             return_value=vehicle_gateway,
         ), patch(
-            "orchestration_service.dependencies.build_zone_gateway",
+            "orchestration_service.saga.bootstrap.build_zone_gateway",
             return_value=zone_gateway,
         ), patch(
-            "orchestration_service.dependencies.build_parking_command_gateway",
+            "orchestration_service.saga.bootstrap.build_parking_command_gateway",
             return_value=parking_command_gateway,
         ), patch(
-            "orchestration_service.dependencies.build_parking_query_gateway",
+            "orchestration_service.saga.bootstrap.build_parking_query_gateway",
             return_value=parking_query_gateway,
         ):
             # When
@@ -144,16 +146,16 @@ class OrchestrationParkingCommandGrpcAcceptanceTests(TransactionTestCase):
         parking_query_gateway = FakeParkingQueryGateway(call_log=[])
 
         with patch(
-            "orchestration_service.dependencies.build_vehicle_gateway",
+            "orchestration_service.saga.bootstrap.build_vehicle_gateway",
             return_value=vehicle_gateway,
         ), patch(
-            "orchestration_service.dependencies.build_zone_gateway",
+            "orchestration_service.saga.bootstrap.build_zone_gateway",
             return_value=zone_gateway,
         ), patch(
-            "orchestration_service.dependencies.build_parking_command_gateway",
+            "orchestration_service.saga.bootstrap.build_parking_command_gateway",
             return_value=parking_command_gateway,
         ), patch(
-            "orchestration_service.dependencies.build_parking_query_gateway",
+            "orchestration_service.saga.bootstrap.build_parking_query_gateway",
             return_value=parking_query_gateway,
         ):
             # When

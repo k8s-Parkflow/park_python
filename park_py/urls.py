@@ -25,7 +25,7 @@ from park_py.openapi import openapi_json_view
 from park_py.openapi import swagger_ui_view
 from park_py.swagger_views import openapi_json
 from park_py.swagger_views import swagger_ui
-from parking_query_service.views import availability
+from parking_query_service.parking_view.interfaces.http.views import availability
 
 urlpatterns = [
     path("openapi.json", openapi_json),

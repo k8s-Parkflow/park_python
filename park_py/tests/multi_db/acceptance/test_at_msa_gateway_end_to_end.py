@@ -226,7 +226,7 @@ class MsaGatewayEndToEndAcceptanceTests(TestCase):
 
     def _patch_gateways(self):
         return patch.multiple(
-            "orchestration_service.dependencies",
+            "orchestration_service.saga.bootstrap",
             build_vehicle_gateway=lambda: self.vehicle_gateway,
             build_zone_gateway=lambda: self.zone_gateway,
             build_parking_command_gateway=lambda: self.parking_command_gateway,
