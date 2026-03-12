@@ -1,12 +1,8 @@
-from parking_query_service.clients.grpc.vehicle import VehicleGrpcClient
-from parking_query_service.repositories.current_location_repository import (
-    CurrentLocationRepository,
+from parking_query_service.parking_view.bootstrap import build_get_current_location
+from parking_query_service.parking_view.application.use_cases.get_current_location import (
+    CurrentLocationService,
 )
-from parking_query_service.services.current_location_service import CurrentLocationService
 
 
 def build_current_location_service() -> CurrentLocationService:
-    return CurrentLocationService(
-        current_location_repository=CurrentLocationRepository(),
-        vehicle_lookup=VehicleGrpcClient(),
-    )
+    return build_get_current_location()

@@ -16,9 +16,10 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from park_py.error_handling import ApplicationError, ErrorCode
-from parking_query_service.dependencies import build_current_location_service
 from parking_query_service.models import CurrentParkingView
 from parking_query_service.models import ZoneAvailability
+from parking_query_service.parking_view.bootstrap import build_get_current_location
+from parking_query_service.parking_view.bootstrap import build_get_zone_availability
 from parking_query_service.parking_view.interfaces.http.forms import CurrentLocationQueryForm
 from parking_query_service.parking_view.interfaces.http.serializers import (
     ErrorResponseSerializer,
@@ -56,7 +57,7 @@ def get_current_location(_request: HttpRequest, vehicle_num: str) -> JsonRespons
     if not form.is_valid():
         raise ValidationError(form.errors)
 
-    payload = build_current_location_service().get_current_location(
+    payload = build_get_current_location().get_current_location(
         form.cleaned_data["vehicle_num"]
     )
     return JsonResponse(payload, status=200)
@@ -169,7 +170,7 @@ def restore_parking_exit_projection(request) -> JsonResponse:
 )
 @api_view(["GET"])
 def availability(request: HttpRequest) -> Response:
-    payload = ZoneAvailabilityService().get(
+    payload = build_get_zone_availability().get(
         slot_type=request.GET.get("slot_type", ""),
     )
     return Response(payload)
