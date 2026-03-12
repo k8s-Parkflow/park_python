@@ -1,8 +1,3 @@
-from orchestration_service.clients.grpc.parking_command import ParkingCommandGrpcClient
-from orchestration_service.clients.grpc.parking_query import ParkingQueryGrpcClient
-from orchestration_service.clients.grpc.vehicle import VehicleGrpcClient
-from orchestration_service.clients.grpc.zone import ZoneGrpcClient
-from orchestration_service.repositories.operation import SagaOperationRepository
 from orchestration_service.saga.application.use_cases.entry_saga import (
     EntrySagaOrchestrationService,
 )
@@ -11,6 +6,17 @@ from orchestration_service.saga.application.use_cases.exit_saga import (
 )
 from orchestration_service.saga.application.use_cases.operation_status import (
     OperationStatusQueryService,
+)
+from orchestration_service.saga.infrastructure.clients.grpc.parking_command import (
+    ParkingCommandGrpcClient,
+)
+from orchestration_service.saga.infrastructure.clients.grpc.parking_query import (
+    ParkingQueryGrpcClient,
+)
+from orchestration_service.saga.infrastructure.clients.grpc.vehicle import VehicleGrpcClient
+from orchestration_service.saga.infrastructure.clients.grpc.zone import ZoneGrpcClient
+from orchestration_service.saga.infrastructure.repositories.operation import (
+    SagaOperationRepository,
 )
 
 
