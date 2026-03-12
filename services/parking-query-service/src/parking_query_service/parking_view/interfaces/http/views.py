@@ -18,6 +18,13 @@ from rest_framework.response import Response
 from park_py.error_handling import ApplicationError, ErrorCode
 from parking_query_service.models import CurrentParkingView
 from parking_query_service.models import ZoneAvailability
+from parking_query_service.parking_view.application.use_cases.internal_projection import (
+    get_current_parking,
+    project_entry,
+    project_exit,
+    restore_exit,
+    revert_entry,
+)
 from parking_query_service.parking_view.bootstrap import build_get_current_location
 from parking_query_service.parking_view.bootstrap import build_get_zone_availability
 from parking_query_service.parking_view.interfaces.http.forms import CurrentLocationQueryForm
@@ -26,11 +33,6 @@ from parking_query_service.parking_view.interfaces.http.serializers import (
     TotalAvailabilitySerializer,
     TypedAvailabilitySerializer,
 )
-from parking_query_service.services import get_current_parking
-from parking_query_service.services import project_entry
-from parking_query_service.services import project_exit
-from parking_query_service.services import restore_exit
-from parking_query_service.services import revert_entry
 from parking_query_service.services.zone_availability_service import (
     ZoneAvailabilityService,
 )

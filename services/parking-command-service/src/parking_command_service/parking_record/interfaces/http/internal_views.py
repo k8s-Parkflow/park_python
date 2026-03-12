@@ -9,10 +9,12 @@ from django.views.decorators.http import require_POST
 from park_py.error_handling import ApplicationError, ErrorCode
 from parking_command_service.models import ParkingHistory
 from parking_command_service.models import ParkingSlot
-from parking_command_service.services import cancel_entry
-from parking_command_service.services import enter_parking
-from parking_command_service.services import exit_parking
-from parking_command_service.services import restore_exit
+from parking_command_service.parking_record.application.use_cases.internal_commands import (
+    cancel_entry,
+    enter_parking,
+    exit_parking,
+    restore_exit,
+)
 
 
 def _payload(request) -> dict:
