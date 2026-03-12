@@ -7,6 +7,7 @@ import "common/v1/common.proto";
 service ZoneService {
   rpc ValidateEntryPolicy(ValidateEntryPolicyRequest) returns (ValidateEntryPolicyResponse);
   rpc GetZone(GetZoneRequest) returns (GetZoneResponse);
+  rpc GetZoneSlots(GetZoneSlotsRequest) returns (GetZoneSlotsResponse);
 }
 
 message ValidateEntryPolicyRequest {
@@ -33,4 +34,20 @@ message GetZoneResponse {
   int64 zone_id = 1;
   string zone_name = 2;
   bool is_active = 3;
+}
+
+message GetZoneSlotsRequest {
+  int64 zone_id = 1;
+}
+
+message ZoneSlot {
+  int64 slot_id = 1;
+  string slot_code = 2;
+  string slot_type = 3;
+  bool is_active = 4;
+}
+
+message GetZoneSlotsResponse {
+  int64 zone_id = 1;
+  repeated ZoneSlot slots = 2;
 }

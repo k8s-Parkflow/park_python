@@ -52,3 +52,7 @@ class ZonePolicyService:
 
     def get_zone(self, *, zone_id: int) -> Zone:
         return self.zone_repository.get(zone_id=zone_id)
+
+    def get_zone_slots(self, *, zone_id: int):
+        self.zone_repository.get(zone_id=zone_id)
+        return self.parking_slot_repository.list_by_zone_id(zone_id=zone_id)
