@@ -32,9 +32,16 @@ def build_get_zone_slots_response(*, zone_id: int, slots) -> zone_pb2.GetZoneSlo
     )
 
 
+def build_list_parking_slots_response(*, slots) -> zone_pb2.ListParkingSlotsResponse:
+    return zone_pb2.ListParkingSlotsResponse(
+        slots=[build_zone_slot(slot=slot) for slot in slots],
+    )
+
+
 def build_zone_slot(*, slot: ParkingSlot) -> zone_pb2.ZoneSlot:
     return zone_pb2.ZoneSlot(
         slot_id=slot.slot_id,
+        zone_id=slot.zone_id,
         slot_code=slot.slot_code,
         slot_type=slot.slot_type.type_name,
         is_active=slot.is_active,

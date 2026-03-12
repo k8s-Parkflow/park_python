@@ -9,6 +9,7 @@ from contracts.gen.python.zone.v1 import zone_pb2
 class _FakeZoneStub:
     def __init__(self) -> None:
         self.request = None
+        self.list_request = None
 
     def ValidateEntryPolicy(self, request, timeout=None):  # noqa: N802, ARG002
         self.request = request
@@ -20,6 +21,20 @@ class _FakeZoneStub:
             entry_allowed=True,
             zone_name="ZONE-1",
             slot_code="A001",
+        )
+
+    def ListParkingSlots(self, request, timeout=None):  # noqa: N802, ARG002
+        self.list_request = request
+        return zone_pb2.ListParkingSlotsResponse(
+            slots=[
+                zone_pb2.ZoneSlot(
+                    slot_id=11,
+                    zone_id=1,
+                    slot_code="A001",
+                    slot_type="GENERAL",
+                    is_active=True,
+                )
+            ]
         )
 
 
@@ -65,4 +80,25 @@ class ParkingCommandZoneGrpcClientContractTests(SimpleTestCase):
                 "zone_name": "ZONE-1",
                 "slot_code": "A001",
             },
+        )
+
+    def test_should_build_list_parking_slots_request__when_called(self) -> None:
+        from parking_command_service.clients.grpc.zone import ZoneGrpcClient
+
+        stub = _FakeZoneStub()
+        client = ZoneGrpcClient(stub=stub)
+
+        payload = client.list_parking_slots()
+
+        self.assertIsNotNone(stub.list_request)
+        self.assertEqual(
+            payload,
+            [
+                {
+                    "slot_id": 11,
+                    "zone_id": 1,
+                    "slot_code": "A001",
+                    "is_active": True,
+                }
+            ],
         )

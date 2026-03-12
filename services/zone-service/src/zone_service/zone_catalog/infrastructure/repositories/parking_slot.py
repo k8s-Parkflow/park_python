@@ -16,3 +16,10 @@ class ParkingSlotRepository:
             .annotate(slot_type_name=F("slot_type__type_name"))
             .order_by("slot_code", "slot_id")
         )
+
+    def list_all(self):
+        return (
+            ParkingSlot.objects.select_related("zone", "slot_type")
+            .annotate(slot_type_name=F("slot_type__type_name"))
+            .order_by("zone_id", "slot_code", "slot_id")
+        )

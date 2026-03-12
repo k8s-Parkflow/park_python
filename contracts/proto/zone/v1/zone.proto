@@ -8,6 +8,7 @@ service ZoneService {
   rpc ValidateEntryPolicy(ValidateEntryPolicyRequest) returns (ValidateEntryPolicyResponse);
   rpc GetZone(GetZoneRequest) returns (GetZoneResponse);
   rpc GetZoneSlots(GetZoneSlotsRequest) returns (GetZoneSlotsResponse);
+  rpc ListParkingSlots(ListParkingSlotsRequest) returns (ListParkingSlotsResponse);
 }
 
 message ValidateEntryPolicyRequest {
@@ -42,12 +43,19 @@ message GetZoneSlotsRequest {
 
 message ZoneSlot {
   int64 slot_id = 1;
-  string slot_code = 2;
-  string slot_type = 3;
-  bool is_active = 4;
+  int64 zone_id = 2;
+  string slot_code = 3;
+  string slot_type = 4;
+  bool is_active = 5;
 }
 
 message GetZoneSlotsResponse {
   int64 zone_id = 1;
   repeated ZoneSlot slots = 2;
+}
+
+message ListParkingSlotsRequest {}
+
+message ListParkingSlotsResponse {
+  repeated ZoneSlot slots = 1;
 }

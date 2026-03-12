@@ -6,8 +6,10 @@ from unittest.mock import patch
 from django.core.management import call_command
 from django.test import TestCase, override_settings
 
+from park_py.tests.grpc_support import build_direct_stub
 from orchestration_service.application.errors import DownstreamError
 from orchestration_service.models import SagaOperation
+from parking_command_service.clients.grpc.zone import ZoneGrpcClient
 from parking_command_service.domains.parking_record.application.exceptions import (
     ParkingRecordBadRequestError,
     ParkingRecordConflictError,
@@ -22,6 +24,7 @@ from vehicle_service.models.enums import VehicleType
 from vehicle_service.services.lookup import VehicleLookupService
 from zone_service.models import ParkingSlot as ZoneParkingSlot
 from zone_service.models import SlotType, Zone
+from zone_service.zone_catalog.interfaces.grpc.servicers import ZoneGrpcServicer
 from zone_service.services.policy import ZonePolicyService
 
 
@@ -233,6 +236,18 @@ class MsaGatewayEndToEndAcceptanceTests(TestCase):
             build_parking_query_gateway=lambda: self.parking_query_gateway,
         )
 
+    def _sync_slot_lock_anchors(self) -> None:
+        with patch(
+            "parking_command_service.management.commands.sync_slot_lock_anchors.ZoneGrpcClient",
+            return_value=ZoneGrpcClient(
+                stub=build_direct_stub(
+                    servicer=ZoneGrpcServicer(),
+                    method_names=["ListParkingSlots"],
+                )
+            ),
+        ):
+            call_command("sync_slot_lock_anchors")
+
     def _seed_vehicle_and_slot(self) -> None:
         Vehicle.objects.using("vehicle").create(
             vehicle_num="12가3456",
@@ -250,7 +265,7 @@ class MsaGatewayEndToEndAcceptanceTests(TestCase):
 
     def test_should_complete_entry_across_service_databases__when_gateway_runs_end_to_end(self) -> None:
         self._seed_vehicle_and_slot()
-        call_command("sync_slot_lock_anchors")
+        self._sync_slot_lock_anchors()
 
         with self._patch_gateways():
             response = self.client.post(
@@ -279,7 +294,7 @@ class MsaGatewayEndToEndAcceptanceTests(TestCase):
 
     def test_should_complete_exit_across_service_databases__when_gateway_runs_end_to_end(self) -> None:
         self._seed_vehicle_and_slot()
-        call_command("sync_slot_lock_anchors")
+        self._sync_slot_lock_anchors()
 
         with self._patch_gateways():
             self.client.post(

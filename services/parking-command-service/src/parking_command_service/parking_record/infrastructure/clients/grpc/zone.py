@@ -69,3 +69,24 @@ class ZoneGrpcClient(GrpcClientBase):
             "zone_name": response.zone_name,
             "is_active": response.is_active,
         }
+
+    def list_parking_slots(self) -> list[dict]:
+        stub = self.get_stub(zone_pb2_grpc.ZoneServiceStub)
+        request = zone_pb2.ListParkingSlotsRequest()
+
+        try:
+            response = stub.ListParkingSlots(request, timeout=self.timeout)
+        except grpc.RpcError as error:
+            raise DownstreamDependencyError(
+                message="구역 슬롯 목록 조회 서비스 호출에 실패했습니다."
+            ) from error
+
+        return [
+            {
+                "slot_id": slot.slot_id,
+                "zone_id": slot.zone_id,
+                "slot_code": slot.slot_code,
+                "is_active": slot.is_active,
+            }
+            for slot in response.slots
+        ]

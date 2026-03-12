@@ -25,7 +25,7 @@ _sym_db = _symbol_database.Default()
 from common.v1 import common_pb2 as common_dot_v1_dot_common__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x12zone/v1/zone.proto\x12\x07zone.v1\x1a\x16\x63ommon/v1/common.proto\"o\n\x1aValidateEntryPolicyRequest\x12*\n\x07\x63ontext\x18\x01 \x01(\x0b\x32\x19.common.v1.RequestContext\x12\x0f\n\x07slot_id\x18\x02 \x01(\x03\x12\x14\n\x0cvehicle_type\x18\x03 \x01(\t\"\xa4\x01\n\x1bValidateEntryPolicyResponse\x12\x0f\n\x07slot_id\x18\x01 \x01(\x03\x12\x0f\n\x07zone_id\x18\x02 \x01(\x03\x12\x11\n\tslot_type\x18\x03 \x01(\t\x12\x13\n\x0bzone_active\x18\x04 \x01(\x08\x12\x15\n\rentry_allowed\x18\x05 \x01(\x08\x12\x11\n\tzone_name\x18\x06 \x01(\t\x12\x11\n\tslot_code\x18\x07 \x01(\t\"!\n\x0eGetZoneRequest\x12\x0f\n\x07zone_id\x18\x01 \x01(\x03\"H\n\x0fGetZoneResponse\x12\x0f\n\x07zone_id\x18\x01 \x01(\x03\x12\x11\n\tzone_name\x18\x02 \x01(\t\x12\x11\n\tis_active\x18\x03 \x01(\x08\"&\n\x13GetZoneSlotsRequest\x12\x0f\n\x07zone_id\x18\x01 \x01(\x03\"T\n\x08ZoneSlot\x12\x0f\n\x07slot_id\x18\x01 \x01(\x03\x12\x11\n\tslot_code\x18\x02 \x01(\t\x12\x11\n\tslot_type\x18\x03 \x01(\t\x12\x11\n\tis_active\x18\x04 \x01(\x08\"I\n\x14GetZoneSlotsResponse\x12\x0f\n\x07zone_id\x18\x01 \x01(\x03\x12 \n\x05slots\x18\x02 \x03(\x0b\x32\x11.zone.v1.ZoneSlot2\xfa\x01\n\x0bZoneService\x12`\n\x13ValidateEntryPolicy\x12#.zone.v1.ValidateEntryPolicyRequest\x1a$.zone.v1.ValidateEntryPolicyResponse\x12<\n\x07GetZone\x12\x17.zone.v1.GetZoneRequest\x1a\x18.zone.v1.GetZoneResponse\x12K\n\x0cGetZoneSlots\x12\x1c.zone.v1.GetZoneSlotsRequest\x1a\x1d.zone.v1.GetZoneSlotsResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x12zone/v1/zone.proto\x12\x07zone.v1\x1a\x16\x63ommon/v1/common.proto\"o\n\x1aValidateEntryPolicyRequest\x12*\n\x07\x63ontext\x18\x01 \x01(\x0b\x32\x19.common.v1.RequestContext\x12\x0f\n\x07slot_id\x18\x02 \x01(\x03\x12\x14\n\x0cvehicle_type\x18\x03 \x01(\t\"\xa4\x01\n\x1bValidateEntryPolicyResponse\x12\x0f\n\x07slot_id\x18\x01 \x01(\x03\x12\x0f\n\x07zone_id\x18\x02 \x01(\x03\x12\x11\n\tslot_type\x18\x03 \x01(\t\x12\x13\n\x0bzone_active\x18\x04 \x01(\x08\x12\x15\n\rentry_allowed\x18\x05 \x01(\x08\x12\x11\n\tzone_name\x18\x06 \x01(\t\x12\x11\n\tslot_code\x18\x07 \x01(\t\"!\n\x0eGetZoneRequest\x12\x0f\n\x07zone_id\x18\x01 \x01(\x03\"H\n\x0fGetZoneResponse\x12\x0f\n\x07zone_id\x18\x01 \x01(\x03\x12\x11\n\tzone_name\x18\x02 \x01(\t\x12\x11\n\tis_active\x18\x03 \x01(\x08\"&\n\x13GetZoneSlotsRequest\x12\x0f\n\x07zone_id\x18\x01 \x01(\x03\"e\n\x08ZoneSlot\x12\x0f\n\x07slot_id\x18\x01 \x01(\x03\x12\x0f\n\x07zone_id\x18\x02 \x01(\x03\x12\x11\n\tslot_code\x18\x03 \x01(\t\x12\x11\n\tslot_type\x18\x04 \x01(\t\x12\x11\n\tis_active\x18\x05 \x01(\x08\"I\n\x14GetZoneSlotsResponse\x12\x0f\n\x07zone_id\x18\x01 \x01(\x03\x12 \n\x05slots\x18\x02 \x03(\x0b\x32\x11.zone.v1.ZoneSlot\"\x19\n\x17ListParkingSlotsRequest\"<\n\x18ListParkingSlotsResponse\x12 \n\x05slots\x18\x01 \x03(\x0b\x32\x11.zone.v1.ZoneSlot2\xd3\x02\n\x0bZoneService\x12`\n\x13ValidateEntryPolicy\x12#.zone.v1.ValidateEntryPolicyRequest\x1a$.zone.v1.ValidateEntryPolicyResponse\x12<\n\x07GetZone\x12\x17.zone.v1.GetZoneRequest\x1a\x18.zone.v1.GetZoneResponse\x12K\n\x0cGetZoneSlots\x12\x1c.zone.v1.GetZoneSlotsRequest\x1a\x1d.zone.v1.GetZoneSlotsResponse\x12W\n\x10ListParkingSlots\x12 .zone.v1.ListParkingSlotsRequest\x1a!.zone.v1.ListParkingSlotsResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -43,9 +43,13 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_GETZONESLOTSREQUEST']._serialized_start=444
   _globals['_GETZONESLOTSREQUEST']._serialized_end=482
   _globals['_ZONESLOT']._serialized_start=484
-  _globals['_ZONESLOT']._serialized_end=568
-  _globals['_GETZONESLOTSRESPONSE']._serialized_start=570
-  _globals['_GETZONESLOTSRESPONSE']._serialized_end=643
-  _globals['_ZONESERVICE']._serialized_start=646
-  _globals['_ZONESERVICE']._serialized_end=896
+  _globals['_ZONESLOT']._serialized_end=585
+  _globals['_GETZONESLOTSRESPONSE']._serialized_start=587
+  _globals['_GETZONESLOTSRESPONSE']._serialized_end=660
+  _globals['_LISTPARKINGSLOTSREQUEST']._serialized_start=662
+  _globals['_LISTPARKINGSLOTSREQUEST']._serialized_end=687
+  _globals['_LISTPARKINGSLOTSRESPONSE']._serialized_start=689
+  _globals['_LISTPARKINGSLOTSRESPONSE']._serialized_end=749
+  _globals['_ZONESERVICE']._serialized_start=752
+  _globals['_ZONESERVICE']._serialized_end=1091
 # @@protoc_insertion_point(module_scope)
