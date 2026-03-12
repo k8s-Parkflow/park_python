@@ -1,4 +1,4 @@
-from parking_command_service.domains.parking_record.infrastructure.repositories import (
+from parking_command_service.parking_record.infrastructure.repositories.parking_record_repository import (
     DjangoParkingRecordRepository,
 )
 

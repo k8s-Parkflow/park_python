@@ -44,7 +44,7 @@ def post_entry(
     if entry_at is not None:
         payload["entry_at"] = entry_at.isoformat()
     with patch(
-        "parking_command_service.domains.parking_record.presentation.http.views.get_parking_record_command_service",
+        "parking_command_service.parking_record.interfaces.http.views.get_parking_record_command_service",
         return_value=build_test_command_service(),
     ):
         return client.post(
@@ -74,7 +74,7 @@ def post_exit(
     if exit_at is not None:
         payload["exit_at"] = exit_at.isoformat()
     with patch(
-        "parking_command_service.domains.parking_record.presentation.http.views.get_parking_record_command_service",
+        "parking_command_service.parking_record.interfaces.http.views.get_parking_record_command_service",
         return_value=build_test_command_service(),
     ):
         return client.post(

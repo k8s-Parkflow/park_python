@@ -3,7 +3,7 @@ from __future__ import annotations
 import grpc
 
 from contracts.gen.python.parking_command.v1 import parking_command_pb2_grpc
-from parking_command_service.domains.parking_record.application.exceptions import (
+from parking_command_service.parking_record.application.exceptions import (
     ParkingRecordBadRequestError,
     ParkingRecordConflictError,
     ParkingRecordNotFoundError,
@@ -85,6 +85,7 @@ class ParkingCommandGrpcServicer(parking_command_pb2_grpc.ParkingCommandServiceS
 def _abort_for_record_error(*, context, error) -> None:
     if isinstance(error, ParkingRecordNotFoundError):
         context.abort(grpc.StatusCode.NOT_FOUND, str(error))
-    if isinstance(error, ParkingRecordBadRequestError):
+    elif isinstance(error, ParkingRecordBadRequestError):
         context.abort(grpc.StatusCode.INVALID_ARGUMENT, str(error))
-    context.abort(grpc.StatusCode.FAILED_PRECONDITION, str(error))
+    else:
+        context.abort(grpc.StatusCode.FAILED_PRECONDITION, str(error))

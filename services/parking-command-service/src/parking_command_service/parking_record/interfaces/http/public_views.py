@@ -1,4 +1,4 @@
-from parking_command_service.domains.parking_record.presentation.http.views import (
+from parking_command_service.parking_record.interfaces.http.views import (
     ParkingEntryView,
     ParkingExitView,
 )

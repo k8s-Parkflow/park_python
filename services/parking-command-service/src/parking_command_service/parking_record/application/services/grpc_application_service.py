@@ -6,8 +6,8 @@ from typing import Any
 from django.db import transaction
 from django.utils import timezone
 
-from parking_command_service.domains.parking_record.application.dtos import EntryCommand, ExitCommand
-from parking_command_service.domains.parking_record.application.exceptions import (
+from parking_command_service.parking_record.application.dtos import EntryCommand, ExitCommand
+from parking_command_service.parking_record.application.exceptions import (
     ParkingRecordConflictError,
     ParkingRecordNotFoundError,
 )
