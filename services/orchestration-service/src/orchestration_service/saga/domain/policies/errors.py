@@ -1,5 +1,5 @@
-from park_py.error_handling import ErrorCode
-from park_py.error_handling.error_codes import serialize_error_code
+from shared.error_handling import ErrorCode
+from shared.error_handling.error_codes import serialize_error_code
 
 
 class GatewayErrorMapper:

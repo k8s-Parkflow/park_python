@@ -3,7 +3,7 @@ from __future__ import annotations
 from django.db import IntegrityError, transaction
 from django.utils.dateparse import parse_datetime
 
-from park_py.error_handling import ApplicationError, ErrorCode
+from shared.error_handling import ApplicationError, ErrorCode
 
 from parking_command_service.models import ParkingCommandOperation
 from parking_command_service.models import ParkingHistory

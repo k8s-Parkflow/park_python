@@ -10,8 +10,8 @@ from orchestration_service.saga.bootstrap import (
     build_exit_saga_service,
     build_operation_status_query_service,
 )
-from park_py.error_handling.error_codes import ErrorCode
-from park_py.error_handling.responses import build_error_response
+from shared.error_handling.error_codes import ErrorCode
+from shared.error_handling.responses import build_error_response
 
 
 def _load_json_body(request: HttpRequest) -> dict:

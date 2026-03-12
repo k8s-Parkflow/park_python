@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from http import HTTPStatus
 
-from park_py.error_handling import ApplicationError, ErrorCode
+from shared.error_handling import ApplicationError, ErrorCode
 
 
 class ParkingRecordNotFoundError(ApplicationError):

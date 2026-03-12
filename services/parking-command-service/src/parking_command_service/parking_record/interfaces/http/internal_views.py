@@ -6,7 +6,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from park_py.error_handling import ApplicationError, ErrorCode
+from shared.error_handling import ApplicationError, ErrorCode
 from parking_command_service.models import ParkingHistory
 from parking_command_service.models import ParkingSlot
 from parking_command_service.parking_record.application.use_cases.internal_commands import (

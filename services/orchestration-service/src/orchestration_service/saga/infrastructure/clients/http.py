@@ -11,7 +11,7 @@ from urllib.request import urlopen
 
 from orchestration_service.saga.domain.policies.retry import RetryPolicy
 from orchestration_service.saga.domain.policies.timeout import TimeoutPolicy
-from park_py.error_handling import ApplicationError, ErrorCode
+from shared.error_handling import ApplicationError, ErrorCode
 
 
 class DownstreamHttpError(Exception):

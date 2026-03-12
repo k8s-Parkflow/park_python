@@ -1,7 +1,7 @@
 from django.urls import include, path
 
-from park_py.error_handling import handler404 as json_handler404
-from park_py.error_handling import handler500 as json_handler500
+from shared.error_handling import handler404 as json_handler404
+from shared.error_handling import handler500 as json_handler500
 from parking_query_service.parking_view.interfaces.http.views import availability
 
 

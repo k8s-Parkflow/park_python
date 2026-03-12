@@ -1,7 +1,7 @@
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
 
-from park_py.error_handling import ApplicationError, ErrorCode
+from shared.error_handling import ApplicationError, ErrorCode
 from zone_service.zone_catalog.domain.entities import ParkingSlot
 from zone_service.zone_catalog.infrastructure.repositories import ParkingSlotRepository
 
