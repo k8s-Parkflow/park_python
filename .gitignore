@@ -27,6 +27,7 @@ AGENTS.md
 # Keep README files anywhere
 !README.md
 !**/README.md
+!/.github/*.md
 
 # Keep only entity docs under docs/
 /docs/*
