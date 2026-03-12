@@ -1,26 +1,15 @@
-from rest_framework import serializers
+from parking_query_service.parking_view.interfaces.http.serializers import (
+    AvailabilityQuerySerializer,
+    ErrorBodySerializer,
+    ErrorResponseSerializer,
+    TotalAvailabilitySerializer,
+    TypedAvailabilitySerializer,
+)
 
-
-class AvailabilityQuerySerializer(serializers.Serializer):
-    slot_type = serializers.CharField(required=False)
-
-
-class TypedAvailabilitySerializer(serializers.Serializer):
-    slotType = serializers.CharField()
-    availableCount = serializers.IntegerField()
-
-
-class TotalAvailabilitySerializer(serializers.Serializer):
-    availableCount = serializers.IntegerField()
-
-
-class ErrorBodySerializer(serializers.Serializer):
-    code = serializers.CharField()
-    message = serializers.CharField()
-    details = serializers.DictField(
-        child=serializers.ListField(child=serializers.CharField()),
-    )
-
-
-class ErrorResponseSerializer(serializers.Serializer):
-    error = ErrorBodySerializer()
+__all__ = [
+    "AvailabilityQuerySerializer",
+    "TypedAvailabilitySerializer",
+    "TotalAvailabilitySerializer",
+    "ErrorBodySerializer",
+    "ErrorResponseSerializer",
+]
