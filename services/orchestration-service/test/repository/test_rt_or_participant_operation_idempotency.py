@@ -23,7 +23,9 @@ class ParticipantOperationIdempotencyTests(TestCase):
     def test_should_reuse_cached_entry_result__when_same_command_operation_retries(self) -> None:
         """[RT-OR-PART-01] command write 멱등성"""
 
-        from parking_command_service.services import enter_parking
+        from parking_command_service.parking_record.application.use_cases.internal_commands import (
+            enter_parking,
+        )
 
         zone = Zone.objects.create(zone_name="IDEMP-A")
         slot_type = SlotType.objects.create(type_name="GENERAL")
