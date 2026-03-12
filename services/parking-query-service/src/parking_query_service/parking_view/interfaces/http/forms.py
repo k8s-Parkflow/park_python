@@ -2,7 +2,7 @@ import re
 
 from django import forms
 
-from parking_query_service.vehicle_num import normalize_vehicle_num
+from parking_query_service.parking_view.shared.vehicle_num import normalize_vehicle_num
 
 
 VEHICLE_NUM_PATTERN = re.compile(r"^\d{2,3}[가-힣]\d{4}$")

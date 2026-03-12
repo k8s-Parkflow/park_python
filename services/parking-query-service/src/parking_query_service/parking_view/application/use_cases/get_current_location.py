@@ -6,7 +6,7 @@ from park_py.error_handling.exceptions import ApplicationError
 from parking_query_service.parking_view.domain.ports import CurrentLocationRepositoryProtocol
 from parking_query_service.parking_view.domain.ports import CurrentLocationSource
 from parking_query_service.parking_view.domain.ports import VehicleLookupPort
-from parking_query_service.vehicle_num import normalize_vehicle_num
+from parking_query_service.parking_view.shared.vehicle_num import normalize_vehicle_num
 
 
 class VehicleNotFoundError(ApplicationError):

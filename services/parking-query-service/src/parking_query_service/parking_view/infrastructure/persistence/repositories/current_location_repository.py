@@ -4,7 +4,7 @@ from parking_query_service.models.current_parking_view import CurrentParkingView
 from parking_query_service.parking_view.infrastructure.persistence.repositories.normalized_vehicle_num import (
     with_normalized_vehicle_num,
 )
-from parking_query_service.vehicle_num import normalize_vehicle_num
+from parking_query_service.parking_view.shared.vehicle_num import normalize_vehicle_num
 
 
 class CurrentLocationRepository:
