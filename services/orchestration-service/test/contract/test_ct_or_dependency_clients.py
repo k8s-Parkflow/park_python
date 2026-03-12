@@ -15,7 +15,9 @@ class OrchestrationDependencyClientContractTests(SimpleTestCase):
     ) -> None:
         """[CT-OR-CLIENT-01] vehicle-service 클라이언트 계약"""
 
-        from orchestration_service.clients.vehicle import VehicleServiceClient
+        from orchestration_service.saga.infrastructure.clients.vehicle import (
+            VehicleServiceClient,
+        )
 
         # Given
         payload = {
@@ -38,7 +40,7 @@ class OrchestrationDependencyClientContractTests(SimpleTestCase):
     def test_should_parse_zone_policy_response__when_zone_contract_matches(self) -> None:
         """[CT-OR-CLIENT-02] zone-service 클라이언트 계약"""
 
-        from orchestration_service.clients.zone import ZoneServiceClient
+        from orchestration_service.saga.infrastructure.clients.zone import ZoneServiceClient
 
         # Given
         payload = {
@@ -69,7 +71,9 @@ class OrchestrationDependencyClientContractTests(SimpleTestCase):
     ) -> None:
         """[CT-OR-CLIENT-03] parking-command-service 클라이언트 계약"""
 
-        from orchestration_service.clients.parking_command import ParkingCommandServiceClient
+        from orchestration_service.saga.infrastructure.clients.parking_command import (
+            ParkingCommandServiceClient,
+        )
 
         # Given
         payload = {
@@ -100,7 +104,9 @@ class OrchestrationDependencyClientContractTests(SimpleTestCase):
     ) -> None:
         """[CT-OR-CLIENT-04] parking-query-service 클라이언트 계약"""
 
-        from orchestration_service.clients.parking_query import ParkingQueryServiceClient
+        from orchestration_service.saga.infrastructure.clients.parking_query import (
+            ParkingQueryServiceClient,
+        )
 
         # Given
         payload = {

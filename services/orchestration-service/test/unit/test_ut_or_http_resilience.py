@@ -19,7 +19,7 @@ class OrchestrationHttpResilienceTests(SimpleTestCase):
     def test_should_retry_with_exponential_backoff__when_timeout_error_is_retryable(self) -> None:
         """[UT-OR-HTTP-01] retry/timeout 실행 경로"""
 
-        from orchestration_service.clients.http import JsonHttpClient
+        from orchestration_service.saga.infrastructure.clients.http import JsonHttpClient
 
         responses = [socket.timeout("timeout"), socket.timeout("timeout"), {"ok": True}]
         sleep_recorder = Mock()
@@ -51,7 +51,7 @@ class OrchestrationHttpResilienceTests(SimpleTestCase):
         """[UT-OR-HTTP-02] retry budget 소진"""
 
         from park_py.error_handling import ApplicationError
-        from orchestration_service.clients.http import JsonHttpClient
+        from orchestration_service.saga.infrastructure.clients.http import JsonHttpClient
 
         sleep_recorder = Mock()
 
@@ -78,7 +78,7 @@ class OrchestrationHttpResilienceTests(SimpleTestCase):
         """[UT-OR-HTTP-03] 허용되지 않은 URL scheme"""
 
         from park_py.error_handling import ApplicationError
-        from orchestration_service.clients.http import JsonHttpClient
+        from orchestration_service.saga.infrastructure.clients.http import JsonHttpClient
 
         client = JsonHttpClient(sender=Mock())
 
@@ -97,8 +97,10 @@ class OrchestrationHttpResilienceTests(SimpleTestCase):
     def test_should_wrap_non_json_http_error_body__when_downstream_returns_html(self) -> None:
         """[UT-OR-HTTP-04] 비 JSON HTTP 오류 본문 fallback"""
 
-        from orchestration_service.clients.http import DownstreamHttpError
-        from orchestration_service.clients.http import JsonHttpClient
+        from orchestration_service.saga.infrastructure.clients.http import (
+            DownstreamHttpError,
+            JsonHttpClient,
+        )
 
         def sender(*, request, timeout):
             raise HTTPError(

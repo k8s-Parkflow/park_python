@@ -7,6 +7,8 @@ from zone_service.repositories.parking_slot import ParkingSlotRepository
 
 
 class ZonePolicyRepositoryTests(TestCase):
+    databases = "__all__"
+
     def test_should_return_slot_with_zone_and_slot_type__when_slot_exists(self) -> None:
         """[RT-ZONE-GRPC-01] 슬롯 조회 저장소"""
 

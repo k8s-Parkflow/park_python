@@ -11,15 +11,17 @@ from park_py.tests.orchestration_service.support import (
 )
 from orchestration_service.clients.grpc.zone import ZoneGrpcClient
 from orchestration_service.clients.grpc.vehicle import VehicleGrpcClient
-from vehicle_service.grpc.servicers import VehicleGrpcServicer
+from vehicle_service.vehicle.interfaces.grpc.servicers import VehicleGrpcServicer
 from vehicle_service.models import Vehicle
 from vehicle_service.models.enums import VehicleType
-from zone_service.grpc.servicers import ZoneGrpcServicer
+from zone_service.zone_catalog.interfaces.grpc.servicers import ZoneGrpcServicer
 from zone_service.models import ParkingSlot, SlotType, Zone
 
 
 @override_settings(ROOT_URLCONF="orchestration_service.urls")
 class OrchestrationVehicleZoneGrpcAcceptanceTests(TransactionTestCase):
+    databases = "__all__"
+
     def test_should_complete_entry_saga_via_vehicle_and_zone_grpc_clients__when_servicers_are_available(self) -> None:
         """[AT-OR-GRPC-ENTRY-01] gRPC 계약 경유 차량/구역 검증"""
 
@@ -53,16 +55,16 @@ class OrchestrationVehicleZoneGrpcAcceptanceTests(TransactionTestCase):
         parking_query_gateway = FakeParkingQueryGateway(call_log=[])
 
         with patch(
-            "orchestration_service.dependencies.build_vehicle_gateway",
+            "orchestration_service.saga.bootstrap.build_vehicle_gateway",
             return_value=vehicle_gateway,
         ), patch(
-            "orchestration_service.dependencies.build_zone_gateway",
+            "orchestration_service.saga.bootstrap.build_zone_gateway",
             return_value=zone_gateway,
         ), patch(
-            "orchestration_service.dependencies.build_parking_command_gateway",
+            "orchestration_service.saga.bootstrap.build_parking_command_gateway",
             return_value=parking_command_gateway,
         ), patch(
-            "orchestration_service.dependencies.build_parking_query_gateway",
+            "orchestration_service.saga.bootstrap.build_parking_query_gateway",
             return_value=parking_query_gateway,
         ):
             # When

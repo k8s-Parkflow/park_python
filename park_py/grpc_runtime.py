@@ -4,10 +4,14 @@ import os
 from dataclasses import dataclass
 from typing import Callable
 
-from parking_command_service.grpc.server import build_parking_command_grpc_server
-from parking_query_service.grpc.server import build_parking_query_grpc_server
-from vehicle_service.grpc.server import build_vehicle_grpc_server
-from zone_service.grpc.server import build_zone_grpc_server
+from parking_command_service.parking_record.interfaces.grpc.server import (
+    build_parking_command_grpc_server,
+)
+from parking_query_service.parking_view.interfaces.grpc.server import (
+    build_parking_query_grpc_server,
+)
+from vehicle_service.vehicle.interfaces.grpc.server import build_vehicle_grpc_server
+from zone_service.zone_catalog.interfaces.grpc.server import build_zone_grpc_server
 
 
 @dataclass(frozen=True)

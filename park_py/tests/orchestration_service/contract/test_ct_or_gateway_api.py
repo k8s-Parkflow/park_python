@@ -7,7 +7,7 @@ from django.test import SimpleTestCase, override_settings
 
 @override_settings(ROOT_URLCONF="orchestration_service.urls")
 class OrchestrationGatewayContractTests(SimpleTestCase):
-    @patch("orchestration_service.views.build_entry_saga_service")
+    @patch("orchestration_service.saga.interfaces.http.views.build_entry_saga_service")
     def test_should_match_entry_gateway_response_schema__when_entry_request_succeeds(
         self,
         build_entry_saga_service,
@@ -48,7 +48,7 @@ class OrchestrationGatewayContractTests(SimpleTestCase):
             },
         )
 
-    @patch("orchestration_service.views.build_exit_saga_service")
+    @patch("orchestration_service.saga.interfaces.http.views.build_exit_saga_service")
     def test_should_match_exit_gateway_error_schema__when_exit_is_compensated(
         self,
         build_exit_saga_service,
@@ -91,7 +91,7 @@ class OrchestrationGatewayContractTests(SimpleTestCase):
             },
         )
 
-    @patch("orchestration_service.views.build_operation_status_query_service")
+    @patch("orchestration_service.saga.interfaces.http.views.build_operation_status_query_service")
     def test_should_match_saga_status_response_schema__when_operation_status_is_requested(
         self,
         build_operation_status_query_service,

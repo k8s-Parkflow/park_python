@@ -8,6 +8,8 @@ from vehicle_service.repositories.vehicle import VehicleRepository
 
 
 class VehicleLookupRepositoryTests(TestCase):
+    databases = "__all__"
+
     def test_should_return_vehicle__when_vehicle_num_exists(self) -> None:
         """[RT-VEHICLE-GRPC-01] 차량 조회 저장소"""
 

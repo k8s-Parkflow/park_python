@@ -1,7 +1,3 @@
-from django.db import models
+from vehicle_service.vehicle.domain.entities import VehicleType
 
-
-class VehicleType(models.TextChoices):
-    General = "GENERAL", "GENERAL"
-    EV = "EV", "EV"
-    Disabled = "DISABLED", "DISABLED"
+__all__ = ["VehicleType"]

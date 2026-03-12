@@ -30,9 +30,11 @@ class OrchestrationCompensationRetryTests(SimpleTestCase):
     def test_should_retry_compensation_with_backoff__when_compensation_eventually_succeeds(self) -> None:
         """[UT-OR-COMP-01] 보상 지수 백오프 재시도"""
 
-        from orchestration_service.application.compensation import CompensationRunner
-        from orchestration_service.application.compensation import CompensationAction
-        from orchestration_service.clients.http import DownstreamHttpError
+        from orchestration_service.saga.application.compensation import CompensationAction
+        from orchestration_service.saga.application.compensation import CompensationRunner
+        from orchestration_service.saga.infrastructure.clients.http import (
+            DownstreamHttpError,
+        )
 
         clock = FrozenClock(timezone.now())
         repository = Mock()
@@ -80,9 +82,11 @@ class OrchestrationCompensationRetryTests(SimpleTestCase):
     def test_should_cancel_saga__when_compensation_deadline_is_exceeded(self) -> None:
         """[UT-OR-COMP-02] 보상 취소 전환"""
 
-        from orchestration_service.application.compensation import CompensationRunner
-        from orchestration_service.application.compensation import CompensationAction
-        from orchestration_service.clients.http import DownstreamHttpError
+        from orchestration_service.saga.application.compensation import CompensationAction
+        from orchestration_service.saga.application.compensation import CompensationRunner
+        from orchestration_service.saga.infrastructure.clients.http import (
+            DownstreamHttpError,
+        )
 
         clock = FrozenClock(timezone.now())
         repository = Mock()
@@ -120,9 +124,11 @@ class OrchestrationCompensationRetryTests(SimpleTestCase):
     def test_should_resume_from_first_incomplete_compensation__when_retry_restarts(self) -> None:
         """[UT-OR-COMP-03] 완료된 보상 단계 skip"""
 
-        from orchestration_service.application.compensation import CompensationAction
-        from orchestration_service.application.compensation import CompensationRunner
-        from orchestration_service.clients.http import DownstreamHttpError
+        from orchestration_service.saga.application.compensation import CompensationAction
+        from orchestration_service.saga.application.compensation import CompensationRunner
+        from orchestration_service.saga.infrastructure.clients.http import (
+            DownstreamHttpError,
+        )
 
         clock = FrozenClock(timezone.now())
         repository = Mock()
