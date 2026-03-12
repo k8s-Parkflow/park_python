@@ -17,6 +17,7 @@ from rest_framework.response import Response
 
 from park_py.error_handling import ApplicationError, ErrorCode
 from parking_query_service.dependencies import build_current_location_service
+from parking_query_service.dependencies import build_zone_slot_query_service
 from parking_query_service.forms import CurrentLocationQueryForm
 from parking_query_service.models import CurrentParkingView
 from parking_query_service.models import ZoneAvailability
@@ -30,7 +31,6 @@ from parking_query_service.services import project_entry
 from parking_query_service.services import project_exit
 from parking_query_service.services import restore_exit
 from parking_query_service.services import revert_entry
-from parking_query_service.services.zone_slot_query_service import ZoneSlotQueryService
 from parking_query_service.services.zone_availability_service import (
     ZoneAvailabilityService,
 )
@@ -65,7 +65,7 @@ def get_current_location(_request: HttpRequest, vehicle_num: str) -> JsonRespons
 
 @require_GET
 def get_zone_slots(_request: HttpRequest, zone_id: int) -> JsonResponse:
-    payload = ZoneSlotQueryService().get_zone_slots(zone_id=zone_id)
+    payload = build_zone_slot_query_service().get_zone_slots(zone_id=zone_id)
     return JsonResponse(payload, status=200)
 
 
