@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from parking_command_service.clients.grpc.parking_query import (
+from parking_command_service.parking_record.infrastructure.clients.grpc.parking_query import (
     ParkingQueryGrpcProjectionWriter,
 )
-from parking_command_service.clients.grpc.zone import ZoneGrpcClient
-from parking_command_service.clients.grpc.vehicle import VehicleGrpcClient
+from parking_command_service.parking_record.infrastructure.clients.grpc.zone import ZoneGrpcClient
+from parking_command_service.parking_record.infrastructure.clients.grpc.vehicle import VehicleGrpcClient
 from parking_command_service.parking_record.application.command_service import (
     ParkingRecordCommandService,
 )

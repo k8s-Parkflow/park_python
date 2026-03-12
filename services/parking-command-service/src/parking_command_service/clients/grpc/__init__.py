@@ -1,3 +1,11 @@
-from parking_command_service.clients.grpc.vehicle import VehicleGrpcClient
-from parking_command_service.clients.grpc.parking_query import ParkingQueryGrpcProjectionWriter
-from parking_command_service.clients.grpc.zone import ZoneGrpcClient
+from parking_command_service.parking_record.infrastructure.clients.grpc import (
+    ParkingQueryGrpcProjectionWriter,
+    VehicleGrpcClient,
+    ZoneGrpcClient,
+)
+
+__all__ = [
+    "VehicleGrpcClient",
+    "ParkingQueryGrpcProjectionWriter",
+    "ZoneGrpcClient",
+]
