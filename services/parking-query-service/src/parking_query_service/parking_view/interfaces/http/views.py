@@ -33,9 +33,6 @@ from parking_query_service.parking_view.interfaces.http.serializers import (
     TotalAvailabilitySerializer,
     TypedAvailabilitySerializer,
 )
-from parking_query_service.services.zone_availability_service import (
-    ZoneAvailabilityService,
-)
 
 
 def _payload(request) -> dict:
@@ -172,7 +169,5 @@ def restore_parking_exit_projection(request) -> JsonResponse:
 )
 @api_view(["GET"])
 def availability(request: HttpRequest) -> Response:
-    payload = build_get_zone_availability().get(
-        slot_type=request.GET.get("slot_type", ""),
-    )
+    payload = build_get_zone_availability().get(slot_type=request.GET.get("slot_type", ""))
     return Response(payload)
