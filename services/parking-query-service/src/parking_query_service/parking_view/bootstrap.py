@@ -13,6 +13,11 @@ from parking_query_service.parking_view.infrastructure.persistence.repositories.
 from parking_query_service.parking_view.infrastructure.persistence.repositories.zone_availability_repository import (
     ZoneAvailabilityRepository,
 )
+from parking_query_service.repositories.zone_slot_repository import (
+    ZoneExistenceRepository,
+    ZoneSlotRepository,
+)
+from parking_query_service.services.zone_slot_query_service import ZoneSlotQueryService
 
 
 def build_get_current_location() -> CurrentLocationService:
@@ -25,4 +30,11 @@ def build_get_current_location() -> CurrentLocationService:
 def build_get_zone_availability() -> ZoneAvailabilityService:
     return ZoneAvailabilityService(
         zone_availability_repository=ZoneAvailabilityRepository(),
+    )
+
+
+def build_zone_slot_query_service() -> ZoneSlotQueryService:
+    return ZoneSlotQueryService(
+        zone_slot_repository=ZoneSlotRepository(),
+        zone_existence=ZoneExistenceRepository(),
     )

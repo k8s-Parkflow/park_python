@@ -5,6 +5,7 @@ from parking_query_service.parking_view.application.use_cases.internal_projectio
     restore_exit,
     revert_entry,
 )
+from parking_query_service.services.zone_slot_query_service import ZoneSlotQueryService
 from parking_query_service.services.zone_availability_service import (
     ZoneAvailabilityService,
 )
@@ -15,5 +16,6 @@ __all__ = [
     "project_exit",
     "restore_exit",
     "revert_entry",
+    "ZoneSlotQueryService",
     "ZoneAvailabilityService",
 ]

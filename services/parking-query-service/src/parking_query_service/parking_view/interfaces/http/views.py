@@ -18,6 +18,9 @@ from rest_framework.response import Response
 from park_py.error_handling import ApplicationError, ErrorCode
 from parking_query_service.models import CurrentParkingView
 from parking_query_service.models import ZoneAvailability
+from parking_query_service.parking_view.bootstrap import build_get_current_location
+from parking_query_service.parking_view.bootstrap import build_get_zone_availability
+from parking_query_service.parking_view.bootstrap import build_zone_slot_query_service
 from parking_query_service.parking_view.application.use_cases.internal_projection import (
     get_current_parking,
     project_entry,
@@ -25,8 +28,6 @@ from parking_query_service.parking_view.application.use_cases.internal_projectio
     restore_exit,
     revert_entry,
 )
-from parking_query_service.parking_view.bootstrap import build_get_current_location
-from parking_query_service.parking_view.bootstrap import build_get_zone_availability
 from parking_query_service.parking_view.interfaces.http.forms import CurrentLocationQueryForm
 from parking_query_service.parking_view.interfaces.http.serializers import (
     ErrorResponseSerializer,
@@ -59,6 +60,12 @@ def get_current_location(_request: HttpRequest, vehicle_num: str) -> JsonRespons
     payload = build_get_current_location().get_current_location(
         form.cleaned_data["vehicle_num"]
     )
+    return JsonResponse(payload, status=200)
+
+
+@require_GET
+def get_zone_slots(_request: HttpRequest, zone_id: int) -> JsonResponse:
+    payload = build_zone_slot_query_service().get_zone_slots(zone_id=zone_id)
     return JsonResponse(payload, status=200)
 
 
