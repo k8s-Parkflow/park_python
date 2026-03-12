@@ -14,6 +14,24 @@ def build_openapi_schema(*, server_url: str = "/") -> dict:
         },
         "servers": [{"url": server_url}],
         "paths": {
+            "/zones/{zoneId}/slots": {
+                "get": {
+                    "tags": ["parking-query"],
+                    "summary": "존별 슬롯 목록 조회",
+                    "parameters": [
+                        {
+                            "name": "zoneId",
+                            "in": "path",
+                            "required": True,
+                            "schema": {"type": "integer"},
+                        }
+                    ],
+                    "responses": {
+                        "200": {"description": "존별 슬롯 목록"},
+                        "404": {"description": "존을 찾을 수 없음"},
+                    },
+                }
+            },
             "/api/parking/entry": {
                 "post": {
                     "tags": ["parking-command"],

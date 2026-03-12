@@ -12,6 +12,16 @@ class SwaggerDocsTests(SimpleTestCase):
         self.assertIn("/api/v1/parking/entries", payload["paths"])
         self.assertEqual(payload["servers"], [{"url": "/"}])
 
+    def test_openapi_json_returns_zone_slot_list_path(self) -> None:
+        response = self.client.get("/openapi.json")
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertIn("/zones/{zoneId}/slots", payload["paths"])
+        operation = payload["paths"]["/zones/{zoneId}/slots"]["get"]
+        self.assertEqual(operation["summary"], "존별 슬롯 목록 조회")
+        self.assertEqual(operation["parameters"][0]["name"], "zoneId")
+
     def test_swagger_ui_returns_html_document(self) -> None:
         response = self.client.get("/swagger/")
 
