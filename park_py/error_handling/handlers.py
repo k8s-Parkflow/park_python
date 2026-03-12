@@ -1,20 +1,4 @@
-from http import HTTPStatus
+from shared.error_handling.handlers import handler404
+from shared.error_handling.handlers import handler500
 
-from django.http import HttpRequest, JsonResponse
-
-from park_py.error_handling.error_codes import ErrorCode
-from park_py.error_handling.responses import (
-    build_error_response,
-    build_internal_server_error_response,
-)
-
-
-def handler404(_request: HttpRequest, exception: Exception) -> JsonResponse:
-    return build_error_response(
-        code=ErrorCode.NOT_FOUND,
-        status=HTTPStatus.NOT_FOUND,
-    )
-
-
-def handler500(_request: HttpRequest) -> JsonResponse:
-    return build_internal_server_error_response()
+__all__ = ["handler404", "handler500"]

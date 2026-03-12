@@ -13,6 +13,7 @@ from parking_query_service.parking_view.infrastructure.persistence.repositories.
 from parking_query_service.parking_view.infrastructure.persistence.repositories.zone_availability_repository import (
     ZoneAvailabilityRepository,
 )
+from parking_query_service.clients.grpc.zone import ZoneGrpcClient
 from parking_query_service.repositories.zone_slot_repository import (
     ZoneExistenceRepository,
     ZoneSlotRepository,
@@ -34,7 +35,8 @@ def build_get_zone_availability() -> ZoneAvailabilityService:
 
 
 def build_zone_slot_query_service() -> ZoneSlotQueryService:
+    zone_client = ZoneGrpcClient()
     return ZoneSlotQueryService(
-        zone_slot_repository=ZoneSlotRepository(),
-        zone_existence=ZoneExistenceRepository(),
+        zone_slot_repository=ZoneSlotRepository(zone_client=zone_client),
+        zone_existence=ZoneExistenceRepository(zone_client=zone_client),
     )

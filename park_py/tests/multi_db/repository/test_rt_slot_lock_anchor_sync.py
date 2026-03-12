@@ -1,13 +1,17 @@
 from __future__ import annotations
 
 from io import StringIO
+from unittest.mock import patch
 
 from django.core.management import call_command
 from django.test import TestCase
 
+from park_py.tests.grpc_support import build_direct_stub
+from parking_command_service.clients.grpc.zone import ZoneGrpcClient
 from parking_command_service.domains.parking_record.domain import ParkingSlot as CommandParkingSlot
 from zone_service.models import ParkingSlot as ZoneParkingSlot
 from zone_service.models import SlotType, Zone
+from zone_service.zone_catalog.interfaces.grpc.servicers import ZoneGrpcServicer
 
 
 class SlotLockAnchorSyncRepositoryTests(TestCase):
@@ -25,7 +29,11 @@ class SlotLockAnchorSyncRepositoryTests(TestCase):
             is_active=True,
         )
 
-        call_command("sync_slot_lock_anchors", stdout=stdout)
+        with patch(
+            "parking_command_service.management.commands.sync_slot_lock_anchors.ZoneGrpcClient",
+            return_value=self._build_zone_client(),
+        ):
+            call_command("sync_slot_lock_anchors", stdout=stdout)
 
         anchor = CommandParkingSlot.objects.using("parking_command").get(slot_id=101)
         self.assertEqual(anchor.zone_id, 1)
@@ -51,10 +59,22 @@ class SlotLockAnchorSyncRepositoryTests(TestCase):
             is_active=False,
         )
 
-        call_command("sync_slot_lock_anchors", stdout=stdout)
+        with patch(
+            "parking_command_service.management.commands.sync_slot_lock_anchors.ZoneGrpcClient",
+            return_value=self._build_zone_client(),
+        ):
+            call_command("sync_slot_lock_anchors", stdout=stdout)
 
         anchor = CommandParkingSlot.objects.using("parking_command").get(slot_id=202)
         self.assertEqual(anchor.zone_id, 2)
         self.assertEqual(anchor.slot_code, "B201")
         self.assertTrue(anchor.is_active)
         self.assertIn("synced 1 slot lock anchors", stdout.getvalue())
+
+    def _build_zone_client(self) -> ZoneGrpcClient:
+        return ZoneGrpcClient(
+            stub=build_direct_stub(
+                servicer=ZoneGrpcServicer(),
+                method_names=["ListParkingSlots"],
+            )
+        )

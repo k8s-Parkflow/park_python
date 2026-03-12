@@ -15,7 +15,7 @@ from drf_spectacular.utils import (
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from park_py.error_handling import ApplicationError, ErrorCode
+from shared.error_handling import ApplicationError, ErrorCode
 from parking_query_service.models import CurrentParkingView
 from parking_query_service.models import ZoneAvailability
 from parking_query_service.parking_view.bootstrap import build_get_current_location

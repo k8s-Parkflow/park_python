@@ -3,7 +3,7 @@ from __future__ import annotations
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 
-from park_py.service_databases import SERVICE_MIGRATION_ORDER
+from shared.service_databases import SERVICE_MIGRATION_ORDER
 
 
 class Command(BaseCommand):

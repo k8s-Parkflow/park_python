@@ -3,7 +3,7 @@ from __future__ import annotations
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
 
-from park_py.service_databases import SERVICE_TO_DB_ALIAS
+from shared.service_databases import SERVICE_TO_DB_ALIAS
 
 
 class Command(BaseCommand):

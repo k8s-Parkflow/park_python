@@ -2,11 +2,8 @@ from __future__ import annotations
 
 from typing import TypedDict
 
-from django.db.models import F
-
+from parking_query_service.clients.grpc.zone import ZoneGrpcClient
 from parking_query_service.models.current_parking_view import CurrentParkingView
-from zone_service.models.zone import Zone
-from zone_service.models.parking_slot import ParkingSlot
 
 
 class ZoneSlotRow(TypedDict):
@@ -18,13 +15,19 @@ class ZoneSlotRow(TypedDict):
 
 
 class ZoneExistenceRepository:
+    def __init__(self, *, zone_client: ZoneGrpcClient | None = None) -> None:
+        self._zone_client = zone_client or ZoneGrpcClient()
+
     def exists(self, *, zone_id: int) -> bool:
-        return Zone.objects.filter(zone_id=zone_id).exists()
+        return self._zone_client.exists_by_zone_id(zone_id)
 
 
 class ZoneSlotRepository:
+    def __init__(self, *, zone_client: ZoneGrpcClient | None = None) -> None:
+        self._zone_client = zone_client or ZoneGrpcClient()
+
     def list_by_zone_id(self, *, zone_id: int) -> list[ZoneSlotRow]:
-        slots = list(self._zone_slots_queryset(zone_id=zone_id))
+        slots = self._zone_client.get_zone_slots(zone_id=zone_id)
         if not slots:
             return []
 
@@ -39,18 +42,6 @@ class ZoneSlotRepository:
             }
             for slot in slots
         ]
-
-    def _zone_slots_queryset(self, *, zone_id: int):
-        return (
-            ParkingSlot.objects.select_related("slot_type")
-            .filter(zone_id=zone_id)
-            .annotate(
-                slot_name=F("slot_code"),
-                category=F("slot_type__type_name"),
-            )
-            .order_by("slot_code", "slot_id")
-            .values("slot_id", "slot_name", "category", "is_active")
-        )
 
     def _load_vehicle_nums_by_slot_id(self, *, slot_ids: list[int]) -> dict[int, str]:
         rows = (

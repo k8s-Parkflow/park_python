@@ -8,18 +8,18 @@ from django.test import SimpleTestCase
 
 
 class ServiceGrpcEntrypointCommandRuntimeTests(SimpleTestCase):
-    def test_should_delegate_to_common_grpc_runner__when_service_wrapper_runs(self) -> None:
+    def test_should_call_local_service_runtime__when_service_command_runs(self) -> None:
         stdout = StringIO()
         cases = [
-            ("run_vehicle_grpc", "vehicle"),
-            ("run_zone_grpc", "zone"),
-            ("run_parking_command_grpc", "parking_command"),
-            ("run_parking_query_grpc", "parking_query"),
+            ("run_vehicle_grpc", "vehicle_service.grpc_runtime.run_from_cli"),
+            ("run_zone_grpc", "zone_service.grpc_runtime.run_from_cli"),
+            ("run_parking_command_grpc", "parking_command_service.grpc_runtime.run_from_cli"),
+            ("run_parking_query_grpc", "parking_query_service.grpc_runtime.run_from_cli"),
         ]
 
-        for command_name, service_name in cases:
+        for command_name, runtime_path in cases:
             with self.subTest(command=command_name):
-                with patch("django.core.management.call_command") as delegated_call:
+                with patch(runtime_path) as serve:
                     call_command(
                         command_name,
                         "--host",
@@ -29,19 +29,8 @@ class ServiceGrpcEntrypointCommandRuntimeTests(SimpleTestCase):
                         stdout=stdout,
                     )
 
-                delegated_call.assert_called_once()
-                args = delegated_call.call_args.args
-                kwargs = delegated_call.call_args.kwargs
-                self.assertEqual(
-                    args,
-                    (
-                        "run_grpc_server",
-                        "--service",
-                        service_name,
-                        "--host",
-                        "127.0.0.1",
-                        "--port",
-                        "65000",
-                    ),
-                )
+                serve.assert_called_once()
+                kwargs = serve.call_args.kwargs
+                self.assertEqual(kwargs["host"], "127.0.0.1")
+                self.assertEqual(kwargs["port"], 65000)
                 self.assertIn("stdout", kwargs)

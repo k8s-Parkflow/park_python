@@ -1,8 +1,8 @@
 from http import HTTPStatus
 from typing import Mapping, Optional, TypedDict
 
-from park_py.error_handling.error_codes import ErrorCode
-from park_py.error_handling.exceptions import ApplicationError
+from shared.error_handling.error_codes import ErrorCode
+from shared.error_handling.exceptions import ApplicationError
 from parking_query_service.parking_view.domain.ports import CurrentLocationRepositoryProtocol
 from parking_query_service.parking_view.domain.ports import CurrentLocationSource
 from parking_query_service.parking_view.domain.ports import VehicleLookupPort

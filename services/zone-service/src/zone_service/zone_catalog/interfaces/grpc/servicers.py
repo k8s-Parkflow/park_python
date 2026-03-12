@@ -4,7 +4,9 @@ import grpc
 
 from contracts.gen.python.zone.v1 import zone_pb2_grpc
 from zone_service.zone_catalog.interfaces.grpc.mappers import (
+    build_get_zone_slots_response,
     build_get_zone_response,
+    build_list_parking_slots_response,
     build_validate_entry_policy_response,
 )
 from zone_service.zone_catalog.domain.entities import ParkingSlot, Zone
@@ -33,3 +35,15 @@ class ZoneGrpcServicer(zone_pb2_grpc.ZoneServiceServicer):
             context.abort(grpc.StatusCode.NOT_FOUND, "zone not found")
 
         return build_get_zone_response(zone=zone)
+
+    def GetZoneSlots(self, request, context):  # noqa: N802
+        try:
+            slots = self.zone_policy_service.get_zone_slots(zone_id=request.zone_id)
+        except Zone.DoesNotExist:
+            context.abort(grpc.StatusCode.NOT_FOUND, "zone not found")
+
+        return build_get_zone_slots_response(zone_id=request.zone_id, slots=slots)
+
+    def ListParkingSlots(self, request, context):  # noqa: N802, ARG002
+        slots = self.zone_policy_service.list_parking_slots()
+        return build_list_parking_slots_response(slots=slots)

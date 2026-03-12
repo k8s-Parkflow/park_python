@@ -1,10 +1,14 @@
 from importlib import import_module
 from typing import Any
+from unittest.mock import patch
 
 from django.test import SimpleTestCase
 from django.utils import timezone
 
+from park_py.tests.grpc_support import build_direct_stub
 from parking_query_service.models.current_parking_view import CurrentParkingView
+from parking_query_service.clients.grpc.zone import ZoneGrpcClient
+from zone_service.zone_catalog.interfaces.grpc.servicers import ZoneGrpcServicer
 from zone_service.models.parking_slot import ParkingSlot
 from zone_service.models.slot_type import SlotType
 from zone_service.models.zone import Zone
@@ -59,7 +63,19 @@ class ZoneSlotListFixtureMixin:
         )
 
     def request_zone_slots(self, *, zone_id: int):
-        return self.client.get(f"{ZONE_SLOT_LIST_PATH}/{zone_id}/slots")
+        with patch(
+            "parking_query_service.parking_view.bootstrap.ZoneGrpcClient",
+            return_value=self.build_zone_grpc_client(),
+        ):
+            return self.client.get(f"{ZONE_SLOT_LIST_PATH}/{zone_id}/slots")
+
+    def build_zone_grpc_client(self) -> ZoneGrpcClient:
+        return ZoneGrpcClient(
+            stub=build_direct_stub(
+                servicer=ZoneGrpcServicer(),
+                method_names=["GetZone", "GetZoneSlots"],
+            )
+        )
 
 
 class ZoneSlotListModuleLoaderMixin(SimpleTestCase):

@@ -6,8 +6,8 @@ from typing import Callable, TypeVar
 import grpc
 from contracts.gen.python.common.v1 import common_pb2
 
-from park_py.error_handling.error_codes import ErrorCode
-from park_py.error_handling.exceptions import ApplicationError
+from shared.error_handling.error_codes import ErrorCode
+from shared.error_handling.exceptions import ApplicationError
 
 
 StubT = TypeVar("StubT")

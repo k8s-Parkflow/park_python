@@ -44,6 +44,16 @@ class ZoneServiceStub(object):
                 request_serializer=zone_dot_v1_dot_zone__pb2.GetZoneRequest.SerializeToString,
                 response_deserializer=zone_dot_v1_dot_zone__pb2.GetZoneResponse.FromString,
                 _registered_method=True)
+        self.GetZoneSlots = channel.unary_unary(
+                '/zone.v1.ZoneService/GetZoneSlots',
+                request_serializer=zone_dot_v1_dot_zone__pb2.GetZoneSlotsRequest.SerializeToString,
+                response_deserializer=zone_dot_v1_dot_zone__pb2.GetZoneSlotsResponse.FromString,
+                _registered_method=True)
+        self.ListParkingSlots = channel.unary_unary(
+                '/zone.v1.ZoneService/ListParkingSlots',
+                request_serializer=zone_dot_v1_dot_zone__pb2.ListParkingSlotsRequest.SerializeToString,
+                response_deserializer=zone_dot_v1_dot_zone__pb2.ListParkingSlotsResponse.FromString,
+                _registered_method=True)
 
 
 class ZoneServiceServicer(object):
@@ -61,6 +71,18 @@ class ZoneServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetZoneSlots(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListParkingSlots(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_ZoneServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -73,6 +95,16 @@ def add_ZoneServiceServicer_to_server(servicer, server):
                     servicer.GetZone,
                     request_deserializer=zone_dot_v1_dot_zone__pb2.GetZoneRequest.FromString,
                     response_serializer=zone_dot_v1_dot_zone__pb2.GetZoneResponse.SerializeToString,
+            ),
+            'GetZoneSlots': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetZoneSlots,
+                    request_deserializer=zone_dot_v1_dot_zone__pb2.GetZoneSlotsRequest.FromString,
+                    response_serializer=zone_dot_v1_dot_zone__pb2.GetZoneSlotsResponse.SerializeToString,
+            ),
+            'ListParkingSlots': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListParkingSlots,
+                    request_deserializer=zone_dot_v1_dot_zone__pb2.ListParkingSlotsRequest.FromString,
+                    response_serializer=zone_dot_v1_dot_zone__pb2.ListParkingSlotsResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -129,6 +161,60 @@ class ZoneService(object):
             '/zone.v1.ZoneService/GetZone',
             zone_dot_v1_dot_zone__pb2.GetZoneRequest.SerializeToString,
             zone_dot_v1_dot_zone__pb2.GetZoneResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetZoneSlots(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/zone.v1.ZoneService/GetZoneSlots',
+            zone_dot_v1_dot_zone__pb2.GetZoneSlotsRequest.SerializeToString,
+            zone_dot_v1_dot_zone__pb2.GetZoneSlotsResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ListParkingSlots(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/zone.v1.ZoneService/ListParkingSlots',
+            zone_dot_v1_dot_zone__pb2.ListParkingSlotsRequest.SerializeToString,
+            zone_dot_v1_dot_zone__pb2.ListParkingSlotsResponse.FromString,
             options,
             channel_credentials,
             insecure,

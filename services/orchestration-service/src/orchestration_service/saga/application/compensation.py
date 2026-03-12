@@ -11,8 +11,8 @@ from orchestration_service.saga.infrastructure.clients.http import DownstreamHtt
 from orchestration_service.saga.infrastructure.repositories.operation import (
     SagaOperationRepository,
 )
-from park_py.error_handling import ApplicationError
-from park_py.error_handling.error_codes import serialize_error_code
+from shared.error_handling import ApplicationError
+from shared.error_handling.error_codes import serialize_error_code
 
 
 @dataclass(frozen=True)

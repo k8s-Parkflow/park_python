@@ -1,7 +1,7 @@
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
 
-from park_py.error_handling import ApplicationError, ErrorCode
+from shared.error_handling import ApplicationError, ErrorCode
 from vehicle_service.vehicle.application.use_cases.get_vehicle import VehicleLookupService
 from vehicle_service.vehicle.domain.entities import Vehicle
 

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from django.core.management import call_command
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
+
+from zone_service import grpc_runtime
 
 
 class Command(BaseCommand):
@@ -12,9 +13,11 @@ class Command(BaseCommand):
         parser.add_argument("--port", type=int)
 
     def handle(self, *args, **options):
-        command_args = ["run_grpc_server", "--service", "zone"]
-        if options.get("host"):
-            command_args.extend(["--host", options["host"]])
-        if options.get("port") is not None:
-            command_args.extend(["--port", str(options["port"])])
-        call_command(*command_args, stdout=self.stdout)
+        try:
+            grpc_runtime.run_from_cli(
+                host=options.get("host"),
+                port=options.get("port"),
+                stdout=self.stdout,
+            )
+        except RuntimeError as error:
+            raise CommandError(str(error)) from error

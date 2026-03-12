@@ -3,7 +3,7 @@ from __future__ import annotations
 from http import HTTPStatus
 from typing import Protocol, TypedDict
 
-from park_py.error_handling import ApplicationError, ErrorCode
+from shared.error_handling import ApplicationError, ErrorCode
 from parking_query_service.repositories import (
     ZoneExistenceRepository,
     ZoneSlotRepository,
