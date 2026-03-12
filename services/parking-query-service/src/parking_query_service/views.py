@@ -30,6 +30,7 @@ from parking_query_service.services import project_entry
 from parking_query_service.services import project_exit
 from parking_query_service.services import restore_exit
 from parking_query_service.services import revert_entry
+from parking_query_service.services.zone_slot_query_service import ZoneSlotQueryService
 from parking_query_service.services.zone_availability_service import (
     ZoneAvailabilityService,
 )
@@ -59,6 +60,12 @@ def get_current_location(_request: HttpRequest, vehicle_num: str) -> JsonRespons
     payload = build_current_location_service().get_current_location(
         form.cleaned_data["vehicle_num"]
     )
+    return JsonResponse(payload, status=200)
+
+
+@require_GET
+def get_zone_slots(_request: HttpRequest, zone_id: int) -> JsonResponse:
+    payload = ZoneSlotQueryService().get_zone_slots(zone_id=zone_id)
     return JsonResponse(payload, status=200)
 
 
