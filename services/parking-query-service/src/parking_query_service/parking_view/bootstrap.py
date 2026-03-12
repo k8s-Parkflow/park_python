@@ -1,14 +1,16 @@
-from parking_query_service.clients.grpc.vehicle import VehicleGrpcClient
 from parking_query_service.parking_view.application.use_cases.get_current_location import (
     CurrentLocationService,
 )
 from parking_query_service.parking_view.application.use_cases.get_zone_availability import (
     ZoneAvailabilityService,
 )
-from parking_query_service.repositories.current_location_repository import (
+from parking_query_service.parking_view.infrastructure.clients.grpc.vehicle import (
+    VehicleGrpcClient,
+)
+from parking_query_service.parking_view.infrastructure.persistence.repositories.current_location_repository import (
     CurrentLocationRepository,
 )
-from parking_query_service.repositories.zone_availability_repository import (
+from parking_query_service.parking_view.infrastructure.persistence.repositories.zone_availability_repository import (
     ZoneAvailabilityRepository,
 )
 

@@ -1,12 +1,5 @@
-from django.db.models import QuerySet, Value
-from django.db.models.functions import Replace
+from parking_query_service.parking_view.infrastructure.persistence.repositories.normalized_vehicle_num import (
+    with_normalized_vehicle_num,
+)
 
-
-def with_normalized_vehicle_num(queryset: QuerySet) -> QuerySet:
-    return queryset.annotate(
-        normalized_vehicle_num=Replace(
-            Replace("vehicle_num", Value("-"), Value("")),
-            Value(" "),
-            Value(""),
-        )
-    )
+__all__ = ["with_normalized_vehicle_num"]
