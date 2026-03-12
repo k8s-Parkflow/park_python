@@ -49,10 +49,10 @@ class OrchestrationParkingCommandGrpcExitAcceptanceTests(TransactionTestCase):
         parking_query_gateway = FakeParkingQueryGateway(call_log=[])
 
         with patch(
-            "orchestration_service.dependencies.build_parking_command_gateway",
+            "orchestration_service.saga.bootstrap.build_parking_command_gateway",
             return_value=parking_command_gateway,
         ), patch(
-            "orchestration_service.dependencies.build_parking_query_gateway",
+            "orchestration_service.saga.bootstrap.build_parking_query_gateway",
             return_value=parking_query_gateway,
         ):
             # When

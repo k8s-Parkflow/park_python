@@ -12,14 +12,14 @@ if str(ORCHESTRATION_SERVICE_SRC) not in sys.path:
 
 @override_settings(ROOT_URLCONF="orchestration_service.urls")
 class OrchestrationGatewayContractTests(SimpleTestCase):
-    @patch("orchestration_service.views.EntrySagaOrchestrationService")
+    @patch("orchestration_service.saga.interfaces.http.views.build_entry_saga_service")
     def test_should_match_entry_gateway_response_schema__when_entry_request_succeeds(
         self,
-        entry_saga_service_class,
+        build_entry_saga_service,
     ) -> None:
         """[CT-OR-API-01] 입차 API 계약"""
 
-        entry_saga_service_class.return_value.execute.return_value = {
+        build_entry_saga_service.return_value.execute.return_value = {
             "operation_id": "entry-op-001",
             "status": "COMPLETED",
             "history_id": 101,
@@ -57,14 +57,14 @@ class OrchestrationGatewayContractTests(SimpleTestCase):
             },
         )
 
-    @patch("orchestration_service.views.ExitSagaOrchestrationService")
+    @patch("orchestration_service.saga.interfaces.http.views.build_exit_saga_service")
     def test_should_match_exit_gateway_error_schema__when_exit_saga_is_compensated(
         self,
-        exit_saga_service_class,
+        build_exit_saga_service,
     ) -> None:
         """[CT-OR-API-02] 출차 API 계약"""
 
-        exit_saga_service_class.return_value.execute.return_value = {
+        build_exit_saga_service.return_value.execute.return_value = {
             "operation_id": "exit-op-001",
             "status": "COMPENSATED",
             "failed_step": "UPDATE_QUERY_EXIT",
@@ -101,14 +101,14 @@ class OrchestrationGatewayContractTests(SimpleTestCase):
             },
         )
 
-    @patch("orchestration_service.views.OperationStatusQueryService")
+    @patch("orchestration_service.saga.interfaces.http.views.build_operation_status_query_service")
     def test_should_match_saga_status_response_schema__when_operation_status_is_requested(
         self,
-        operation_status_query_service_class,
+        build_operation_status_query_service,
     ) -> None:
         """[CT-OR-API-03] 사가 상태 조회 계약"""
 
-        operation_status_query_service_class.return_value.get.return_value = {
+        build_operation_status_query_service.return_value.get.return_value = {
             "operation_id": "entry-op-001",
             "saga_type": "ENTRY",
             "status": "FAILED",
