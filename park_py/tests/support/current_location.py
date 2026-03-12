@@ -40,7 +40,7 @@ class CurrentLocationFixtureMixin:
 
     def request_current_location(self, vehicle_num: str):
         with patch(
-            "parking_query_service.views.build_current_location_service",
+            "parking_query_service.parking_view.interfaces.http.views.build_get_current_location",
             return_value=self.build_current_location_service(),
         ):
             return self.client.get(f"{CURRENT_LOCATION_PATH}/{vehicle_num}")
