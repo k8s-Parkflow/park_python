@@ -12,7 +12,7 @@ HOST_ENV = "VEHICLE_GRPC_HOST"
 PORT_ENV = "VEHICLE_GRPC_PORT"
 DEFAULT_HOST = "0.0.0.0"
 DEFAULT_PORT = 50051
-DEFAULT_SETTINGS_MODULE = "park_py.settings_vehicle"
+DEFAULT_SETTINGS_MODULE = "vehicle_service.settings"
 
 
 def build_bind_target(*, host: str, port: int) -> str:

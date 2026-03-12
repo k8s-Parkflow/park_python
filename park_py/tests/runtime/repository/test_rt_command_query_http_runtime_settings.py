@@ -7,7 +7,7 @@ from django.test import SimpleTestCase
 
 class CommandQueryHttpRuntimeSettingsTests(SimpleTestCase):
     def test_should_configure_parking_command_http_runtime_settings(self) -> None:
-        settings_module = import_module("park_py.settings_parking_command")
+        settings_module = import_module("parking_command_service.settings")
 
         self.assertEqual(
             settings_module.ROOT_URLCONF,
@@ -24,7 +24,7 @@ class CommandQueryHttpRuntimeSettingsTests(SimpleTestCase):
         )
 
     def test_should_configure_parking_query_http_runtime_settings(self) -> None:
-        settings_module = import_module("park_py.settings_parking_query")
+        settings_module = import_module("parking_query_service.settings")
 
         self.assertEqual(
             settings_module.ROOT_URLCONF,

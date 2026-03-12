@@ -14,7 +14,7 @@ HOST_ENV = "PARKING_COMMAND_GRPC_HOST"
 PORT_ENV = "PARKING_COMMAND_GRPC_PORT"
 DEFAULT_HOST = "0.0.0.0"
 DEFAULT_PORT = 50053
-DEFAULT_SETTINGS_MODULE = "park_py.settings_parking_command"
+DEFAULT_SETTINGS_MODULE = "parking_command_service.settings"
 
 
 def build_bind_target(*, host: str, port: int) -> str:
