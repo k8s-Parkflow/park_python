@@ -14,7 +14,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         try:
-            grpc_runtime.serve(
+            grpc_runtime.run_from_cli(
                 host=options.get("host"),
                 port=options.get("port"),
                 stdout=self.stdout,

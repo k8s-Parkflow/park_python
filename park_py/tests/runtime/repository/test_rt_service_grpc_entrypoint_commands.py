@@ -11,10 +11,10 @@ class ServiceGrpcEntrypointCommandRuntimeTests(SimpleTestCase):
     def test_should_call_local_service_runtime__when_service_command_runs(self) -> None:
         stdout = StringIO()
         cases = [
-            ("run_vehicle_grpc", "vehicle_service.grpc_runtime.serve"),
-            ("run_zone_grpc", "zone_service.grpc_runtime.serve"),
-            ("run_parking_command_grpc", "parking_command_service.grpc_runtime.serve"),
-            ("run_parking_query_grpc", "parking_query_service.grpc_runtime.serve"),
+            ("run_vehicle_grpc", "vehicle_service.grpc_runtime.run_from_cli"),
+            ("run_zone_grpc", "zone_service.grpc_runtime.run_from_cli"),
+            ("run_parking_command_grpc", "parking_command_service.grpc_runtime.run_from_cli"),
+            ("run_parking_query_grpc", "parking_query_service.grpc_runtime.run_from_cli"),
         ]
 
         for command_name, runtime_path in cases:

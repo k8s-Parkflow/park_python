@@ -4,8 +4,6 @@ import os
 
 import django
 
-from vehicle_service.vehicle.interfaces.grpc.server import build_vehicle_grpc_server
-
 
 SERVICE_NAME = "vehicle"
 HOST_ENV = "VEHICLE_GRPC_HOST"
@@ -26,6 +24,8 @@ def resolve_bind_target(*, host: str | None = None, port: int | None = None) -> 
 
 
 def serve(*, host: str | None = None, port: int | None = None, stdout=None) -> None:
+    from vehicle_service.vehicle.interfaces.grpc.server import build_vehicle_grpc_server
+
     server = build_vehicle_grpc_server()
     bind_target = resolve_bind_target(host=host, port=port)
     bound_port = server.add_insecure_port(bind_target)
@@ -39,10 +39,14 @@ def serve(*, host: str | None = None, port: int | None = None, stdout=None) -> N
     server.wait_for_termination()
 
 
-def main() -> None:
+def run_from_cli(*, host: str | None = None, port: int | None = None, stdout=None) -> None:
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", DEFAULT_SETTINGS_MODULE)
     django.setup()
-    serve()
+    serve(host=host, port=port, stdout=stdout)
+
+
+def main() -> None:
+    run_from_cli()
 
 
 if __name__ == "__main__":

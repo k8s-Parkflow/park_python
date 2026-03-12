@@ -32,3 +32,4 @@ class ServiceGrpcRuntimeModulesContractTests(TestCase):
                 self.assertEqual(module.PORT_ENV, port_env)
                 self.assertEqual(module.DEFAULT_PORT, default_port)
                 self.assertEqual(module.DEFAULT_SETTINGS_MODULE, settings_module)
+                self.assertTrue(callable(module.run_from_cli))
