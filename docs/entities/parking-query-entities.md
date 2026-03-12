@@ -9,6 +9,7 @@
 
 - `CURRENT_PARKING_VIEW`: 현재 주차 중 차량의 최신 위치 projection
 - `ZONE_AVAILABILITY`: zone/slot_type 조합별 가용성 projection
+- `PARKING_QUERY_OPERATION`: query-side projection/내부 반영 작업의 로컬 멱등 처리 결과 저장 테이블
 
 ## CURRENT_PARKING_VIEW
 
@@ -39,6 +40,7 @@ zone/slot_type 조합별 총 슬롯 수, 점유 수, 가용 수를 유지하는 
 
 | 컬럼명 | 타입 | 필수 | 설명 |
 | --- | --- | --- | --- |
+| `id` | `bigint` | Y | 물리 PK |
 | `zone_id` | `bigint` | Y | zone 식별자 |
 | `slot_type` | `varchar(50)` | Y | slot type name |
 | `total_count` | `int` | Y | 전체 슬롯 수 |
@@ -51,9 +53,33 @@ zone/slot_type 조합별 총 슬롯 수, 점유 수, 가용 수를 유지하는 
 - 인덱스: `(zone_id, slot_type)` (`idx_zone_type`)
 - 체크 제약: `available_count = total_count - occupied_count` 및 `available_count >= 0`
 
+운영 규칙:
+- 물리 PK는 `id`를 사용한다.
+- 업무상 자연 키는 `(zone_id, slot_type)`이며, 실제 중복 방지도 이 조합으로 관리한다.
+
+## PARKING_QUERY_OPERATION
+
+query-side 내부 projection 반영 작업의 로컬 멱등 처리 결과를 저장한다.  
+물리 PK는 `id`를 사용하고, 업무상 중복 방지 기준은 `(operation_id, action)` 유니크 제약으로 관리한다.
+
+| 컬럼명 | 타입 | 필수 | 설명 |
+| --- | --- | --- | --- |
+| `id` | `bigint` | Y | 물리 PK |
+| `operation_id` | `varchar(64)` | Y | 상위 작업 식별자 |
+| `action` | `varchar(64)` | Y | projection 반영 액션 이름 |
+| `response_payload` | `json` | N | 재진입 시 재사용할 응답 snapshot |
+| `created_at` | `timestamp` | Y | 생성 시각 |
+| `updated_at` | `timestamp` | Y | 최종 수정 시각 |
+
+제약/인덱스:
+- 유니크 제약: `(operation_id, action)` (`uniq_parking_query_operation_action`)
+
+운영 규칙:
+- 동일 `(operation_id, action)` 재요청이면 기존 결과를 재사용한다.
+- `id`는 물리 PK이고, 비즈니스 식별자는 아니다.
+
 ## 엔터티 관계
 
 - `CURRENT_PARKING_VIEW.history_id`는 `parking-command-service.PARKING_HISTORY.history_id`를 논리 참조한다.
 - `CURRENT_PARKING_VIEW.zone_id`, `ZONE_AVAILABILITY.zone_id`는 `zone-service.ZONE.zone_id`를 논리 참조한다.
 - `CURRENT_PARKING_VIEW.slot_code`, `zone_name`, `slot_name`, `slot_type`는 외부 조회 응답을 위한 snapshot/projection 값이다.
-

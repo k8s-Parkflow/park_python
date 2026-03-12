@@ -3,6 +3,7 @@ from django.db.models import F, Q
 
 
 class ZoneAvailability(models.Model):
+    id = models.BigAutoField(primary_key=True)
 
     zone_id = models.BigIntegerField()
     slot_type = models.CharField(max_length=50)

@@ -7,9 +7,31 @@
 
 ## 엔터티 개요
 
+- `PARKING_COMMAND_OPERATION`: command-side 로컬 멱등 처리 결과 저장 테이블이다.
 - `PARKING_SLOT`: command-side lock anchor. 점유 전이와 동시성 제어를 위한 최소 슬롯 행이다.
 - `PARKING_HISTORY`: 입차부터 출차까지의 주차 세션 이력이다.
 - `SLOT_OCCUPANCY`: 슬롯 현재 점유 상태를 나타내는 현재 상태 테이블이다.
+
+## PARKING_COMMAND_OPERATION
+
+입차/출차/보상 같은 command-side write action의 로컬 멱등 처리 결과를 저장한다.  
+물리 PK는 `id`를 사용하고, 업무상 중복 방지 기준은 `(operation_id, action)` 유니크 제약으로 관리한다.
+
+| 컬럼명 | 타입 | 필수 | 설명 |
+| --- | --- | --- | --- |
+| `id` | `bigint` | Y | 물리 PK |
+| `operation_id` | `varchar(64)` | Y | 오케스트레이션에서 전달한 작업 식별자 |
+| `action` | `varchar(64)` | Y | 로컬 멱등성을 구분하는 액션 이름 |
+| `response_payload` | `json` | N | 재진입 시 재사용할 응답 snapshot |
+| `created_at` | `timestamp` | Y | 생성 시각 |
+| `updated_at` | `timestamp` | Y | 최종 수정 시각 |
+
+제약/인덱스:
+- 유니크 제약: `(operation_id, action)` (`uniq_parking_command_operation_action`)
+
+운영 규칙:
+- 동일 `(operation_id, action)` 재요청이면 기존 결과를 재사용한다.
+- `id`는 참조 안정성을 위한 물리 PK이고, 비즈니스 식별자는 아니다.
 
 ## PARKING_SLOT
 
@@ -102,4 +124,3 @@
   - `parking-command-service.PARKING_HISTORY`
 - 현재 점유 원본:
   - `parking-command-service.SLOT_OCCUPANCY`
-

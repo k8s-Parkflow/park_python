@@ -2,6 +2,7 @@ from django.db import models
 
 
 class ParkingCommandOperation(models.Model):
+    id = models.BigAutoField(primary_key=True)
     operation_id = models.CharField(max_length=64)
     action = models.CharField(max_length=64)
     response_payload = models.JSONField(null=True, blank=True)
