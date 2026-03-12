@@ -16,8 +16,10 @@ class OrchestrationCompensationStateRepositoryTests(TestCase):
     def test_should_persist_compensation_retry_state__when_retry_is_scheduled(self) -> None:
         """[RT-OR-COMP-01] 보상 재시도 상태 저장"""
 
-        from orchestration_service.models import SagaOperation
-        from orchestration_service.repositories.operation import SagaOperationRepository
+        from orchestration_service.saga.domain.entities import SagaOperation
+        from orchestration_service.saga.infrastructure.repositories.operation import (
+            SagaOperationRepository,
+        )
 
         repository = SagaOperationRepository()
         operation = repository.save(
@@ -48,7 +50,9 @@ class OrchestrationCompensationStateRepositoryTests(TestCase):
     def test_should_persist_cancelled_state__when_compensation_is_abandoned(self) -> None:
         """[RT-OR-COMP-02] 보상 취소 상태 저장"""
 
-        from orchestration_service.repositories.operation import SagaOperationRepository
+        from orchestration_service.saga.infrastructure.repositories.operation import (
+            SagaOperationRepository,
+        )
 
         repository = SagaOperationRepository()
         operation = repository.save(
@@ -77,7 +81,9 @@ class OrchestrationCompensationStateRepositoryTests(TestCase):
     def test_should_persist_completed_compensation_steps__when_step_finishes(self) -> None:
         """[RT-OR-COMP-03] 완료된 보상 단계 저장"""
 
-        from orchestration_service.repositories.operation import SagaOperationRepository
+        from orchestration_service.saga.infrastructure.repositories.operation import (
+            SagaOperationRepository,
+        )
 
         repository = SagaOperationRepository()
         operation = repository.save(

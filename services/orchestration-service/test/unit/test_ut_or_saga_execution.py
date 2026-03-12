@@ -16,7 +16,9 @@ class OrchestrationSagaExecutionUnitTests(SimpleTestCase):
     def test_should_mark_failed__when_entry_command_retry_is_exhausted(self) -> None:
         """[UT-OR-EXEC-01] 입차 command 재시도 소진 시 실패 기록"""
 
-        from orchestration_service.application.entry_saga import EntrySagaOrchestrationService
+        from orchestration_service.saga.application.use_cases.entry_saga import (
+            EntrySagaOrchestrationService,
+        )
 
         service = EntrySagaOrchestrationService(base_url="http://testserver")
         service.vehicle_client = Mock()
@@ -51,7 +53,9 @@ class OrchestrationSagaExecutionUnitTests(SimpleTestCase):
     def test_should_mark_failed__when_exit_command_step_fails(self) -> None:
         """[UT-OR-EXEC-02] 출차 command 실패 기록"""
 
-        from orchestration_service.application.exit_saga import ExitSagaOrchestrationService
+        from orchestration_service.saga.application.use_cases.exit_saga import (
+            ExitSagaOrchestrationService,
+        )
 
         service = ExitSagaOrchestrationService(base_url="http://testserver")
         service.parking_command_client = Mock()

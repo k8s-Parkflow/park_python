@@ -16,7 +16,7 @@ class OrchestrationSagaOperationRepositoryTests(TestCase):
     ) -> None:
         """[RT-OR-DB-01] operation_id 유일성"""
 
-        from orchestration_service.models import SagaOperation
+        from orchestration_service.saga.domain.entities import SagaOperation
 
         # Given
         SagaOperation.objects.create(
@@ -40,7 +40,7 @@ class OrchestrationSagaOperationRepositoryTests(TestCase):
     ) -> None:
         """[RT-OR-DB-02] saga_type별 idempotency_key 유일성"""
 
-        from orchestration_service.models import SagaOperation
+        from orchestration_service.saga.domain.entities import SagaOperation
 
         # Given
         SagaOperation.objects.create(
@@ -62,7 +62,7 @@ class OrchestrationSagaOperationRepositoryTests(TestCase):
     def test_should_allow_same_idempotency_key_across_different_saga_types(self) -> None:
         """[RT-OR-DB-03] saga_type 분리 멱등키 허용"""
 
-        from orchestration_service.models import SagaOperation
+        from orchestration_service.saga.domain.entities import SagaOperation
 
         SagaOperation.objects.create(
             operation_id="entry-op-001",
@@ -83,7 +83,9 @@ class OrchestrationSagaOperationRepositoryTests(TestCase):
     def test_should_persist_recovery_fields__when_saga_state_is_saved(self) -> None:
         """[RT-OR-DB-04] 상태 복구 필드 저장"""
 
-        from orchestration_service.repositories.operation import SagaOperationRepository
+        from orchestration_service.saga.infrastructure.repositories.operation import (
+            SagaOperationRepository,
+        )
 
         # Given
         repository = SagaOperationRepository()
@@ -114,7 +116,9 @@ class OrchestrationSagaOperationRepositoryTests(TestCase):
     def test_should_return_snapshot_payload__when_completed_response_is_replayed(self) -> None:
         """[RT-OR-DB-05] 응답 snapshot 재사용"""
 
-        from orchestration_service.repositories.operation import SagaOperationRepository
+        from orchestration_service.saga.infrastructure.repositories.operation import (
+            SagaOperationRepository,
+        )
 
         repository = SagaOperationRepository()
         operation = repository.save(
@@ -160,7 +164,9 @@ class OrchestrationSagaOperationRepositoryTests(TestCase):
     def test_should_find_existing_operation_only_with_same_saga_type(self) -> None:
         """[RT-OR-DB-06] saga_type 기준 멱등 조회"""
 
-        from orchestration_service.repositories.operation import SagaOperationRepository
+        from orchestration_service.saga.infrastructure.repositories.operation import (
+            SagaOperationRepository,
+        )
 
         repository = SagaOperationRepository()
         repository.save(
