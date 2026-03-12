@@ -1,51 +1,31 @@
-from orchestration_service.application.entry_saga import EntrySagaOrchestrationService
-from orchestration_service.application.exit_saga import ExitSagaOrchestrationService
-from orchestration_service.application.operation_status import OperationStatusQueryService
-from orchestration_service.clients.grpc.parking_command import ParkingCommandGrpcClient
-from orchestration_service.clients.grpc.parking_query import ParkingQueryGrpcClient
-from orchestration_service.clients.grpc.vehicle import VehicleGrpcClient
-from orchestration_service.clients.grpc.zone import ZoneGrpcClient
-from orchestration_service.repositories.operation import SagaOperationRepository
+from orchestration_service.saga.application.use_cases.entry_saga import (
+    EntrySagaOrchestrationService,
+)
+from orchestration_service.saga.application.use_cases.exit_saga import (
+    ExitSagaOrchestrationService,
+)
+from orchestration_service.saga.application.use_cases.operation_status import (
+    OperationStatusQueryService,
+)
+from orchestration_service.saga.bootstrap import build_entry_saga_service
+from orchestration_service.saga.bootstrap import build_exit_saga_service
+from orchestration_service.saga.bootstrap import build_operation_repository
+from orchestration_service.saga.bootstrap import build_operation_status_query_service
+from orchestration_service.saga.bootstrap import build_parking_command_gateway
+from orchestration_service.saga.bootstrap import build_parking_query_gateway
+from orchestration_service.saga.bootstrap import build_vehicle_gateway
+from orchestration_service.saga.bootstrap import build_zone_gateway
 
-
-def build_operation_repository() -> SagaOperationRepository:
-    return SagaOperationRepository()
-
-
-def build_vehicle_gateway() -> VehicleGrpcClient:
-    return VehicleGrpcClient()
-
-
-def build_zone_gateway() -> ZoneGrpcClient:
-    return ZoneGrpcClient()
-
-
-def build_parking_command_gateway() -> ParkingCommandGrpcClient:
-    return ParkingCommandGrpcClient()
-
-
-def build_parking_query_gateway() -> ParkingQueryGrpcClient:
-    return ParkingQueryGrpcClient()
-
-
-def build_entry_saga_service() -> EntrySagaOrchestrationService:
-    return EntrySagaOrchestrationService(
-        operation_repository=build_operation_repository(),
-        vehicle_gateway=build_vehicle_gateway(),
-        zone_gateway=build_zone_gateway(),
-        parking_command_gateway=build_parking_command_gateway(),
-        parking_query_gateway=build_parking_query_gateway(),
-    )
-
-
-def build_exit_saga_service() -> ExitSagaOrchestrationService:
-    return ExitSagaOrchestrationService(
-        operation_repository=build_operation_repository(),
-        zone_gateway=build_zone_gateway(),
-        parking_command_gateway=build_parking_command_gateway(),
-        parking_query_gateway=build_parking_query_gateway(),
-    )
-
-
-def build_operation_status_query_service() -> OperationStatusQueryService:
-    return OperationStatusQueryService(operation_repository=build_operation_repository())
+__all__ = [
+    "EntrySagaOrchestrationService",
+    "ExitSagaOrchestrationService",
+    "OperationStatusQueryService",
+    "build_operation_repository",
+    "build_vehicle_gateway",
+    "build_zone_gateway",
+    "build_parking_command_gateway",
+    "build_parking_query_gateway",
+    "build_entry_saga_service",
+    "build_exit_saga_service",
+    "build_operation_status_query_service",
+]
