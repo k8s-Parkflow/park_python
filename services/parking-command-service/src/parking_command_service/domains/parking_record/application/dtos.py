@@ -47,6 +47,7 @@ class ParkingRecordSnapshot:
             "history_id": self.history_id,
             "vehicle_num": self.vehicle_num,
             "zone_id": self.zone_id,
+            "slot_code": self.slot_code,
             "slot_name": self.slot_code,
             "slot_id": self.slot_id,
             "status": self.status,

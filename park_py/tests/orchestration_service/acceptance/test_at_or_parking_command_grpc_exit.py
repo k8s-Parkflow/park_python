@@ -14,6 +14,8 @@ from park_py.tests.orchestration_service.support import FakeParkingQueryGateway
 
 @override_settings(ROOT_URLCONF="orchestration_service.urls")
 class OrchestrationParkingCommandGrpcExitAcceptanceTests(TransactionTestCase):
+    databases = "__all__"
+
     def test_should_complete_exit_saga_via_parking_command_grpc__when_exit_servicer_is_available(self) -> None:
         """[AT-OR-GRPC-PC-EXIT-01] 출차 SAGA가 parking-command gRPC를 통해 완료된다"""
 

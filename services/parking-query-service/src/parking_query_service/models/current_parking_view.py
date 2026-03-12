@@ -8,6 +8,7 @@ class CurrentParkingView(models.Model):
     zone_id = models.BigIntegerField(null=True, blank=True)
     slot_id = models.BigIntegerField(null=True, blank=True)
     zone_name = models.CharField(max_length=100, null=True, blank=True)
+    slot_code = models.CharField(max_length=50, null=True, blank=True)
     slot_name = models.CharField(max_length=50, null=True, blank=True)
     slot_type = models.CharField(max_length=50)
     entry_at = models.DateTimeField()

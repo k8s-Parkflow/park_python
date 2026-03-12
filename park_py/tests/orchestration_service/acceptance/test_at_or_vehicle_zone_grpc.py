@@ -20,6 +20,8 @@ from zone_service.models import ParkingSlot, SlotType, Zone
 
 @override_settings(ROOT_URLCONF="orchestration_service.urls")
 class OrchestrationVehicleZoneGrpcAcceptanceTests(TransactionTestCase):
+    databases = "__all__"
+
     def test_should_complete_entry_saga_via_vehicle_and_zone_grpc_clients__when_servicers_are_available(self) -> None:
         """[AT-OR-GRPC-ENTRY-01] gRPC 계약 경유 차량/구역 검증"""
 

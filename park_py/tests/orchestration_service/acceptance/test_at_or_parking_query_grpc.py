@@ -26,6 +26,8 @@ from zone_service.models import SlotType, Zone
 
 @override_settings(ROOT_URLCONF="orchestration_service.urls")
 class OrchestrationParkingQueryGrpcAcceptanceTests(TransactionTestCase):
+    databases = "__all__"
+
     def test_should_complete_entry_saga_with_real_parking_query_grpc__when_projection_is_applied(self) -> None:
         """[AT-OR-GRPC-PQ-01] 입차 SAGA가 parking-query gRPC projection까지 완료한다"""
 
@@ -138,6 +140,9 @@ class OrchestrationParkingQueryGrpcAcceptanceTests(TransactionTestCase):
         )
         history = slot.parking_histories.create(
             vehicle_num="12가3456",
+            zone_id=1,
+            slot_type_id=1,
+            slot_code="A001",
             entry_at=timezone.datetime(2026, 3, 10, 1, 0, tzinfo=timezone.utc),
         )
         CurrentParkingView.objects.create(
@@ -145,6 +150,8 @@ class OrchestrationParkingQueryGrpcAcceptanceTests(TransactionTestCase):
             history_id=history.history_id,
             zone_id=1,
             slot_id=7,
+            slot_code="A001",
+            slot_name="A001",
             slot_type="GENERAL",
             entry_at=history.entry_at,
         )

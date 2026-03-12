@@ -10,6 +10,8 @@ from parking_command_service.domains.parking_record.infrastructure.repositories.
 
 
 class ParkingCommandGrpcRepositoryTests(TestCase):
+    databases = "__all__"
+
     def test_should_persist_trusted_zone_snapshot__when_history_starts_with_override(self) -> None:
         """[RT-PC-GRPC-05] trusted entry snapshot이 slot master보다 우선 저장된다"""
 
