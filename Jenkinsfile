@@ -153,19 +153,18 @@ spec:
                             
                             def targets = env.TARGET_SERVICES.split(",")
                             def serviceMap = [
-                                "orchestration": "parking-orchestration-app",
-                                "command"      : "parking-command-app",
-                                "query"        : "parking-query-app",
-                                "vehicle"      : "parking-vehicle-app",
-                                "zone"         : "parking-zone-app"
+                                "orchestration": [image: "parking-orchestration-app", yaml: "backend/orchestration-http.yaml"],
+                                "command"      : [image: "parking-command-app", yaml: "backend/parking-command-grpc.yaml"],
+                                "query"        : [image: "parking-query-app", yaml: "backend/parking-query-grpc.yaml"],
+                                "vehicle"      : [image: "parking-vehicle-app", yaml: "backend/vehicle-grpc.yaml"],
+                                "zone"         : [image: "parking-zone-app", yaml: "backend/zone-grpc.yaml"]
                             ]
                             
                             targets.each { target ->
-                                def imageName = serviceMap[target]
-                                def fileName = "backend/${target}-deployment.yaml"
+                                def srv = serviceMap[target]
+                                def fileName = srv.yaml
                                 if (fileExists(fileName)) {
-                                    // image: hyungdongjo/parking-command-app:latest 등을 v{BUILD_NUMBER}로 치환
-                                    sh "sed -i 's|image: ${env.DOCKER_REGISTRY}/${imageName}:.*|image: ${env.DOCKER_REGISTRY}/${imageName}:v${env.BUILD_NUMBER}|g' ${fileName}"
+                                    sh "sed -i 's|image: ${env.DOCKER_REGISTRY}/${srv.image}:.*|image: ${env.DOCKER_REGISTRY}/${srv.image}:v${env.BUILD_NUMBER}|g' ${fileName}"
                                     echo "✅ ${fileName}의 이미지를 v${env.BUILD_NUMBER}로 업데이트했습니다."
                                 } else {
                                     echo "⚠️ ${fileName} 파일을 찾을 수 없어 건너뜁니다."
