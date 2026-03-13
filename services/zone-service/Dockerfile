@@ -35,7 +35,7 @@ RUN chmod -R 777 /app && \
     chmod +x scripts/services/zone/*.sh
 
 # zone gRPC 기본 포트
-EXPOSE 50052
+EXPOSE 50016
 
 # gRPC 실행 스크립트 호출
 CMD ["./scripts/services/zone/run_grpc.sh"]
