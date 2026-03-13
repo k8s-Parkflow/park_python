@@ -41,7 +41,7 @@ class ParkingQueryGrpcClient(GrpcClientBase):
         stub=None,
     ) -> None:
         super().__init__(
-            target=target or os.getenv("PARKING_QUERY_SERVICE_GRPC_TARGET", "127.0.0.1:50054"),
+            target=target or os.getenv("PARKING_QUERY_SERVICE_GRPC_TARGET", "127.0.0.1:50018"),
             timeout=timeout,
             channel=channel,
             stub=stub,

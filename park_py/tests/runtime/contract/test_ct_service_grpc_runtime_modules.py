@@ -7,20 +7,20 @@ from unittest import TestCase
 class ServiceGrpcRuntimeModulesContractTests(TestCase):
     def test_should_expose_service_specific_runtime_defaults(self) -> None:
         cases = [
-            ("vehicle_service.grpc_runtime", "vehicle", "VEHICLE_GRPC_PORT", 50051, "vehicle_service.settings"),
-            ("zone_service.grpc_runtime", "zone", "ZONE_GRPC_PORT", 50052, "zone_service.settings"),
+            ("vehicle_service.grpc_runtime", "vehicle", "VEHICLE_GRPC_PORT", 50015, "vehicle_service.settings"),
+            ("zone_service.grpc_runtime", "zone", "ZONE_GRPC_PORT", 50016, "zone_service.settings"),
             (
                 "parking_command_service.grpc_runtime",
                 "parking_command",
                 "PARKING_COMMAND_GRPC_PORT",
-                50053,
+                50017,
                 "parking_command_service.settings",
             ),
             (
                 "parking_query_service.grpc_runtime",
                 "parking_query",
                 "PARKING_QUERY_GRPC_PORT",
-                50054,
+                50018,
                 "parking_query_service.settings",
             ),
         ]

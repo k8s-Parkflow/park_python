@@ -18,7 +18,7 @@ class VehicleGrpcClient(GrpcClientBase):
         stub=None,
     ) -> None:
         super().__init__(
-            target=target or os.getenv("VEHICLE_SERVICE_GRPC_TARGET", "127.0.0.1:50051"),
+            target=target or os.getenv("VEHICLE_SERVICE_GRPC_TARGET", "127.0.0.1:50015"),
             timeout=timeout,
             channel=channel,
             stub=stub,
