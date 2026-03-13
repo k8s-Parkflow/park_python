@@ -1,6 +1,6 @@
 # 오케스트레이션 게이트웨이 API
 
-이 문서는 `orchestration-service`가 제공하는 사가 기반 공개 API를 정리합니다.
+이 문서는 `orchestration-service`가 제공하는 사가 기반 공개 API 정리
 
 관련 URL 등록:
 - orchestration_service/saga/interfaces/http/urls.py

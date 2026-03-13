@@ -10,8 +10,8 @@
 
 문서 목록:
 - `public-query-api.md`
-- `public-command-api.md`
 - `gateway-api.md`
+- `integration-guide.md`
 - `internal-support-api.md`
 - `internal-command-api.md`
 - `internal-query-api.md`
@@ -59,7 +59,6 @@
 - 전체 여석 조회
 - 존별 슬롯 목록 조회
 - 차량 현재 위치 조회
-- 직접 입차/출차
 - 사가 기반 입차/출차
 - 사가 상태 조회
 
@@ -68,3 +67,9 @@
 - 슬롯 입차 정책 조회
 - parking-command write/compensation
 - parking-query projection/read model 반영
+
+## 문서 해석 기준
+
+- 프론트엔드는 `gateway-api.md`와 `public-query-api.md`를 기준으로 연동합니다.
+- 입차/출차는 `gateway-api.md` 기준으로 진행합니다.
+- 내부 `parking-command`, `parking-query`, `vehicle`, `zone` API는 서비스 간 연동용입니다.
