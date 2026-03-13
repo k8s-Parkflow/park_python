@@ -33,6 +33,8 @@ AGENTS.md
 /docs/*
 !/docs/entities/
 !/docs/entities/**/*.md
+!/docs/apiDoc/
+!/docs/apiDoc/**/*.md
 
 # Ignore test documents except README files
 services/*/test/*.md
@@ -50,3 +52,5 @@ services/*/test/**/*.rst
 # Track entity schema docs only
 !/docs/entities/
 !/docs/entities/*.md
+!/docs/apiDoc/
+!/docs/apiDoc/*.md
