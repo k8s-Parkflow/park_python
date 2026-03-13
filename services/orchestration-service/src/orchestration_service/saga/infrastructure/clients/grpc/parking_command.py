@@ -102,7 +102,7 @@ class ParkingCommandGrpcClient(GrpcClientBase):
         stub=None,
     ) -> None:
         super().__init__(
-            target=target or os.getenv("PARKING_COMMAND_SERVICE_GRPC_TARGET", "127.0.0.1:50053"),
+            target=target or os.getenv("PARKING_COMMAND_SERVICE_GRPC_TARGET", "127.0.0.1:50017"),
             timeout=timeout,
             channel=channel,
             stub=stub,

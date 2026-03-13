@@ -18,7 +18,7 @@ class ZoneGrpcClient(GrpcClientBase):
         stub=None,
     ) -> None:
         super().__init__(
-            target=target or os.getenv("ZONE_SERVICE_GRPC_TARGET", "127.0.0.1:50052"),
+            target=target or os.getenv("ZONE_SERVICE_GRPC_TARGET", "127.0.0.1:50016"),
             timeout=timeout,
             channel=channel,
             stub=stub,
