@@ -125,11 +125,11 @@ spec:
                             echo "🚀 Building and Pushing: ${target} (${imageFullPath}:v${env.BUILD_NUMBER})"
                             
                             sh """
-                            /kaniko/executor \
-                              --context "${buildContext}" \
-                              --dockerfile ${srv.dockerfile} \
-                              --destination ${imageFullPath}:v${env.BUILD_NUMBER} \
-                              --destination ${imageFullPath}:latest
+                            /kaniko/executor \\
+                              --context "${buildContext}" \\
+                              --dockerfile "${buildContext}/${srv.dockerfile}" \\
+                              --destination "${imageFullPath}:v${env.BUILD_NUMBER}" \\
+                              --destination "${imageFullPath}:latest"
                             """
                         }
                     }
