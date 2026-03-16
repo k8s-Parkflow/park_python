@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
 from unittest import TestCase
 
 from park_py import settings as settings_module
@@ -17,6 +16,8 @@ class MsaDatabaseAliasesAcceptanceTests(TestCase):
             {"default", "vehicle", "zone", "parking_command", "parking_query"},
         )
         self.assertEqual(
-            Path(settings_module.DATABASES["default"]["NAME"]).name,
-            "orchestration.sqlite3",
+            settings_module.DATABASES["default"]["ENGINE"],
+            "django.db.backends.mysql",
         )
+        self.assertEqual(settings_module.DATABASES["default"]["NAME"], "autoe_orchestration")
+        self.assertEqual(settings_module.DATABASES["default"]["HOST"], "127.0.0.1")
