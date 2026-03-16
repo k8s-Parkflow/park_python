@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 from importlib import import_module
+from unittest import TestCase
 
-from django.test import SimpleTestCase
 
-
-class CommandQueryHttpRuntimeSettingsTests(SimpleTestCase):
+class CommandQueryHttpRuntimeSettingsTests(TestCase):
     def test_should_configure_parking_command_http_runtime_settings(self) -> None:
         settings_module = import_module("parking_command_service.settings")
 

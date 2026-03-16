@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 from importlib import import_module
+from unittest import TestCase
 
-from django.test import SimpleTestCase
 
-
-class InternalServiceHttpRuntimeSettingsTests(SimpleTestCase):
+class InternalServiceHttpRuntimeSettingsTests(TestCase):
     def test_should_configure_vehicle_http_runtime_settings(self) -> None:
         settings_module = import_module("vehicle_service.settings")
 

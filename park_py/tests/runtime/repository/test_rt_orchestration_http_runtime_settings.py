@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 from importlib import import_module
+from unittest import TestCase
 
-from django.test import SimpleTestCase
 
-
-class OrchestrationHttpRuntimeSettingsTests(SimpleTestCase):
+class OrchestrationHttpRuntimeSettingsTests(TestCase):
     def test_should_configure_orchestration_only_urlconf_and_wsgi(self) -> None:
         settings_module = import_module("orchestration_service.settings")
 
