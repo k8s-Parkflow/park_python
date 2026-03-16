@@ -69,3 +69,11 @@ ParkPython은 이용자들의 Zone 별 주차장 여석 조회를 지원하는 D
 테스트 설정도 SQLite 파일 대신 MariaDB 테스트 database 이름을 사용합니다.
 - 예시: `test_default_autoe_orchestration`
 - 예시: `test_vehicle_autoe_vehicle`
+
+로컬 MariaDB를 바로 띄우려면 아래 compose 파일을 사용할 수 있습니다.
+
+```bash
+docker compose -f docker-compose.mariadb.yml up -d
+```
+
+기본 root 비밀번호는 `root`이고, `autoe_orchestration`, `autoe_vehicle`, `autoe_zone`, `autoe_parking_command`, `autoe_parking_query` database가 준비됩니다.

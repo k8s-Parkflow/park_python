@@ -39,6 +39,10 @@ AGENTS.md
 /docs/architecture/*
 !/docs/architecture/mariadb-migration-scope.md
 !/docs/architecture/mariadb-migration-implementation-checklist.md
+!/docs/Deploy/
+/docs/Deploy/*
+!/docs/Deploy/database-and-migration.md
+!/docs/Deploy/common-image-and-docker.md
 
 # Ignore test documents except README files
 services/*/test/*.md
@@ -62,3 +66,7 @@ services/*/test/**/*.rst
 /docs/architecture/*
 !/docs/architecture/mariadb-migration-scope.md
 !/docs/architecture/mariadb-migration-implementation-checklist.md
+!/docs/Deploy/
+/docs/Deploy/*
+!/docs/Deploy/database-and-migration.md
+!/docs/Deploy/common-image-and-docker.md
