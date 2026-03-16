@@ -15,6 +15,12 @@ class InternalServiceHttpRuntimeSettingsTests(SimpleTestCase):
             "vehicle_service.http_runtime.wsgi.application",
         )
         self.assertEqual(set(settings_module.DATABASES.keys()), {"default"})
+        self.assertEqual(
+            settings_module.DATABASES["default"]["ENGINE"],
+            "django.db.backends.mysql",
+        )
+        self.assertEqual(settings_module.DATABASES["default"]["NAME"], "autoe_vehicle")
+        self.assertEqual(settings_module.DATABASES["default"]["HOST"], "127.0.0.1")
         self.assertIn("vehicle_service.apps.VehicleServiceConfig", settings_module.INSTALLED_APPS)
 
     def test_should_configure_zone_http_runtime_settings(self) -> None:
@@ -26,4 +32,10 @@ class InternalServiceHttpRuntimeSettingsTests(SimpleTestCase):
             "zone_service.http_runtime.wsgi.application",
         )
         self.assertEqual(set(settings_module.DATABASES.keys()), {"default"})
+        self.assertEqual(
+            settings_module.DATABASES["default"]["ENGINE"],
+            "django.db.backends.mysql",
+        )
+        self.assertEqual(settings_module.DATABASES["default"]["NAME"], "autoe_zone")
+        self.assertEqual(settings_module.DATABASES["default"]["HOST"], "127.0.0.1")
         self.assertIn("zone_service.apps.ZoneServiceConfig", settings_module.INSTALLED_APPS)

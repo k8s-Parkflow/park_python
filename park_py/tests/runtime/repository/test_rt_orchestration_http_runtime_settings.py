@@ -29,3 +29,9 @@ class OrchestrationHttpRuntimeSettingsTests(SimpleTestCase):
             ],
         )
         self.assertEqual(set(settings_module.DATABASES.keys()), {"default"})
+        self.assertEqual(
+            settings_module.DATABASES["default"]["ENGINE"],
+            "django.db.backends.mysql",
+        )
+        self.assertEqual(settings_module.DATABASES["default"]["NAME"], "autoe_orchestration")
+        self.assertEqual(settings_module.DATABASES["default"]["HOST"], "127.0.0.1")

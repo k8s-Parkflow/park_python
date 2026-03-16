@@ -1,12 +1,8 @@
 from __future__ import annotations
 
 import os
-from pathlib import Path
 
-from shared.database_config import build_sqlite_database
-
-
-BASE_DIR = Path(__file__).resolve().parents[4]
+from shared.database_config import build_mariadb_database
 
 SECRET_KEY = os.getenv(
     "SECRET_KEY",
@@ -56,11 +52,12 @@ TEMPLATES = [
 WSGI_APPLICATION = "vehicle_service.http_runtime.wsgi.application"
 
 DATABASES = {
-    "default": build_sqlite_database(
-        name=os.getenv(
-            "VEHICLE_DB_NAME",
-            str(BASE_DIR / "vehicle.sqlite3"),
-        )
+    "default": build_mariadb_database(
+        name=os.getenv("VEHICLE_DB_NAME", "autoe_vehicle"),
+        host=os.getenv("VEHICLE_DB_HOST", "127.0.0.1"),
+        port=os.getenv("VEHICLE_DB_PORT", "3306"),
+        user=os.getenv("VEHICLE_DB_USER", "root"),
+        password=os.getenv("VEHICLE_DB_PASSWORD", ""),
     )
 }
 

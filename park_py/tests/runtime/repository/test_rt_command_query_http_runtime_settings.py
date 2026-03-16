@@ -18,6 +18,12 @@ class CommandQueryHttpRuntimeSettingsTests(SimpleTestCase):
             "parking_command_service.http_runtime.wsgi.application",
         )
         self.assertEqual(set(settings_module.DATABASES.keys()), {"default"})
+        self.assertEqual(
+            settings_module.DATABASES["default"]["ENGINE"],
+            "django.db.backends.mysql",
+        )
+        self.assertEqual(settings_module.DATABASES["default"]["NAME"], "autoe_parking_command")
+        self.assertEqual(settings_module.DATABASES["default"]["HOST"], "127.0.0.1")
         self.assertIn(
             "parking_command_service.apps.ParkingCommandServiceConfig",
             settings_module.INSTALLED_APPS,
@@ -35,6 +41,12 @@ class CommandQueryHttpRuntimeSettingsTests(SimpleTestCase):
             "parking_query_service.http_runtime.wsgi.application",
         )
         self.assertEqual(set(settings_module.DATABASES.keys()), {"default"})
+        self.assertEqual(
+            settings_module.DATABASES["default"]["ENGINE"],
+            "django.db.backends.mysql",
+        )
+        self.assertEqual(settings_module.DATABASES["default"]["NAME"], "autoe_parking_query")
+        self.assertEqual(settings_module.DATABASES["default"]["HOST"], "127.0.0.1")
         self.assertIn(
             "parking_query_service.apps.ParkingQueryServiceConfig",
             settings_module.INSTALLED_APPS,
