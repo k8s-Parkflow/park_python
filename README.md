@@ -20,6 +20,7 @@ ParkPython은 이용자들의 Zone 별 주차장 여석 조회를 지원하는 D
 
 ### 데이터베이스
 - **MariaDB** - 관계형 데이터베이스
+- **mysqlclient** - Django MariaDB/MySQL 드라이버
 - **Django ORM** - 데이터 모델링 및 영속성 관리
 
 ### API 문서화
@@ -45,3 +46,26 @@ ParkPython은 이용자들의 Zone 별 주차장 여석 조회를 지원하는 D
 어플리케이션 실행 후 다음 URL에서 API 문서를 확인할 수 있습니다:
 
 - **Swagger UI**: http://localhost:8000/api/docs/swagger
+
+## 🗄 MariaDB 실행 계약
+
+현재 프로젝트는 서비스별 database 분리 전략을 사용합니다.
+
+- `ORCHESTRATION_DB_NAME` 기본값: `autoe_orchestration`
+- `VEHICLE_DB_NAME` 기본값: `autoe_vehicle`
+- `ZONE_DB_NAME` 기본값: `autoe_zone`
+- `PARKING_COMMAND_DB_NAME` 기본값: `autoe_parking_command`
+- `PARKING_QUERY_DB_NAME` 기본값: `autoe_parking_query`
+
+공통 기본값:
+
+- `*_DB_HOST=127.0.0.1`
+- `*_DB_PORT=3306`
+- `*_DB_USER=root`
+- `*_DB_PASSWORD=""`
+
+서비스 실행 스크립트는 위 환경변수 계약을 그대로 사용합니다.
+
+테스트 설정도 SQLite 파일 대신 MariaDB 테스트 database 이름을 사용합니다.
+- 예시: `test_default_autoe_orchestration`
+- 예시: `test_vehicle_autoe_vehicle`
