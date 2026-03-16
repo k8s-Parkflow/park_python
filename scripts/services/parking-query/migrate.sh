@@ -6,6 +6,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../_common.sh"
 
 setup_service_env "services/parking-query-service/src" "parking_query_service.settings"
+setup_mariadb_env "PARKING_QUERY" "autoe_parking_query"
 
 REPO_ROOT="$(service_repo_root)"
 
