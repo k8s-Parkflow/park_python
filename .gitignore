@@ -33,16 +33,6 @@ AGENTS.md
 /docs/*
 !/docs/entities/
 !/docs/entities/**/*.md
-!/docs/apiDoc/
-!/docs/apiDoc/**/*.md
-!/docs/architecture/
-/docs/architecture/*
-!/docs/architecture/mariadb-migration-scope.md
-!/docs/architecture/mariadb-migration-implementation-checklist.md
-!/docs/Deploy/
-/docs/Deploy/*
-!/docs/Deploy/database-and-migration.md
-!/docs/Deploy/common-image-and-docker.md
 
 # Ignore test documents except README files
 services/*/test/*.md
@@ -60,13 +50,3 @@ services/*/test/**/*.rst
 # Track entity schema docs only
 !/docs/entities/
 !/docs/entities/*.md
-!/docs/apiDoc/
-!/docs/apiDoc/*.md
-!/docs/architecture/
-/docs/architecture/*
-!/docs/architecture/mariadb-migration-scope.md
-!/docs/architecture/mariadb-migration-implementation-checklist.md
-!/docs/Deploy/
-/docs/Deploy/*
-!/docs/Deploy/database-and-migration.md
-!/docs/Deploy/common-image-and-docker.md
