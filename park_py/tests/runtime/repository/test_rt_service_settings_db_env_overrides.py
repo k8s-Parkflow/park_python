@@ -5,8 +5,35 @@ import os
 from unittest import TestCase
 from unittest.mock import patch
 
+from django.core.exceptions import ImproperlyConfigured
+
 
 class ServiceSettingsDatabaseEnvOverrideRuntimeTests(TestCase):
+    def test_should_require_service_db_credentials__when_settings_are_reloaded(self) -> None:
+        with patch.dict(
+            os.environ,
+            {
+                "ORCHESTRATION_DB_USER": "or_user",
+                "ORCHESTRATION_DB_PASSWORD": "or_pass",
+            },
+            clear=False,
+        ):
+            settings_module = importlib.import_module("orchestration_service.settings")
+
+        with patch.dict(
+            os.environ,
+            {
+                "ORCHESTRATION_DB_USER": "",
+                "ORCHESTRATION_DB_PASSWORD": "",
+            },
+            clear=False,
+        ):
+            with self.assertRaisesRegex(
+                ImproperlyConfigured,
+                "ORCHESTRATION_DB_USER must be set for MariaDB configuration",
+            ):
+                importlib.reload(settings_module)
+
     def test_should_apply_service_specific_db_env_overrides__when_settings_are_reloaded(self) -> None:
         cases = [
             (

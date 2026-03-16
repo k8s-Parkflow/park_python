@@ -29,6 +29,15 @@ export_default_env() {
   fi
 }
 
+require_env() {
+  local env_key="$1"
+
+  if [[ -z "${!env_key:-}" ]]; then
+    echo "Missing required environment variable: ${env_key}" >&2
+    return 1
+  fi
+}
+
 setup_mariadb_env() {
   local env_prefix="$1"
   local default_name="$2"
@@ -36,6 +45,6 @@ setup_mariadb_env() {
   export_default_env "${env_prefix}_DB_NAME" "${default_name}"
   export_default_env "${env_prefix}_DB_HOST" "127.0.0.1"
   export_default_env "${env_prefix}_DB_PORT" "3306"
-  export_default_env "${env_prefix}_DB_USER" "root"
-  export_default_env "${env_prefix}_DB_PASSWORD" ""
+  require_env "${env_prefix}_DB_USER"
+  require_env "${env_prefix}_DB_PASSWORD"
 }

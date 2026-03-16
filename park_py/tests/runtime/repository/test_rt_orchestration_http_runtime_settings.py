@@ -1,12 +1,23 @@
 from __future__ import annotations
 
-from importlib import import_module
+import importlib
+import os
 from unittest import TestCase
+from unittest.mock import patch
 
 
 class OrchestrationHttpRuntimeSettingsTests(TestCase):
     def test_should_configure_orchestration_only_urlconf_and_wsgi(self) -> None:
-        settings_module = import_module("orchestration_service.settings")
+        with patch.dict(
+            os.environ,
+            {
+                "ORCHESTRATION_DB_USER": "orchestration_app",
+                "ORCHESTRATION_DB_PASSWORD": "orchestration_secret",
+            },
+            clear=False,
+        ):
+            settings_module = importlib.import_module("orchestration_service.settings")
+            settings_module = importlib.reload(settings_module)
 
         self.assertEqual(
             settings_module.ROOT_URLCONF,

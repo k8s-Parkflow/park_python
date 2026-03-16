@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 
-from shared.database_config import build_mariadb_database
+from shared.database_config import build_service_mariadb_database
 
 SECRET_KEY = os.getenv(
     "SECRET_KEY",
@@ -54,13 +54,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "parking_query_service.http_runtime.wsgi.application"
 
 DATABASES = {
-    "default": build_mariadb_database(
-        name=os.getenv("PARKING_QUERY_DB_NAME", "autoe_parking_query"),
-        host=os.getenv("PARKING_QUERY_DB_HOST", "127.0.0.1"),
-        port=os.getenv("PARKING_QUERY_DB_PORT", "3306"),
-        user=os.getenv("PARKING_QUERY_DB_USER", "root"),
-        password=os.getenv("PARKING_QUERY_DB_PASSWORD", ""),
-    )
+    "default": build_service_mariadb_database(alias="parking_query")
 }
 
 AUTH_PASSWORD_VALIDATORS = [

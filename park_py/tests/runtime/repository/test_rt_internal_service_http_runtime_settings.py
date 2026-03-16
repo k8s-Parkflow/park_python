@@ -1,12 +1,23 @@
 from __future__ import annotations
 
-from importlib import import_module
+import importlib
+import os
 from unittest import TestCase
+from unittest.mock import patch
 
 
 class InternalServiceHttpRuntimeSettingsTests(TestCase):
     def test_should_configure_vehicle_http_runtime_settings(self) -> None:
-        settings_module = import_module("vehicle_service.settings")
+        with patch.dict(
+            os.environ,
+            {
+                "VEHICLE_DB_USER": "vehicle_app",
+                "VEHICLE_DB_PASSWORD": "vehicle_secret",
+            },
+            clear=False,
+        ):
+            settings_module = importlib.import_module("vehicle_service.settings")
+            settings_module = importlib.reload(settings_module)
 
         self.assertEqual(settings_module.ROOT_URLCONF, "vehicle_service.http_runtime.urls")
         self.assertEqual(
@@ -23,7 +34,16 @@ class InternalServiceHttpRuntimeSettingsTests(TestCase):
         self.assertIn("vehicle_service.apps.VehicleServiceConfig", settings_module.INSTALLED_APPS)
 
     def test_should_configure_zone_http_runtime_settings(self) -> None:
-        settings_module = import_module("zone_service.settings")
+        with patch.dict(
+            os.environ,
+            {
+                "ZONE_DB_USER": "zone_app",
+                "ZONE_DB_PASSWORD": "zone_secret",
+            },
+            clear=False,
+        ):
+            settings_module = importlib.import_module("zone_service.settings")
+            settings_module = importlib.reload(settings_module)
 
         self.assertEqual(settings_module.ROOT_URLCONF, "zone_service.http_runtime.urls")
         self.assertEqual(

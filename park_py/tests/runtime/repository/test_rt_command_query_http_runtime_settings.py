@@ -1,12 +1,23 @@
 from __future__ import annotations
 
-from importlib import import_module
+import importlib
+import os
 from unittest import TestCase
+from unittest.mock import patch
 
 
 class CommandQueryHttpRuntimeSettingsTests(TestCase):
     def test_should_configure_parking_command_http_runtime_settings(self) -> None:
-        settings_module = import_module("parking_command_service.settings")
+        with patch.dict(
+            os.environ,
+            {
+                "PARKING_COMMAND_DB_USER": "parking_command_app",
+                "PARKING_COMMAND_DB_PASSWORD": "parking_command_secret",
+            },
+            clear=False,
+        ):
+            settings_module = importlib.import_module("parking_command_service.settings")
+            settings_module = importlib.reload(settings_module)
 
         self.assertEqual(
             settings_module.ROOT_URLCONF,
@@ -29,7 +40,16 @@ class CommandQueryHttpRuntimeSettingsTests(TestCase):
         )
 
     def test_should_configure_parking_query_http_runtime_settings(self) -> None:
-        settings_module = import_module("parking_query_service.settings")
+        with patch.dict(
+            os.environ,
+            {
+                "PARKING_QUERY_DB_USER": "parking_query_app",
+                "PARKING_QUERY_DB_PASSWORD": "parking_query_secret",
+            },
+            clear=False,
+        ):
+            settings_module = importlib.import_module("parking_query_service.settings")
+            settings_module = importlib.reload(settings_module)
 
         self.assertEqual(
             settings_module.ROOT_URLCONF,
