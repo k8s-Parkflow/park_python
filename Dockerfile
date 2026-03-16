@@ -2,6 +2,7 @@
 FROM python:3.11-slim AS builder
 WORKDIR /app
 
+# mysqlclient 빌드를 위해 MariaDB/MySQL 클라이언트 헤더와 pkg-config가 필요하다.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential default-libmysqlclient-dev pkg-config \
     && rm -rf /var/lib/apt/lists/*
@@ -19,8 +20,9 @@ WORKDIR /app
 # Non-root 사용자 생성 (보안)
 RUN groupadd --system appgroup && useradd --system --gid appgroup appuser
 
+# 빌드된 mysqlclient wheel이 링크할 런타임 공유 라이브러리만 유지한다.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    default-libmysqlclient-dev && rm -rf /var/lib/apt/lists/*
+    libmariadb3 && rm -rf /var/lib/apt/lists/*
 
 # 빌드된 가상환경 복사
 COPY --from=builder /opt/venv /opt/venv
