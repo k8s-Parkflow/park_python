@@ -29,23 +29,6 @@ DB 이름 예시:
 - `autoe_parking_command`
 - `autoe_parking_query`
 
-로컬 검증용 구성:
-
-- `docker-compose.mariadb.yml`
-- `docker/mariadb/init/001-create-service-databases.sql`
-
-로컬 실행 예시:
-
-```bash
-docker compose -f docker-compose.mariadb.yml up -d
-docker exec autoe-mariadb mariadb -uroot -proot -e "SHOW DATABASES;"
-```
-
-기본 포트:
-
-- 호스트 `3306`
-- 컨테이너 `3306`
-
 ## 3. 권장 settings_prod.py 구조
 
 운영용 설정 파일을 새로 두고, 서비스별 DB 접속 정보를 환경 변수로 주입하는 방식을 추천한다.
