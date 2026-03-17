@@ -5,3 +5,4 @@ protobuf==6.31.1
 grpcio==1.78.0
 grpcio-tools==1.78.0
 gunicorn==21.2.0
+mysqlclient==2.2.7

@@ -6,5 +6,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../_common.sh"
 
 setup_service_env "services/zone-service/src" "zone_service.settings"
+setup_mariadb_env "ZONE" "autoe_zone"
 
 exec "${PYTHON_BIN:-python}" -m zone_service.grpc_runtime

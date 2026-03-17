@@ -19,3 +19,32 @@ setup_service_env() {
   export PYTHONPATH="${repo_root}:${repo_root}/${service_src}${PYTHONPATH:+:${PYTHONPATH}}"
   export DJANGO_SETTINGS_MODULE="${settings_module}"
 }
+
+export_default_env() {
+  local env_key="$1"
+  local default_value="$2"
+
+  if [[ -z "${!env_key:-}" ]]; then
+    export "${env_key}=${default_value}"
+  fi
+}
+
+require_env() {
+  local env_key="$1"
+
+  if [[ -z "${!env_key:-}" ]]; then
+    echo "Missing required environment variable: ${env_key}" >&2
+    return 1
+  fi
+}
+
+setup_mariadb_env() {
+  local env_prefix="$1"
+  local default_name="$2"
+
+  export_default_env "${env_prefix}_DB_NAME" "${default_name}"
+  export_default_env "${env_prefix}_DB_HOST" "127.0.0.1"
+  export_default_env "${env_prefix}_DB_PORT" "3306"
+  require_env "${env_prefix}_DB_USER"
+  require_env "${env_prefix}_DB_PASSWORD"
+}
