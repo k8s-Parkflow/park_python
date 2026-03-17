@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib
 import os
+import sys
 from unittest import TestCase
 from unittest.mock import patch
 
@@ -10,10 +11,29 @@ class MsaTestDatabaseSettingsUnitTests(TestCase):
     def test_should_build_mariadb_test_database_names__for_settings_test(self) -> None:
         """[UT-MSA-DB-03] settings_test가 MariaDB 테스트 DB 이름을 구성"""
 
-        with patch.dict(os.environ, self._all_service_credentials(), clear=False):
-            settings_module = importlib.import_module("park_py.settings_test")
-            settings_module = importlib.reload(settings_module)
+        self._assert_with_settings_module(
+            module_name="park_py.settings_test",
+            assertion=self._assert_settings_test_database_names,
+        )
 
+    def test_should_build_mariadb_test_database_names__for_settings_msa_test(self) -> None:
+        """[UT-MSA-DB-04] settings_msa_test가 MariaDB 테스트 DB 이름을 구성"""
+
+        self._assert_with_settings_module(
+            module_name="park_py.settings_msa_test",
+            assertion=self._assert_settings_msa_test_database_names,
+        )
+
+    def _assert_with_settings_module(self, *, module_name: str, assertion) -> None:
+        with patch.dict(os.environ, self._all_service_credentials(), clear=True):
+            self._clear_module_cache(module_name)
+            try:
+                settings_module = importlib.import_module(module_name)
+                assertion(settings_module)
+            finally:
+                self._clear_module_cache(module_name)
+
+    def _assert_settings_test_database_names(self, settings_module) -> None:
         self.assertEqual(
             settings_module.DATABASES["default"]["TEST"]["NAME"],
             "test_default_autoe_orchestration",
@@ -24,13 +44,7 @@ class MsaTestDatabaseSettingsUnitTests(TestCase):
         )
         self.assertNotIn("/", settings_module.DATABASES["default"]["TEST"]["NAME"])
 
-    def test_should_build_mariadb_test_database_names__for_settings_msa_test(self) -> None:
-        """[UT-MSA-DB-04] settings_msa_test가 MariaDB 테스트 DB 이름을 구성"""
-
-        with patch.dict(os.environ, self._all_service_credentials(), clear=False):
-            settings_module = importlib.import_module("park_py.settings_msa_test")
-            settings_module = importlib.reload(settings_module)
-
+    def _assert_settings_msa_test_database_names(self, settings_module) -> None:
         self.assertEqual(
             settings_module.DATABASES["parking_command"]["TEST"]["NAME"],
             "test_parking_command_autoe_parking_command",
@@ -40,6 +54,11 @@ class MsaTestDatabaseSettingsUnitTests(TestCase):
             "test_parking_query_autoe_parking_query",
         )
         self.assertNotIn("/", settings_module.DATABASES["parking_query"]["TEST"]["NAME"])
+
+    @staticmethod
+    def _clear_module_cache(module_name: str) -> None:
+        sys.modules.pop(module_name, None)
+        sys.modules.pop("park_py.settings", None)
 
     @staticmethod
     def _all_service_credentials() -> dict[str, str]:
