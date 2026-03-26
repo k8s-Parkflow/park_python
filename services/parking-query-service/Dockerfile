@@ -43,6 +43,6 @@ ENV DJANGO_SETTINGS_MODULE=parking_query_service.settings
 RUN chmod +x scripts/services/parking-query/*.sh && \
     chmod +x scripts/services/_common.sh
 
-EXPOSE 50051
+EXPOSE 50018
 
 CMD ["./scripts/services/parking-query/run_grpc.sh"]
