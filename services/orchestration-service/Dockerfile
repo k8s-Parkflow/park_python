@@ -1,8 +1,7 @@
-# 1단계: 빌드 스테이지 (의존성 설치 전용)
+# 1단계: 빌드 스테이지
 FROM python:3.11-slim AS builder
 WORKDIR /app
 
-# mysqlclient 빌드를 위해 MariaDB/MySQL 클라이언트 헤더와 pkg-config가 필요하다.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential default-libmysqlclient-dev pkg-config \
     && rm -rf /var/lib/apt/lists/*
@@ -10,8 +9,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
-
-# Python 의존성 설치
 RUN pip install --no-cache-dir -U pip && \
     pip install --no-cache-dir -r requirements.txt
 
@@ -21,26 +18,30 @@ RUN pip install --no-cache-dir -U pip && \
 FROM python:3.11-slim
 WORKDIR /app
 
-# 빌드된 mysqlclient wheel이 링크할 런타임 공유 라이브러리만 유지한다.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libmariadb3 \
+    tzdata \
     && rm -rf /var/lib/apt/lists/*
 
-# 빌드 스테이지에서 설치된 venv 복사
 COPY --from=builder /opt/venv /opt/venv
 
-# 환경 변수 설정
 ENV PATH="/opt/venv/bin:$PATH"
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+ENV TZ=Asia/Seoul
 
-# 소스 코드 복사
-COPY . .
+COPY manage.py .
+COPY park_py/ ./park_py/
+COPY shared/ ./shared/
+COPY contracts/ ./contracts/
+COPY services/ ./services/
+COPY scripts/ ./scripts/
 
-# 스크립트 권한 부여
-RUN chmod +x scripts/services/orchestration/*.sh
+ENV PYTHONPATH="/app:/app/services/orchestration-service/src:/app/contracts/gen/python"
+ENV DJANGO_SETTINGS_MODULE=orchestration_service.settings
+RUN chmod +x scripts/services/orchestration/*.sh && \
+    chmod +x scripts/services/_common.sh
 
 EXPOSE 8000
 
-# 실행 명령
 CMD ["./scripts/services/orchestration/run_http.sh"]
