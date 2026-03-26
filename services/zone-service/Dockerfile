@@ -43,6 +43,6 @@ ENV DJANGO_SETTINGS_MODULE=zone_service.settings
 RUN chmod +x scripts/services/zone/*.sh && \
     chmod +x scripts/services/_common.sh
 
-EXPOSE 50051
+EXPOSE 50016
 
 CMD ["./scripts/services/zone/run_grpc.sh"]
