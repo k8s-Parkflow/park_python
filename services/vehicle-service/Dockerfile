@@ -43,6 +43,6 @@ ENV DJANGO_SETTINGS_MODULE=vehicle_service.settings
 RUN chmod +x scripts/services/vehicle/*.sh && \
     chmod +x scripts/services/_common.sh
 
-EXPOSE 50051
+EXPOSE 50015
 
 CMD ["./scripts/services/vehicle/run_grpc.sh"]
